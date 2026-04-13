@@ -237,39 +237,11 @@
     socket.onmessage = function(e) {
         const data = JSON.parse(e.data);
 
-<<<<<<< HEAD
-        // 1. Handle Immediate Alarms (Waving/Falling)
-        if (data.type === "ALARM") {
-            if (data.action === "FALL DETECTED") {
-                createLogItem(actionLog, "{% trans 'CRITICAL' %}", "{% trans 'FALL DETECTED' %}", "fall-bg");
-                triggerFlash("#7b1113"); // Red flash
-            } else if (data.action === "HAND WAVING") {
-                createLogItem(actionLog, "{% trans 'GREETING' %}", "{% trans 'Wave Detected' %}", "wave-bg");
-                triggerFlash("#3d3d00"); // Yellow flash
-            }
-        }
-
-        // 2. Handle Identity Matches
-=======
         // --- Live detection events ---
->>>>>>> f01b9940f10ccf9fc04bcf8a60edb710b7016991
         if (data.type === "TARGET_MATCH") {
             createLogItem(idLog, "{% trans 'CONFIRMED' %}", data.name, "match-bg");
         }
 
-<<<<<<< HEAD
-        // 3. Handle Stat Updates (Counter)
-        if (data.type === "STAT_UPDATE") {
-            counterDisplay.innerText = data.count.toString().padStart(2, '0');
-            // Allow backend to send a custom message or use default
-            labelDisplay.innerText   = data.message || "{% trans 'Scanning Environment...' %}";
-            counterDisplay.style.color = (data.count === 0) ? "#95a5a6" : "#4ecca3";
-        }
-
-        // 4. Handle In-app Notifications
-        if (data.type === "NOTIFICATION") {
-            showToast(data);
-=======
         if (data.type === "STAT_UPDATE") {
             counterDisplay.innerText = data.count.toString().padStart(2, '0');
             labelDisplay.innerText   = data.message;
@@ -289,7 +261,6 @@
             showToast(data);
 
             // Mark as read via WebSocket
->>>>>>> f01b9940f10ccf9fc04bcf8a60edb710b7016991
             socket.send(JSON.stringify({
                 type: "MARK_READ",
                 notification_id: data.notification_id
@@ -306,16 +277,8 @@
     }
 
     function triggerFlash(color) {
-<<<<<<< HEAD
-        mainView.style.transition = "box-shadow 0.1s ease";
-        mainView.style.boxShadow = `inset 0 0 60px ${color}`;
-        setTimeout(() => {
-            mainView.style.boxShadow = "none";
-        }, 1000);
-=======
         mainView.style.boxShadow = `inset 0 0 40px ${color}`;
         setTimeout(() => mainView.style.boxShadow = "none", 800);
->>>>>>> f01b9940f10ccf9fc04bcf8a60edb710b7016991
     }
 
     function showToast(data) {
@@ -334,11 +297,8 @@
         `;
         toast.onclick = () => toast.remove();
         toastContainer.prepend(toast);
-<<<<<<< HEAD
-=======
 
         // Auto-dismiss after 8 seconds
->>>>>>> f01b9940f10ccf9fc04bcf8a60edb710b7016991
         setTimeout(() => toast.remove(), 8000);
     }
 
