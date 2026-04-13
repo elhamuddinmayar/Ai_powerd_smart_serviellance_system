@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Command Center{% endblock %}
+
+{% block extra_css %}
+<style>
+.hub-hero {
+  text-align: center;
+  padding: 3rem 0 2rem;
+}
+.hub-title {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: .3em;
+  color: var(--accent);
+  margin-bottom: .5rem;
+  animation: flicker 4s infinite;
+}
+@keyframes flicker {
+  0%,95%,100% { opacity:1; }
+  96%,99% { opacity:.6; }
+  97%,98% { opacity:.8; }
+}
+.hub-sub {
+  color: var(--text-muted);
+  font-size: .85rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+.hub-pulse {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse-live 1.5s infinite;
+}
+@keyframes pulse-live {
+  0%,100% { box-shadow: 0 0 0 0 rgba(78,204,163,.4); }
+  50% { box-shadow: 0 0 0 8px rgba(78,204,163,0); }
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.2rem;
+  margin-top: 2.5rem;
+}
+
+.hub-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.8rem 1.5rem;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+  position: relative;
+  overflow: hidden;
+  transition: all .3s cubic-bezier(.175,.885,.32,1.275);
+}
+.hub-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--card-glow, rgba(78,204,163,.06)) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.hub-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--card-accent, var(--accent));
+  box-shadow: 0 12px 32px rgba(0,0,0,.4),
+              0 0 0 1px var(--card-accent, var(--accent));
+}
+.hub-card:hover::before { opacity: 1; }
+
+.hub-card__icon {
+  font-size: 2.2rem;
+  color: var(--card-accent, var(--accent));
+}
+.hub-card__title {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: .1em;
+  color: var(--card-accent, var(--accent));
+}
+.hub-card__desc {
+  font-size: .82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.hub-card__arrow {
+  margin-top: auto;
+  font-size: .75rem;
+  color: var(--card-accent, var(--accent));
+  opacity: 0;
+  transition: opacity .2s, transform .2s;
+  transform: translateX(-4px);
+}
+.hub-card:hover .hub-card__arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Role-specific color theming */
+.hub-card--surveillance { --card-accent: #4ecca3; --card-glow: rgba(78,204,163,.08); }
+.hub-card--targets      { --card-accent: #e94560; --card-glow: rgba(233,69,96,.08); }
+.hub-card--assignments  { --card-accent: #f39c12; --card-glow: rgba(243,156,18,.08); }
+.hub-card--verif        { --card-accent: #3498db; --card-glow: rgba(52,152,219,.08); }
+.hub-card--accounts     { --card-accent: #9b59b6; --card-glow: rgba(155,89,182,.08); }
+.hub-card--history      { --card-accent: #1abc9c; --card-glow: rgba(26,188,156,.08); }
+.hub-card--cameras      { --card-accent: #e67e22; --card-glow: rgba(230,126,34,.08); }
+.hub-card--notif        { --card-accent: #e74c3c; --card-glow: rgba(231,76,60,.08); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;">
+  <div class="hub-hero">
+    <h1 class="hub-title">SYSTEM HUB</h1>
+    <p class="hub-sub">
+      <span class="hub-pulse"></span>
+      Neural Link Active — Authorized Personnel Only
+    </p>
+  </div>
+
+  <div class="hub-grid">
+    <!-- Surveillance (all) -->
+    <a href="{% url 'dashboard' %}" class="hub-card hub-card--surveillance">
+      <div class="hub-card__icon"><i class="fas fa-tv"></i></div>
+      <div class="hub-card__title">SURVEILLANCE</div>
+      <div class="hub-card__desc">
+        Live vision stream, occupancy counting, gesture detection and real-time alerts.
+      </div>
+      <div class="hub-card__arrow">→ Enter</div>
+    </a>
+
+    <!-- Cameras (all) -->
+    <a href="{% url 'camera_dashboard' %}" class="hub-card hub-card--cameras">
+      <div class="hub-card__icon"><i class="fas fa-camera"></i></div>
+      <div class="hub-card__title">CAMERAS</div>
+      <div class="hub-card__desc">
+        Monitor and manage connected camera feeds and their operational status.
+      </div>
+      <div class="hub-card__arrow">→ Enter</div>
+    </a>
+
+    <!-- History (all) -->
+    <a href="{% url 'detection_history' %}" class="hub-card hub-card--history">
+      <div class="hub-card__icon"><i class="fas fa-history"></i></div>
+      <div class="hub-card__title">DETECTION HISTORY</div>
+      <div class="hub-card__desc">
+        Full log of all detection events. Export approved detections as PDF reports.
+      </div>
+      <div class="hub-card__arrow">→ Enter</div>
+    </a>
+
+    <!-- Notifications (all authenticated) -->
+    <a href="{% url 'notifications_list' %}" class="hub-card hub-card--notif">
+      <div class="hub-card__icon">
+        <i class="fas fa-bell"></i>
+        {% if unread_count %}
+          <span class="b-badge b-badge--red" style="font-size:.7rem;vertical-align:top;">
+            {{ unread_count }}
+          </span>
+        {% endif %}
+      </div>
+      <div class="hub-card__title">NOTIFICATIONS</div>
+      <div class="hub-card__desc">
+        Alerts, assignments, detections and verification updates in real-time.
+      </div>
+      <div class="hub-card__arrow">→ Enter</div>
+    </a>
+
+    {% if user.profile.role == 'operator' %}
+    <!-- Operator: My Assignments -->
+    <a href="{% url 'operator_assignments' %}" class="hub-card hub-card--assignments">
+      <div class="hub-card__icon"><i class="fas fa-tasks"></i></div>
+      <div class="hub-card__title">MY ASSIGNMENTS</div>
+      <div class="hub-card__desc">
+        View targets assigned to you, acknowledge tasks, and pass back completed assignments.
+      </div>
+      <div class="hub-card__arrow">→ Enter</div>
+    </a>
+    {% endif %}
+
+    {% if user.profile.role == 'admin' or user.profile.role == 'supervisor' or user.is_superuser %}
+    <!-- Targets -->
+    <a href="{% url 'target_management' %}" class="hub-card hub-card--targets">
+      <div class="hub-card__icon"><i class="fas fa-crosshairs"></i></div>
+      <div class="hub-card__title">TARGET MANAGEMENT</div>
+      <div class="hub-card__desc">
+        Register, assign and manage surveillance targets. Export full dossier PDFs.
+      </div>
+      <div class="hub-card__arrow">→ Enter</div>
+    </a>
+
+    <!-- Verifications -->
+    <a href="{% url 'pending_verifications' %}" class="hub-card hub-card--verif">
+      <div class="hub-card__icon"><i class="fas fa-shield-alt"></i></div>
+      <div class="hub-card__title">VERIFICATIONS</div>
+      <div class="hub-card__desc">
+        Review detection events reported by operators. Approve or reject with notes.
+      </div>
+      <div class="hub-card__arrow">→ Enter</div>
+    </a>
+    {% endif %}
+
+    {% if user.profile.role == 'admin' or user.is_superuser %}
+    <!-- Accounts -->
+    <a href="{% url 'account_manage' %}" class="hub-card hub-card--accounts">
+      <div class="hub-card__icon"><i class="fas fa-users-cog"></i></div>
+      <div class="hub-card__title">ACCOUNTS</div>
+      <div class="hub-card__desc">
+        Manage personnel, assign roles, and control system access levels.
+      </div>
+      <div class="hub-card__arrow">→ Enter</div>
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

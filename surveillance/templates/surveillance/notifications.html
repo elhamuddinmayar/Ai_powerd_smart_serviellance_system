@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Notifications" %}{% endblock %}
+
+{% block content %}
+<div class="b-page-header">
+  <div>
+    <h1 class="b-page-title"><i class="fas fa-bell"></i> {% trans "Notifications" %}</h1>
+    <p class="b-page-sub">{% trans "All your system notifications — most recent first." %}</p>
+  </div>
+</div>
+
+{% if notifications %}
+<div style="max-width:800px;display:flex;flex-direction:column;gap:.8rem;">
+  {% for notif in notifications %}
+  {% with type=notif.notification_type %}
+  <div class="b-card"
+       style="border-left:3px solid
+         {% if type == 'assignment' %}var(--accent)
+         {% elif type == 'pass_back' %}var(--warn)
+         {% elif type == 'detection' %}var(--danger)
+         {% elif type == 'approved' %}#2ecc71
+         {% elif type == 'rejected' %}var(--danger)
+         {% elif type == 'verification' %}var(--info)
+         {% else %}var(--border){% endif %};">
+
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <div class="flex items-center gap-2">
+        <span style="font-size:1.1rem;">
+          {% if type == 'assignment' %}<i class="fas fa-tasks text-accent"></i>
+          {% elif type == 'pass_back' %}<i class="fas fa-undo text-warn"></i>
+          {% elif type == 'detection' %}<i class="fas fa-eye text-danger"></i>
+          {% elif type == 'approved' %}<i class="fas fa-check-double" style="color:#2ecc71"></i>
+          {% elif type == 'rejected' %}<i class="fas fa-ban text-danger"></i>
+          {% elif type == 'verification' %}<i class="fas fa-shield-alt" style="color:var(--info)"></i>
+          {% else %}<i class="fas fa-bell text-muted"></i>{% endif %}
+        </span>
+        <div>
+          <div style="font-weight:700;font-size:.9rem;color:
+            {% if type == 'assignment' %}var(--accent)
+            {% elif type == 'pass_back' %}var(--warn)
+            {% elif type == 'detection' or type == 'rejected' %}var(--danger)
+            {% elif type == 'approved' %}#2ecc71
+            {% elif type == 'verification' %}var(--info)
+            {% else %}var(--text){% endif %};">
+            {{ notif.title }}
+          </div>
+          <div style="font-size:.72rem;color:var(--text-muted);">
+            {{ notif.get_notification_type_display }}
+          </div>
+        </div>
+      </div>
+      <span style="font-size:.72rem;color:var(--text-muted);white-space:nowrap;">
+        <i class="fas fa-clock"></i> {{ notif.created_at|date:"d M Y H:i" }}
+      </span>
+    </div>
+
+    <div style="font-size:.83rem;color:var(--text-dim);margin-top:.7rem;
+                white-space:pre-line;line-height:1.6;">
+      {{ notif.message }}
+    </div>
+
+    {% if notif.related_assignment or notif.related_event %}
+    <div class="flex gap-2 mt-2">
+      {% if notif.related_assignment %}
+      <a href="{% url 'operator_assignments' %}" class="b-btn b-btn--ghost b-btn--sm">
+        <i class="fas fa-tasks"></i> {% trans "View Assignment" %}
+      </a>
+      {% endif %}
+      {% if notif.related_event and notif.related_event.verification_status == 'approved' %}
+      <a href="{% url 'export_detection_pdf' notif.related_event.pk %}"
+         class="b-btn b-btn--pdf b-btn--sm" target="_blank">
+        <i class="fas fa-file-pdf"></i> {% trans "Export PDF" %}
+      </a>
+      {% endif %}
+      {% if notif.related_event and is_admin %}
+      <a href="{% url 'pending_verifications' %}" class="b-btn b-btn--ghost b-btn--sm">
+        <i class="fas fa-shield-alt"></i> {% trans "Verify" %}
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% endwith %}
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="b-empty">
+  <i class="fas fa-bell-slash"></i>
+  <h2>{% trans "No Notifications" %}</h2>
+  <p>{% trans "You have no notifications yet." %}</p>
+</div>
+{% endif %}
+{% endblock %}

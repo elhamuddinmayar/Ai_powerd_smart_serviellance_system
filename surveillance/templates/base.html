@@ -1,0 +1,162 @@
+{% load i18n static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" 
+      dir="{% if LANGUAGE_CODE == 'fa' or LANGUAGE_CODE == 'ps' %}rtl{% else %}ltr{% endif %}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Butterfly AI{% endblock %} — Butterfly</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous">
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="{% static 'css/butterfly.css' %}">
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ══ NAVBAR ═══════════════════════════════════════════════ -->
+<nav class="b-nav">
+  <!-- Brand -->
+  <a href="{% url 'home' %}" class="b-nav__brand">BUTTERFLY</a>
+
+  <!-- Mobile toggle -->
+  <button class="b-nav__toggle" id="b-nav-toggle" aria-label="Menu">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Nav links -->
+  <div class="b-nav__links" id="b-nav-links">
+    <a href="{% url 'dashboard' %}" class="b-nav__link">
+      <i class="fas fa-tv"></i> {% trans "Surveillance" %}
+    </a>
+    <a href="{% url 'camera_dashboard' %}" class="b-nav__link">
+      <i class="fas fa-camera"></i> {% trans "Cameras" %}
+    </a>
+
+    {% if user.is_authenticated %}
+      {% if user.profile.role == 'operator' %}
+        <a href="{% url 'operator_assignments' %}" class="b-nav__link">
+          <i class="fas fa-tasks"></i> {% trans "My Assignments" %}
+        </a>
+      {% endif %}
+
+      {% if user.profile.role == 'admin' or user.profile.role == 'supervisor' or user.is_superuser %}
+        <a href="{% url 'target_management' %}" class="b-nav__link">
+          <i class="fas fa-crosshairs"></i> {% trans "Targets" %}
+        </a>
+        <a href="{% url 'pending_verifications' %}" class="b-nav__link">
+          <i class="fas fa-shield-alt"></i> {% trans "Verifications" %}
+        </a>
+      {% endif %}
+
+      {% if user.profile.role == 'admin' or user.is_superuser %}
+        <a href="{% url 'account_manage' %}" class="b-nav__link">
+          <i class="fas fa-users-cog"></i> {% trans "Accounts" %}
+        </a>
+      {% endif %}
+
+      <a href="{% url 'detection_history' %}" class="b-nav__link">
+        <i class="fas fa-history"></i> {% trans "History" %}
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Right side -->
+  <div class="b-nav__right">
+    <!-- Language -->
+    <select class="b-lang" onchange="switchLang(this.value)" aria-label="Language">
+      {% get_available_languages as LANGUAGES %}
+      {% for lang in LANGUAGES %}
+        <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
+          {{ lang.1 }}
+        </option>
+      {% endfor %}
+    </select>
+
+    {% if user.is_authenticated %}
+      <!-- Notifications bell -->
+      <a href="{% url 'notifications_list' %}" class="notif-bell" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="notif-badge" data-notif-badge data-count="{{ unread_count|default:0 }}">
+          {% if unread_count %}{{ unread_count }}{% endif %}
+        </span>
+      </a>
+
+      <!-- User chip -->
+      <a href="{% url 'account_detail' user.id %}" class="b-nav__user">
+        {% if user.profile.profile_picture %}
+          <img class="b-nav__avatar" src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}">
+        {% else %}
+          <span class="b-nav__avatar" style="background:var(--panel-2);display:flex;align-items:center;justify-content:center;font-size:.9rem;">
+            <i class="fas fa-user"></i>
+          </span>
+        {% endif %}
+        <span>{{ user.username }}</span>
+        <span class="b-badge b-badge--{% if user.profile.role == 'admin' or user.is_superuser %}green{% elif user.profile.role == 'supervisor' %}blue{% else %}gray{% endif %}"
+              style="font-size:.6rem;padding:.1rem .4rem;">
+          {{ user.profile.role|upper }}
+        </span>
+      </a>
+
+      <a href="{% url 'logout' %}" class="b-nav__link danger" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    {% else %}
+      <a href="{% url 'login' %}" class="b-btn b-btn--primary b-btn--sm">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- ══ DJANGO MESSAGES (hidden, consumed by JS) ══════════════ -->
+{% if messages %}
+  {% for message in messages %}
+    <div data-django-message
+         data-message-type="{{ message.tags }}"
+         data-message-title="{% if 'success' in message.tags %}Success{% elif 'error' in message.tags %}Error{% elif 'warning' in message.tags %}Warning{% else %}Notice{% endif %}"
+         style="display:none">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<!-- ══ SNAP MODAL ════════════════════════════════════════════ -->
+<div id="snapModal" class="b-snap-modal">
+  <img id="snapModalImg" src="" alt="Snapshot">
+</div>
+
+<!-- ══ MAIN CONTENT ══════════════════════════════════════════ -->
+<main class="b-main">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ══ SCRIPTS ═══════════════════════════════════════════════ -->
+<script src="{% static 'js/butterfly.js' %}"></script>
+
+<script>
+function switchLang(code) {
+  // We create a placeholder URL and replace 'LANGUAGE_CODE' with the actual code
+  let url = "{% url 'set_lang' lang_code='placeholder' %}".replace('placeholder', code);
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    // Since the lang_code is now in the URL path, you don't strictly need it in the body,
+    // but keeping it doesn't hurt if your view expects it.
+    body: 'language=' + encodeURIComponent(code) + '&next=' + encodeURIComponent(location.pathname)
+  }).then(() => location.reload());
+}
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

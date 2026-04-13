@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}My Assignments{% endblock %}
+
+{% block content %}
+<div class="b-page-header">
+  <div>
+    <h1 class="b-page-title"><i class="fas fa-tasks"></i> {% trans "My Assignments" %}</h1>
+    <p class="b-page-sub">
+      {% trans "Targets assigned to you. Only your assigned targets are scanned by the system." %}
+    </p>
+  </div>
+</div>
+
+{% if assignments %}
+<div style="display:flex;flex-direction:column;gap:1.2rem;">
+  {% for a in assignments %}
+  <div class="assign-card status-{{ a.status }}" id="assign-{{ a.pk }}">
+
+    <!-- Photo -->
+    <div style="flex-shrink:0;">
+      {% if a.target.image %}
+        <img src="{{ a.target.image.url }}" alt="{{ a.target.name }}"
+             style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--border);">
+      {% else %}
+        <div class="assign-photo-placeholder" style="width:80px;height:80px;border-radius:50%;">
+          <i class="fas fa-user"></i>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Body -->
+    <div style="flex:1;display:flex;flex-direction:column;gap:.7rem;min-width:0;">
+
+      <!-- Header row -->
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--text);">
+            {{ a.target.name }} {{ a.target.last_name }}
+          </div>
+          <div class="flex flex-wrap gap-2 mt-1" style="font-size:.78rem;color:var(--text-muted);">
+            <span class="b-badge b-status--{{ a.status }}">{{ a.get_status_display }}</span>
+            <span><i class="fas fa-user-tie"></i> {{ a.assigned_by.username|default:"—" }}</span>
+            <span><i class="fas fa-calendar"></i> {{ a.created_at|date:"Y-m-d H:i" }}</span>
+          </div>
+        </div>
+
+        <!-- Assignment actions -->
+        <div class="flex gap-2 flex-wrap">
+          {% if a.status == 'pending' %}
+          <button class="b-btn b-btn--primary b-btn--sm" data-ack-btn
+                  onclick="bfAcknowledge({{ a.pk }}, '{{ csrf_token }}', this.closest('.assign-card'))">
+            <i class="fas fa-check"></i> {% trans "Acknowledge" %}
+          </button>
+          {% endif %}
+          {% if a.status != 'passed_back' and a.status != 'closed' %}
+          <a href="{% url 'pass_back_target' a.pk %}" class="b-btn b-btn--ghost b-btn--sm"
+             onclick="return confirm('{% trans "Pass this target back to the uploader?" %}')">
+            <i class="fas fa-undo"></i> {% trans "Pass Back" %}
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if a.note %}
+      <div style="font-size:.82rem;color:var(--text-muted);background:rgba(255,255,255,.04);
+                  padding:.5rem .8rem;border-radius:6px;border-left:2px solid var(--border);">
+        <i class="fas fa-sticky-note text-accent"></i> {{ a.note }}
+      </div>
+      {% endif %}
+
+      <!-- ══ Detection History for this Assignment ══════════ -->
+      {% with events=a.detection_events.all %}
+      {% if events %}
+      <div style="background:rgba(0,0,0,.25);border-radius:8px;padding:.8rem 1rem;">
+        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+                    color:var(--text-muted);margin-bottom:.6rem;">
+          <i class="fas fa-history text-accent"></i> {% trans "Detection Events" %}
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:.4rem;">
+          {% for ev in events %}
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;
+                      padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.8rem;">
+
+            <!-- Snapshot thumbnail -->
+            {% if ev.frame_snapshot %}
+            <img src="/media/{{ ev.frame_snapshot }}" alt="snap"
+                 style="width:36px;height:36px;border-radius:4px;object-fit:cover;cursor:zoom-in;"
+                 onclick="openSnap(this.src)">
+            {% endif %}
+
+            <span style="color:var(--text-muted);white-space:nowrap;">
+              {{ ev.timestamp|date:"Y-m-d H:i:s" }}
+            </span>
+            <span style="color:var(--text-dim);font-weight:600;">
+              <i class="fas fa-camera" style="font-size:.7rem;"></i>
+              {{ ev.camera.name|default:"—" }}
+            </span>
+            {% if ev.camera.location %}
+            <span style="color:var(--text-muted);font-size:.75rem;">
+              <i class="fas fa-map-marker-alt"></i> {{ ev.camera.location }}
+            </span>
+            {% endif %}
+
+            <!-- Verification status -->
+            <span class="b-badge b-verif--{{ ev.verification_status }}">
+              {{ ev.get_verification_status_display }}
+            </span>
+
+            <!-- Action badge -->
+            <span class="b-badge {% if ev.action == 'Normal' %}b-badge--gray{% elif 'FALL' in ev.action %}b-badge--red{% else %}b-badge--yellow{% endif %}">
+              {{ ev.action }}
+            </span>
+
+            <!-- PDF export (only if approved) -->
+            {% if ev.verification_status == 'approved' %}
+            <a href="{% url 'export_detection_pdf' ev.pk %}" class="b-btn b-btn--pdf b-btn--sm" target="_blank">
+              <i class="fas fa-file-pdf"></i> {% trans "Export PDF" %}
+            </a>
+            {% elif ev.verification_status == 'pending' %}
+            <span style="color:var(--text-muted);font-size:.75rem;">
+              <i class="fas fa-hourglass-half text-warn"></i> {% trans "Awaiting admin review" %}
+            </span>
+            {% elif ev.verification_status == 'rejected' %}
+            {% if ev.verification_note %}
+            <span style="color:var(--danger);font-size:.75rem;"
+                  title="{{ ev.verification_note }}">
+              <i class="fas fa-times-circle"></i> {% trans "Rejected" %}:
+              {{ ev.verification_note|truncatechars:40 }}
+            </span>
+            {% endif %}
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="text-muted" style="font-size:.8rem;">
+        <i class="fas fa-eye-slash"></i> {% trans "No detections recorded for this assignment yet." %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+    </div><!-- /body -->
+  </div><!-- /assign-card -->
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="b-empty">
+  <i class="fas fa-inbox"></i>
+  <h2>{% trans "No Assignments" %}</h2>
+  <p>{% trans "You have no active target assignments. Contact your supervisor or admin." %}</p>
+</div>
+{% endif %}
+{% endblock %}

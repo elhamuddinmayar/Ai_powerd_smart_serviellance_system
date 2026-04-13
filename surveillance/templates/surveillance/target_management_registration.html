@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Register Target{% endblock %}
+
+{% block content %}
+<div class="b-page-header">
+  <div>
+    <h1 class="b-page-title"><i class="fas fa-user-plus"></i> {% trans "Register Target" %}</h1>
+    <p class="b-page-sub">{% trans "Enroll a new surveillance target into the system." %}</p>
+  </div>
+  <a href="{% url 'target_management' %}" class="b-btn b-btn--ghost">
+    <i class="fas fa-arrow-left"></i> {% trans "Back" %}
+  </a>
+</div>
+
+<div style="max-width:800px;margin:0 auto;">
+  <form method="post" enctype="multipart/form-data" id="target-form">
+    {% csrf_token %}
+
+    <!-- Photo upload with webcam -->
+    <div class="b-card mb-3">
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+                  color:var(--text-muted);margin-bottom:1rem;">
+        {% trans "Subject Photo" %}
+      </div>
+
+      <div class="b-photo-uploader" data-uploader data-field="id_image" data-modal="cam_modal_image">
+        <div style="display:flex;gap:1.2rem;align-items:flex-start;flex-wrap:wrap;">
+          <div>
+            <img class="b-photo-preview" id="id_image_preview"
+                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' fill='%23151f2e'/%3E%3Ctext x='60' y='68' text-anchor='middle' fill='%23334155' font-size='36'%3E👤%3C/text%3E%3C/svg%3E"
+                 alt="Preview"
+                 style="width:120px;height:120px;border-radius:var(--radius);object-fit:cover;
+                        border:2px solid var(--border);">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;justify-content:center;">
+            <button type="button" class="b-btn b-btn--ghost b-btn--sm" data-action="pick">
+              <i class="fas fa-folder-open"></i> {% trans "Browse File" %}
+            </button>
+            <button type="button" class="b-btn b-btn--ghost b-btn--sm" data-action="webcam">
+              <i class="fas fa-camera"></i> {% trans "Use Webcam" %}
+            </button>
+            <span class="text-muted" style="font-size:.72rem;">
+              {% trans "Drag on image to crop after capture" %}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Django image field (hidden visually, JS controls it) -->
+      <div style="display:none;">{{ form.image }}</div>
+    </div>
+
+    <!-- Personal info -->
+    <div class="b-card mb-3">
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+                  color:var(--text-muted);margin-bottom:1rem;">
+        {% trans "Personal Information" %}
+      </div>
+      <div class="grid-2">
+        <div class="b-form-group">
+          <label class="b-label">{% trans "First Name" %} *</label>
+          {{ form.name }}
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Last Name" %} *</label>
+          {{ form.last_name }}
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Father's Name" %}</label>
+          {{ form.father_name }}
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Age" %}</label>
+          {{ form.age }}
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Gender" %}</label>
+          {{ form.gender }}
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Marital Status" %}</label>
+          {{ form.marital_status }}
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Place of Birth" %}</label>
+          {{ form.place_of_birth }}
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Occupation" %}</label>
+          {{ form.job }}
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Tazkira Number" %}</label>
+          {{ form.tazkira_number }}
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Phone Number" %}</label>
+          {{ form.phone_number }}
+        </div>
+      </div>
+      <div class="b-form-group">
+        <label class="b-label">{% trans "Address" %}</label>
+        {{ form.address }}
+      </div>
+    </div>
+
+    <!-- Case info -->
+    <div class="b-card mb-3">
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+                  color:var(--text-muted);margin-bottom:1rem;">
+        {% trans "Case Information" %}
+      </div>
+      <div class="b-form-group">
+        <label class="b-label">{% trans "Crime / Charge" %} *</label>
+        {{ form.crime }}
+      </div>
+      <div class="b-form-group">
+        <label class="b-label">{% trans "Description / Notes" %}</label>
+        {{ form.description }}
+      </div>
+    </div>
+
+    <!-- Duration / expiry -->
+    <div class="b-card mb-3">
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+                  color:var(--text-muted);margin-bottom:1rem;">
+        {% trans "Monitoring Duration" %}
+      </div>
+      <div class="b-form-group">
+        <label class="b-label">{% trans "Active Duration" %}</label>
+        <select name="duration" class="b-select" id="duration-select" onchange="toggleCustomDate(this.value)">
+          <option value="">{% trans "Indefinite (no expiry)" %}</option>
+          <option value="1h">1 {% trans "Hour" %}</option>
+          <option value="12h">12 {% trans "Hours" %}</option>
+          <option value="1d">1 {% trans "Day" %}</option>
+          <option value="7d">7 {% trans "Days" %}</option>
+          <option value="custom">{% trans "Custom Date" %}</option>
+        </select>
+      </div>
+      <div class="b-form-group" id="custom-date-wrap" style="display:none;">
+        <label class="b-label">{% trans "Custom Expiry Date & Time" %}</label>
+        <input type="datetime-local" name="custom_date" class="b-input">
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="b-btn b-btn--primary b-btn--lg">
+        <i class="fas fa-user-plus"></i> {% trans "Register Target" %}
+      </button>
+      <a href="{% url 'target_management' %}" class="b-btn b-btn--ghost b-btn--lg">
+        {% trans "Cancel" %}
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Webcam Modal for image field -->
+<div id="cam_modal_image" class="b-cam-modal">
+  <div class="b-cam-box">
+    <h3><i class="fas fa-camera"></i> {% trans "Capture Subject Photo" %}</h3>
+    <video class="b-cam-video" autoplay playsinline muted style="max-height:280px;"></video>
+    <canvas class="b-cam-canvas"></canvas>
+    <div class="b-cam-cropper-wrap">
+      <img class="b-cam-cropper-img" src="" alt="Captured">
+    </div>
+    <p style="font-size:.75rem;color:var(--text-muted);">
+      {% trans "After capturing, drag on the image to define a crop area, then click Use Photo." %}
+    </p>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+      <button type="button" class="b-btn b-btn--primary" data-modal-snap>
+        <i class="fas fa-circle"></i> {% trans "Capture" %}
+      </button>
+      <button type="button" class="b-btn b-btn--primary" data-modal-use style="display:none">
+        <i class="fas fa-check"></i> {% trans "Use Photo" %}
+      </button>
+      <button type="button" class="b-btn b-btn--ghost" data-modal-cancel>
+        <i class="fas fa-times"></i> {% trans "Cancel" %}
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleCustomDate(val) {
+  document.getElementById('custom-date-wrap').style.display = val === 'custom' ? 'block' : 'none';
+}
+
+// Style Django form fields to use our CSS classes
+document.querySelectorAll('#target-form input[type="text"],#target-form input[type="number"],#target-form input[type="email"]')
+  .forEach(el => { el.classList.add('b-input'); });
+document.querySelectorAll('#target-form textarea')
+  .forEach(el => { el.classList.add('b-textarea'); });
+document.querySelectorAll('#target-form select:not(#duration-select)')
+  .forEach(el => { el.classList.add('b-select'); });
+</script>
+{% endblock %}

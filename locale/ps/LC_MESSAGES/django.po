@@ -1,0 +1,723 @@
+# Butterfly System - Pashto Translation
+# Copyright (C) 2026
+msgid ""
+msgstr ""
+"Project-Id-Version: Butterfly 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-05 12:48+0430\n"
+"PO-Revision-Date: 2026-04-01 16:10+0430\n"
+"Last-Translator: Gemini\n"
+"Language-Team: Pashto\n"
+"Language: ps\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\surveillance\templates\base.html:93
+msgid "Dashboard"
+msgstr "ډاشبورډ"
+
+#: .\surveillance\templates\base.html:96
+msgid "Accounts"
+msgstr "حسابونه"
+
+#: .\surveillance\templates\base.html:117
+msgid "Logout"
+msgstr "وتل"
+
+#: .\surveillance\templates\registration\login.html:8
+msgid "Butterfly - System Access"
+msgstr "باترفلای - سیسټم ته لاسرسی"
+
+#: .\surveillance\templates\registration\login.html:83
+msgid "SYSTEM STATUS"
+msgstr "د سیسټم حالت"
+
+#: .\surveillance\templates\registration\login.html:92
+msgid "Authorize"
+msgstr "اجازه ورکول"
+
+#: .\surveillance\templates\registration\login.html:95
+msgid "USERNAME OR EMAIL"
+msgstr "کارن نوم یا برېښنالیک"
+
+#: .\surveillance\templates\registration\login.html:96
+msgid "PASSWORD"
+msgstr "پټنوم"
+
+#: .\surveillance\templates\registration\login.html:97
+msgid "Access System"
+msgstr "سیسټم ته ننوتل"
+
+#: .\surveillance\templates\registration\login.html:100
+#: .\surveillance\templates\surveillance\account_update.html:150
+msgid "Cancel"
+msgstr "لغوه"
+
+#: .\surveillance\templates\registration\register.html:7
+msgid "AI System - Register"
+msgstr "د AI سیسټم - ثبت"
+
+#: .\surveillance\templates\registration\register.html:55
+msgid "System Status"
+msgstr "د سیسټم حالت"
+
+#: .\surveillance\templates\registration\register.html:74
+msgid "Register Personnel"
+msgstr "پرسونل ثبت کړئ"
+
+#: .\surveillance\templates\registration\register.html:80
+msgid "Username"
+msgstr "کارن نوم"
+
+#: .\surveillance\templates\registration\register.html:85
+msgid "First Name"
+msgstr "لومړی نوم"
+
+#: .\surveillance\templates\registration\register.html:89
+msgid "Last Name"
+msgstr "تخلص"
+
+#: .\surveillance\templates\registration\register.html:94
+msgid "Email"
+msgstr "برېښنالیک"
+
+#: .\surveillance\templates\registration\register.html:99
+msgid "Badge ID"
+msgstr "د نښان پیژندګلوی (ID)"
+
+#: .\surveillance\templates\registration\register.html:103
+msgid "Security Role"
+msgstr "امنیتي رول"
+
+#: .\surveillance\templates\registration\register.html:112
+msgid "Profile Image"
+msgstr "د پروفایل انځور"
+
+#: .\surveillance\templates\registration\register.html:117
+#: .\surveillance\templates\surveillance\account_manage_details.html:96
+#: .\surveillance\templates\surveillance\account_update.html:132
+msgid "Emergency Contact"
+msgstr "بیړنۍ اړیکه"
+
+#: .\surveillance\templates\registration\register.html:122
+msgid "Password"
+msgstr "پټنوم"
+
+#: .\surveillance\templates\registration\register.html:126
+msgid "Confirm"
+msgstr "تایید"
+
+#: .\surveillance\templates\registration\register.html:131
+#, fuzzy
+msgid "Register User"
+msgstr "کارن ثبت کړئ"
+
+#: .\surveillance\templates\registration\register.html:135
+msgid "Retrun"
+msgstr "بیرته ستنیدل"
+
+#: .\surveillance\templates\surveillance\account_manage.html:153
+#, fuzzy
+msgid "USER ARCHIVE"
+msgstr "د کاروونکو آرشیف"
+
+#: .\surveillance\templates\surveillance\account_manage.html:154
+msgid "System Administration & Database Integrity"
+msgstr "د سیسټم اداره او د ډیټابیس بشپړتیا"
+
+#: .\surveillance\templates\surveillance\account_manage.html:159
+msgid "Register New User"
+msgstr "نوی کارن ثبت کړئ"
+
+#: .\surveillance\templates\surveillance\account_manage.html:164
+msgid "Search ID or Name..."
+msgstr "آی ډي یا نوم وپلټئ..."
+
+#: .\surveillance\templates\surveillance\account_manage.html:169
+msgid "Recently Joined"
+msgstr "تازه یوځای شوي"
+
+#: .\surveillance\templates\surveillance\account_manage.html:170
+msgid "Oldest Members"
+msgstr "پخواني غړي"
+
+#: .\surveillance\templates\surveillance\account_manage.html:172
+msgid "Name (A-Z)"
+msgstr "نوم (الف-ی)"
+
+#: .\surveillance\templates\surveillance\account_manage.html:173
+msgid "Name (Z-A)"
+msgstr "نوم (ی-الف)"
+
+#: .\surveillance\templates\surveillance\account_manage.html:175
+msgid "Rank: Admins First"
+msgstr "درجه: مدیران لومړی"
+
+#: .\surveillance\templates\surveillance\account_manage.html:176
+msgid "Rank: Observers First"
+msgstr "درجه: کتونکي لومړی"
+
+#: .\surveillance\templates\surveillance\account_manage.html:178
+msgid "Role: Supervisors First"
+msgstr "رول: څارونکي لومړی"
+
+#: .\surveillance\templates\surveillance\account_manage.html:179
+msgid "Role: Operators First"
+msgstr "رول: اپریټران لومړی"
+
+#: .\surveillance\templates\surveillance\account_manage.html:183
+msgid "RESET"
+msgstr "بیا تنظیم"
+
+#: .\surveillance\templates\surveillance\account_manage.html:194
+msgid "Admin"
+msgstr "مدیر"
+
+#: .\surveillance\templates\surveillance\account_manage.html:196
+msgid "Supervisor"
+msgstr "سپروایزر"
+
+#: .\surveillance\templates\surveillance\account_manage.html:198
+msgid "Operator"
+msgstr "اپریټر"
+
+#: .\surveillance\templates\surveillance\account_manage.html:209
+#, fuzzy
+msgid "NAME:"
+msgstr "نوم:"
+
+#: .\surveillance\templates\surveillance\account_manage.html:210
+msgid "BADGE:"
+msgstr "نښان:"
+
+#: .\surveillance\templates\surveillance\account_manage.html:211
+msgid "CLEARANCE:"
+msgstr "امنیتي اجازه:"
+
+#: .\surveillance\templates\surveillance\account_manage.html:217
+msgid "VIEW PROFILE"
+msgstr "پروفایل کتل"
+
+#: .\surveillance\templates\surveillance\account_manage.html:223
+msgid ""
+"Are you sure you want to delete this user? This action cannot be undone."
+msgstr "ایا تاسو واقعیا غواړئ دا کارن حذف کړئ؟ دا کړنه بیرته نه ګرځي."
+
+#: .\surveillance\templates\surveillance\account_manage.html:231
+msgid "No matching records found in the archive."
+msgstr "په آرشیف کې ورته ریکارډ ونه موندل شو."
+
+#: .\surveillance\templates\surveillance\account_manage.html:252
+msgid "RETURN TO HUB"
+msgstr "مرکز ته ستنیدل"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:74
+msgid "ON DUTY"
+msgstr "په دنده کې"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:74
+msgid "OFF DUTY"
+msgstr "رخصت"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:81
+#: .\surveillance\templates\surveillance\account_update.html:108
+msgid "Badge Number"
+msgstr "د نښان شمېره"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:86
+#: .\surveillance\templates\surveillance\account_update.html:115
+msgid "Role"
+msgstr "رول"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:91
+#: .\surveillance\templates\surveillance\account_update.html:126
+msgid "Email Address"
+msgstr "د برېښنالیک پته"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:102
+msgid "Joined Date"
+msgstr "د یوځای کیدو نیټه"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:110
+#, fuzzy
+msgid "Edit Profile"
+msgstr "پروفایل سم کړئ"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:115
+msgid "Return"
+msgstr "شاته"
+
+#: .\surveillance\templates\surveillance\account_update.html:100
+msgid "Editing"
+msgstr "سمول"
+
+#: .\surveillance\templates\surveillance\account_update.html:139
+msgid "Update Photo"
+msgstr "عکس تازه کړئ"
+
+#: .\surveillance\templates\surveillance\account_update.html:146
+msgid "Save Changes"
+msgstr "بدلونونه خوندي کړئ"
+
+#: .\surveillance\templates\surveillance\dashboard.html:4
+msgid "Butterfly - Tactical Dashboard"
+msgstr "باترفلای - تاکتیکي ډاشبورډ"
+
+#: .\surveillance\templates\surveillance\dashboard.html:116
+msgid "SYSTEM CONTROL"
+msgstr "د سیسټم کنټرول"
+
+#: .\surveillance\templates\surveillance\dashboard.html:119
+msgid "Surveillance Hub"
+msgstr "د څارنې مرکز"
+
+#: .\surveillance\templates\surveillance\dashboard.html:121
+msgid ""
+"Database and Subject enrollment has been moved to the Management Portal."
+msgstr "د ډیټابیس او د اشخاصو ثبت د مدیریت پورټل ته لیږدول شوی."
+
+#: .\surveillance\templates\surveillance\dashboard.html:126
+msgid "Manage Watchlist"
+msgstr "د څارنې لیست اداره کړئ"
+
+#: .\surveillance\templates\surveillance\dashboard.html:131
+#: .\surveillance\templates\surveillance\detection_history.html:4
+#: .\surveillance\templates\surveillance\detection_history.html:9
+msgid "Detection History"
+msgstr "د کشف تاریخچه"
+
+#: .\surveillance\templates\surveillance\dashboard.html:135
+#: .\surveillance\templates\surveillance\notifications.html:4
+#: .\surveillance\templates\surveillance\notifications.html:9
+msgid "Notifications"
+msgstr "خبرتیاوې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:143
+msgid "Optical Sensor Feed"
+msgstr "د نوري سنسر جریان"
+
+#: .\surveillance\templates\surveillance\dashboard.html:144
+msgid "ACTIVE"
+msgstr "فعال"
+
+#: .\surveillance\templates\surveillance\dashboard.html:147
+msgid "Scanning Environment..."
+msgstr "چاپیریال سکین کیږي..."
+
+#: .\surveillance\templates\surveillance\dashboard.html:152
+msgid "Identity Confirmation"
+msgstr "د هویت تایید"
+
+#: .\surveillance\templates\surveillance\dashboard.html:158
+msgid "Activity Alerts"
+msgstr "د فعالیت خبرتیاوې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:164
+#: .\surveillance\templates\surveillance\dashboard.html:250
+msgid "CRITICAL"
+msgstr "بحراني"
+
+#: .\surveillance\templates\surveillance\dashboard.html:164
+#: .\surveillance\templates\surveillance\dashboard.html:250
+msgid "FALL DETECTED"
+msgstr "سقوط کشف شو"
+
+#: .\surveillance\templates\surveillance\dashboard.html:169
+#: .\surveillance\templates\surveillance\dashboard.html:253
+msgid "GREETING"
+msgstr "سلام"
+
+#: .\surveillance\templates\surveillance\dashboard.html:169
+#: .\surveillance\templates\surveillance\dashboard.html:253
+msgid "Wave Detected"
+msgstr "لاس خوځول کشف شو"
+
+#: .\surveillance\templates\surveillance\dashboard.html:174
+#: .\surveillance\templates\surveillance\dashboard.html:242
+msgid "CONFIRMED"
+msgstr "تایید شوی"
+
+#: .\surveillance\templates\surveillance\dashboard.html:184
+msgid "System Integrity & Recent Detections"
+msgstr "د سیسټم بشپړتیا او وروستي کشفونه"
+
+#: .\surveillance\templates\surveillance\dashboard.html:191
+msgid "UPTIME"
+msgstr "د فعالیت وخت"
+
+#: .\surveillance\templates\surveillance\dashboard.html:195
+msgid "LATENCY"
+msgstr "ځنډ"
+
+#: .\surveillance\templates\surveillance\dashboard.html:199
+msgid "ENCRYPTION"
+msgstr "کوډګذاري"
+
+#: .\surveillance\templates\surveillance\dashboard.html:206
+msgid "Recently Detected Persons"
+msgstr "وروستي کشف شوي کسان"
+
+#: .\surveillance\templates\surveillance\dashboard.html:219
+msgid "No confirmed identities yet."
+msgstr "تر اوسه هیڅ تایید شوی هویت نشته."
+
+#: .\surveillance\templates\surveillance\dashboard.html:306
+msgid "DISCONNECTED"
+msgstr "قطع شوی"
+
+#: .\surveillance\templates\surveillance\detection_history.html:15
+msgid "Time"
+msgstr "وخت"
+
+#: .\surveillance\templates\surveillance\detection_history.html:16
+#, fuzzy
+msgid "Count"
+msgstr "شمېر"
+
+#: .\surveillance\templates\surveillance\detection_history.html:17
+msgid "Action"
+msgstr "کړنه"
+
+#: .\surveillance\templates\surveillance\detection_history.html:18
+msgid "Matched Target"
+msgstr "مطابقت لرونکی هدف"
+
+#: .\surveillance\templates\surveillance\detection_history.html:19
+msgid "Snapshot"
+msgstr "انځور"
+
+#: .\surveillance\templates\surveillance\detection_history.html:31
+msgid "FALL"
+msgstr "سقوط"
+
+#: .\surveillance\templates\surveillance\detection_history.html:33
+msgid "WAVE"
+msgstr "لاس خوځول"
+
+#: .\surveillance\templates\surveillance\detection_history.html:59
+msgid "No detection events recorded yet."
+msgstr "تر اوسه د کشف هیڅ پیښه نه ده ثبت شوې."
+
+#: .\surveillance\templates\surveillance\detection_history.html:73
+msgid "Page"
+msgstr "پاڼه"
+
+#: .\surveillance\templates\surveillance\home.html:38
+msgid "SYSTEM HUB"
+msgstr "د سیسټم مرکز"
+
+#: .\surveillance\templates\surveillance\home.html:39
+msgid "Authorized Personnel Only - Neural Link Active"
+msgstr "یوازې مجاز پرسونل - عصبي اړیکه فعاله ده"
+
+#: .\surveillance\templates\surveillance\home.html:43
+msgid "Surveillance"
+msgstr "څارنه"
+
+#: .\surveillance\templates\surveillance\home.html:44
+msgid ""
+"Initialize live vision stream, occupancy counting, and gesture recognition "
+"protocols."
+msgstr ""
+"د ژوندۍ ویډیو جریان، د اشغال شمېرنه او د حرکت پېژندنې پروتوکولونه فعال کړئ."
+
+#: .\surveillance\templates\surveillance\home.html:49
+msgid "Database"
+msgstr "ډیټابیس"
+
+#: .\surveillance\templates\surveillance\home.html:50
+msgid ""
+"Access the User Archive, manage access levels, and enroll new personnel into "
+"the system."
+msgstr "د کاروونکو آرشیف ته لاسرسی، د لاسرسي کچې اداره کول، او په سیسټم کې د نوي پرسونل ثبتول."
+
+#: .\surveillance\templates\surveillance\notifications.html:39
+msgid "View Assignment"
+msgstr "دنده کتل"
+
+#: .\surveillance\templates\surveillance\notifications.html:47
+msgid "No notifications yet."
+msgstr "تر اوسه خبرتیاوې نشته."
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:4
+msgid "My Assignments"
+msgstr "زما دندې"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:9
+msgid "My Assigned Targets"
+msgstr "ما ته سپارل شوي اهداف"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:40
+msgid "Crime"
+msgstr "جرم"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:41
+msgid "Age"
+msgstr "عمر"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:42
+msgid "Assigned by"
+msgstr "د لخوا سپارل شوی"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:60
+msgid "Acknowledge"
+msgstr "منل"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:69
+msgid "Pass this target back to the original uploader?"
+msgstr "ایا دا هدف بیرته اصلي اپلوډر ته وسپارل شي؟"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:70
+msgid "Pass Back to Uploader"
+msgstr "اپلوډر ته بېرته لېږل"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:80
+msgid "No targets currently assigned to you."
+msgstr "دا مهال تاسو ته هیڅ هدف نه دی سپارل شوی."
+
+#: .\surveillance\templates\surveillance\target_management.html:4
+msgid "Watchlist Database"
+msgstr "د څارنې لیست ډیټابیس"
+
+#: .\surveillance\templates\surveillance\target_management.html:44
+msgid "Database Actions"
+msgstr "د ډیټابیس کړنې"
+
+#: .\surveillance\templates\surveillance\target_management.html:46
+msgid "Enroll New Subject"
+msgstr "نوی شخص ثبت کړئ"
+
+#: .\surveillance\templates\surveillance\target_management.html:49
+msgid "Initialize full biometric enrollment for new surveillance targets."
+msgstr "د نوي څارنې اهدافو لپاره بشپړ بایومتریک نوم لیکنه پیل کړئ."
+
+#: .\surveillance\templates\surveillance\target_management.html:54
+#, fuzzy
+msgid "Authorized Personnel Watchlist"
+msgstr "د مجاز پرسونل د څارنې لیست"
+
+#: .\surveillance\templates\surveillance\target_management.html:58
+msgid "IMAGE"
+msgstr "انځور"
+
+#: .\surveillance\templates\surveillance\target_management.html:59
+msgid "NAME & ID"
+msgstr "نوم او آی ډي"
+
+#: .\surveillance\templates\surveillance\target_management.html:60
+msgid "EXPIRATION"
+msgstr "نیټه ختمیدل"
+
+#: .\surveillance\templates\surveillance\target_management.html:61
+#, fuzzy
+msgid "STATUS"
+msgstr "حالت"
+
+#: .\surveillance\templates\surveillance\target_management.html:62
+#, fuzzy
+msgid "ACTIONS"
+msgstr "کړنې"
+
+#: .\surveillance\templates\surveillance\target_management.html:76
+msgid "WATCHED"
+msgstr "تر څارنې لاندې"
+
+#: .\surveillance\templates\surveillance\target_management.html:77
+msgid "DETAILS"
+msgstr "جزیات"
+
+#: .\surveillance\templates\surveillance\target_management.html:80
+msgid "Database Empty"
+msgstr "ډیټابیس خالي دی"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:4
+msgid "Subject Profile"
+msgstr "د شخص پروفایل"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:130
+msgid "Back to Watchlist"
+msgstr "بېرته د څارنې لیست ته"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:139
+msgid "Tazkira / ID Number"
+msgstr "تذکره / آی ډي شمېره"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:144
+msgid "Enrolled By"
+msgstr "د لخوا ثبت شوی"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:157
+msgid "Biometric & Personal Records"
+msgstr "بایومتریک او شخصي ریکارډونه"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:161
+msgid "Father's Name"
+msgstr "د پلار نوم"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:165
+msgid "Age / Gender"
+msgstr "عمر / جنسیت"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:169
+msgid "Marital Status"
+msgstr "تأهل حالت"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:173
+msgid "Place of Birth"
+msgstr "د زیږیدو ځای"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:177
+msgid "Phone Number"
+msgstr "د تلیفون شمېره"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:181
+#, fuzzy
+msgid "Authorization Created"
+msgstr "اجازه جوړه شوه"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:187
+msgid "Current Address"
+msgstr "اوسنی پته"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:191
+msgid "Criminal Incident Log"
+msgstr "د جرمی پیښو لاګ"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:194
+msgid "Primary Offense"
+msgstr "اصلي جرم"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:198
+msgid "Detailed Description"
+msgstr "بشپړ تفصیل"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:210
+msgid "Assign Target to Operator"
+msgstr "اپریټر ته د هدف سپارل"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:217
+msgid "Select Operator"
+msgstr "اپریټر وټاکئ"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:219
+msgid "Choose operator"
+msgstr "اپریټر انتخاب کړئ"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:226
+msgid "Note / Instructions"
+msgstr "یادونه / لارښوونې"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:228
+msgid "e.g. Monitor gate 3, report immediately on sighting"
+msgstr "مثلاً: ۳ دروازه وڅارئ، د لیدلو په صورت کې سمدستي خبر ورکړئ"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:232
+msgid "Assign"
+msgstr "سپارل"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:239
+msgid "No operators are currently registered in the system."
+msgstr "په سیسټم کې دا مهال هیڅ اپریټر نه دی ثبت شوی."
+
+#: .\surveillance\templates\surveillance\target_management_details.html:246
+msgid "Assignment History"
+msgstr "د سپارلو تاریخچه"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:255
+msgid "by"
+msgstr "د لخوا"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:4
+msgid "New Subject Enrollment"
+msgstr "د نوي شخص نوم لیکنه"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:65
+msgid "Subject Enrollment System"
+msgstr "د اشخاصو د ثبت سیسټم"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:72
+msgid "1. Core Biometrics"
+msgstr "۱. اساسي بایومتریک"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:84
+msgid "2. Personal Profile"
+msgstr "۲. شخصي پروفایل"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:92
+msgid "3. Identification & Contact"
+msgstr "۳. پیژندګلوی او اړیکه"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:99
+msgid "4. Criminal Record & TTL"
+msgstr "۴. جرمي ریکارډ او TTL"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:105
+msgid "Authorization Window"
+msgstr "د اجازې کړکۍ"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:107
+msgid "Permanent Access"
+msgstr "دایمي لاسرسی"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:108
+msgid "1 Hour"
+msgstr "۱ ساعت"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:109
+msgid "12 Hours"
+msgstr "۱۲ ساعته"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:110
+msgid "1 Day"
+msgstr "۱ ورځ"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:111
+msgid "7 Days"
+msgstr "۷ ورځې"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:112
+msgid "Custom Date..."
+msgstr "خپله نیټه..."
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:116
+msgid "Expiry Timestamp"
+msgstr "د پای ته رسیدو وخت"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:122
+msgid "Abort"
+msgstr "لغوه کول"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:123
+#, fuzzy
+msgid "Initialize Subject Enrollment"
+msgstr "د شخص نوم لیکنه پیل کړئ"
+
+#: .\surveillance\views.py:499
+msgid "Profile updated successfully."
+msgstr "پروفایل په بریالیتوب سره تازه شو."
+
+#~ msgid "Create Account"
+#~ msgstr "حساب جوړ کړئ"
+
+#~ msgid "Alert"
+#~ msgstr "خبرتیا"
+
+#~ msgid "FIRST NAME"
+#~ msgstr "لومړی نوم"
+
+#~ msgid "LAST NAME"
+#~ msgstr "تخلص"
+
+#~ msgid "EMAIL ADDRESS"
+#~ msgstr "د برېښنالیک پته"
+
+#~ msgid "CONFIRM"
+#~ msgstr "تأیید"
+
+#~ msgid "Return to Login"
+#~ msgstr "ننوتلو ته ستنیدل"
+
+#~ msgid "ADMINISTRATOR"
+#~ msgstr "مدیر"

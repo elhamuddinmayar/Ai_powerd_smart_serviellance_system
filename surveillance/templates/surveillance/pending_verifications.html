@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Pending Verifications{% endblock %}
+
+{% block content %}
+<div class="b-page-header">
+  <div>
+    <h1 class="b-page-title"><i class="fas fa-shield-alt"></i> {% trans "Pending Verifications" %}</h1>
+    <p class="b-page-sub">
+      {% trans "Review detection events reported by operators. Approve or reject with notes." %}
+    </p>
+  </div>
+</div>
+
+{% if events %}
+<div class="verif-grid">
+  {% for event in events %}
+  <div class="b-card" style="display:flex;gap:1.2rem;flex-wrap:wrap;">
+
+    <!-- Snapshot column -->
+    <div style="flex-shrink:0;width:170px;">
+      {% if event.frame_snapshot %}
+        <img src="/media/{{ event.frame_snapshot }}" alt="Capture"
+             onclick="openSnap(this.src)"
+             style="width:170px;height:160px;object-fit:cover;border-radius:8px;
+                    cursor:zoom-in;border:1px solid var(--border);">
+      {% else %}
+        <div style="width:170px;height:160px;border-radius:8px;background:var(--panel-2);
+                    border:1px solid var(--border);display:flex;flex-direction:column;
+                    align-items:center;justify-content:center;color:var(--text-muted);gap:.4rem;">
+          <i class="fas fa-camera" style="font-size:2rem;opacity:.3;"></i>
+          <span style="font-size:.75rem;">{% trans "No Snapshot" %}</span>
+        </div>
+      {% endif %}
+
+      <!-- Reference photo -->
+      {% if event.matched_target and event.matched_target.image %}
+      <div style="margin-top:.6rem;display:flex;align-items:center;gap:.5rem;">
+        <img src="{{ event.matched_target.image.url }}" alt="Ref"
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;
+                    border:2px solid var(--border-accent);">
+        <span style="font-size:.7rem;color:var(--text-muted);">{% trans "Reference" %}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Info column -->
+    <div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:.7rem;">
+
+      <!-- Target name + status -->
+      <div>
+        <div style="font-size:1.15rem;font-weight:700;color:var(--text);">
+          {{ event.matched_target_name }}
+        </div>
+        <div class="flex flex-wrap gap-2 mt-1" style="font-size:.78rem;color:var(--text-muted);">
+          <span><i class="fas fa-video"></i> {{ event.camera.name|default:"Unknown" }}</span>
+          <span><i class="fas fa-map-marker-alt"></i> {{ event.camera.location|default:"—" }}</span>
+          <span><i class="fas fa-clock"></i> {{ event.timestamp|date:"Y-m-d H:i:s" }}</span>
+        </div>
+        <div class="mt-1" style="font-size:.78rem;color:var(--text-muted);">
+          <i class="fas fa-user-shield"></i>
+          {% if event.related_assignment and event.related_assignment.assigned_to %}
+            {% trans "Reported by" %}: <strong>{{ event.related_assignment.assigned_to.username }}</strong>
+          {% else %}
+            {% trans "Detected by engine" %}
+          {% endif %}
+        </div>
+      </div>
+
+      <hr class="b-divider">
+
+      <!-- Approve / Reject form -->
+      <form method="post" action="{% url 'verify_detection' event.pk %}">
+        {% csrf_token %}
+        <textarea name="note" class="b-textarea"
+                  placeholder="{% trans 'Add a verification note (optional)...' %}"
+                  rows="2" style="margin-bottom:.6rem;"></textarea>
+
+        <div class="flex gap-2 flex-wrap">
+          <button type="submit" name="action" value="approve" class="b-btn b-btn--primary">
+            <i class="fas fa-check-circle"></i> {% trans "Approve" %}
+          </button>
+          <button type="submit" name="action" value="reject" class="b-btn b-btn--danger">
+            <i class="fas fa-times-circle"></i> {% trans "Reject" %}
+          </button>
+        </div>
+      </form>
+
+      <hr class="b-divider">
+
+      <!-- Print / PDF actions — always available to admin/supervisor -->
+      <div>
+        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+                    color:var(--text-muted);margin-bottom:.5rem;">
+          <i class="fas fa-print"></i> {% trans "Export Options" %}
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <a href="{% url 'export_detection_pdf' event.pk %}" class="b-btn b-btn--pdf b-btn--sm" target="_blank">
+            <i class="fas fa-file-pdf"></i> {% trans "Detection PDF" %}
+          </a>
+          {% if event.matched_target %}
+          <a href="{% url 'export_target_pdf' event.matched_target.pk %}"
+             class="b-btn b-btn--ghost b-btn--sm" target="_blank">
+            <i class="fas fa-id-card"></i> {% trans "Full Dossier" %}
+          </a>
+          {% endif %}
+          <button class="b-btn b-btn--ghost b-btn--sm" onclick="window.print()">
+            <i class="fas fa-print"></i> {% trans "Print Page" %}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="b-empty">
+  <i class="fas fa-check-double"></i>
+  <h2>{% trans "All Clear" %}</h2>
+  <p>{% trans "No detection events are pending verification." %}</p>
+</div>
+{% endif %}
+{% endblock %}

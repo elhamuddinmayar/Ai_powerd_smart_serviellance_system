@@ -1,0 +1,10 @@
+
+5. Video Archiving with Metadata
+
+The Feature: When a "Gesture Event" is triggered, save a 10-second clip of that specific moment.
+Why: Users need evidence, not just a log entry in a database.
+
+Email/SMS Alerts | Easy | `views.py`, `settings.py` (using `django.core.mail`) |
+
+
+6:camera control part able to connect camera details (connection ,analyszing)

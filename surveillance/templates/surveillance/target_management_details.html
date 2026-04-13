@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Target: {{ target.name }} {{ target.last_name }}{% endblock %}
+
+{% block content %}
+<!-- Page header -->
+<div class="b-page-header">
+  <div>
+    <h1 class="b-page-title">
+      <i class="fas fa-crosshairs"></i>
+      {{ target.name }} {{ target.last_name }}
+    </h1>
+    <p class="b-page-sub">{% trans "Target Dossier & Assignment Management" %}</p>
+  </div>
+  <div class="flex gap-2 flex-wrap">
+    <a href="{% url 'export_target_pdf' target.pk %}" class="b-btn b-btn--pdf" target="_blank">
+      <i class="fas fa-id-card"></i> {% trans "Full Dossier PDF" %}
+    </a>
+    <button class="b-btn b-btn--ghost" onclick="window.print()">
+      <i class="fas fa-print"></i> {% trans "Print" %}
+    </button>
+    <a href="{% url 'target_management' %}" class="b-btn b-btn--ghost">
+      <i class="fas fa-arrow-left"></i> {% trans "Back" %}
+    </a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:1.5rem;align-items:start;">
+
+  <!-- ── Left: Target Info ──────────────────────────────── -->
+  <div style="display:flex;flex-direction:column;gap:1.2rem;">
+
+    <!-- Photo + status -->
+    <div class="b-card" style="text-align:center;">
+      {% if target.image %}
+        <img src="{{ target.image.url }}" alt="{{ target.name }}"
+             style="width:160px;height:160px;border-radius:50%;object-fit:cover;
+                    border:3px solid var(--border-accent);margin:0 auto .8rem;">
+      {% else %}
+        <div style="width:160px;height:160px;border-radius:50%;background:var(--panel-2);
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:3rem;color:var(--text-muted);margin:0 auto .8rem;">
+          <i class="fas fa-user"></i>
+        </div>
+      {% endif %}
+      <div style="font-size:1.2rem;font-weight:700;">
+        {{ target.name }} {{ target.last_name }}
+      </div>
+      <div class="mt-1">
+        <span class="b-badge {% if target.is_found %}b-badge--green{% else %}b-badge--red{% endif %}">
+          {% if target.is_found %}{% trans "FOUND" %}{% else %}{% trans "ACTIVE" %}{% endif %}
+        </span>
+        {% if target.expires_at %}
+        <span class="b-badge b-badge--yellow" style="margin-left:.3rem;">
+          <i class="fas fa-clock"></i> {% trans "Expires" %} {{ target.expires_at|date:"d M Y" }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Info table -->
+    <div class="b-card">
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+                  color:var(--text-muted);margin-bottom:.8rem;">
+        {% trans "Personal Information" %}
+      </div>
+      {% for row in info_rows %}
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+        <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;
+                     text-transform:uppercase;letter-spacing:.05em;padding-top:.1rem;">
+          {{ row.0 }}
+        </span>
+        <span style="color:var(--text);">{{ row.1|default:"—" }}</span>
+      </div>
+      {% endfor %}
+      <!-- We'll just render the info inline -->
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+        <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Father" %}</span>
+        <span>{{ target.father_name }}</span>
+      </div>
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+        <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Age" %}</span>
+        <span>{{ target.age }}</span>
+      </div>
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+        <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Gender" %}</span>
+        <span>{{ target.get_gender_display }}</span>
+      </div>
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+        <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Tazkira" %}</span>
+        <span>{{ target.tazkira_number|default:"N/A" }}</span>
+      </div>
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+        <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Phone" %}</span>
+        <span>{{ target.phone_number }}</span>
+      </div>
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+        <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Address" %}</span>
+        <span>{{ target.address }}</span>
+      </div>
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+        <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Crime" %}</span>
+        <span class="text-danger">{{ target.crime }}</span>
+      </div>
+      {% if target.description %}
+      <div style="padding:.45rem 0;font-size:.84rem;">
+        <div style="color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">{% trans "Notes" %}</div>
+        <div style="color:var(--text-dim);">{{ target.description }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Right: Assignments ────────────────────────────── -->
+  <div style="display:flex;flex-direction:column;gap:1.2rem;">
+
+    <!-- ══ Assign to Operator ══════════════════════════════ -->
+    {% if operators %}
+    <div class="b-card b-card--accent">
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+                  color:var(--accent);margin-bottom:1rem;">
+        <i class="fas fa-user-plus"></i> {% trans "Assign to Operator" %}
+      </div>
+
+      <form method="post" action="{% url 'assign_target' target.pk %}">
+        {% csrf_token %}
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Select Operator" %}</label>
+          <select name="operator_id" class="b-select" required>
+            <option value="">— {% trans "Choose operator" %} —</option>
+            {% for op in operators %}
+            <option value="{{ op.pk }}">
+              {{ op.username }}
+              {% if op.profile.badge_number %}(#{{ op.profile.badge_number }}){% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="b-form-group">
+          <label class="b-label">{% trans "Assignment Note" %} ({% trans "optional" %})</label>
+          <textarea name="note" class="b-textarea"
+                    placeholder="{% trans 'Instructions for the operator...' %}" rows="2"></textarea>
+        </div>
+        <button type="submit" class="b-btn b-btn--primary">
+          <i class="fas fa-paper-plane"></i> {% trans "Assign Target" %}
+        </button>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- ══ Assignment History ══════════════════════════════ -->
+    <div class="b-card">
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+                  color:var(--text-muted);margin-bottom:.8rem;">
+        <i class="fas fa-history"></i> {% trans "Assignment History" %}
+      </div>
+
+      {% if assignments %}
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        {% for a in assignments %}
+        <div style="border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;
+                    border-left:3px solid {% if a.status == 'pending' %}var(--warn){% elif a.status == 'acknowledged' %}var(--accent){% elif a.status == 'passed_back' %}var(--info){% else %}#555{% endif %};">
+
+          <!-- Assignment header -->
+          <div class="flex items-center justify-between flex-wrap gap-1 mb-1">
+            <div style="font-weight:600;font-size:.9rem;">
+              <i class="fas fa-user" style="color:var(--text-muted);"></i>
+              {{ a.assigned_to.username|default:"?" }}
+            </div>
+            <span class="b-badge b-status--{{ a.status }}">{{ a.get_status_display }}</span>
+          </div>
+          <div style="font-size:.75rem;color:var(--text-muted);">
+            <i class="fas fa-user-tie"></i> {% trans "By" %}: {{ a.assigned_by.username|default:"?" }}
+            &nbsp;·&nbsp;
+            <i class="fas fa-calendar"></i> {{ a.created_at|date:"Y-m-d H:i" }}
+          </div>
+          {% if a.note %}
+          <div style="font-size:.8rem;color:var(--text-dim);margin-top:.4rem;
+                      padding:.3rem .6rem;background:rgba(255,255,255,.04);border-radius:4px;">
+            {{ a.note }}
+          </div>
+          {% endif %}
+
+          <!-- Detection events for this assignment -->
+          {% with events=a.detection_events.all %}
+          {% if events %}
+          <div style="margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border);">
+            <div style="font-size:.7rem;text-transform:uppercase;color:var(--text-muted);
+                        letter-spacing:.08em;margin-bottom:.4rem;">
+              {% trans "Detections" %}
+            </div>
+            {% for ev in events %}
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;
+                        font-size:.78rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+              <span class="b-badge b-verif--{{ ev.verification_status }} b-badge--sm">
+                {{ ev.get_verification_status_display }}
+              </span>
+              <span style="color:var(--text-muted);">{{ ev.timestamp|date:"Y-m-d H:i" }}</span>
+              <span style="color:var(--text-dim);">{{ ev.camera.name|default:"—" }}</span>
+
+              <!-- Admin PDF export (always visible to admin/supervisor) -->
+              <a href="{% url 'export_detection_pdf' ev.pk %}" class="b-btn b-btn--pdf b-btn--sm" target="_blank">
+                <i class="fas fa-file-pdf"></i> PDF
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endwith %}
+
+          <!-- Status: passed back needs admin action -->
+          {% if a.status == 'passed_back' %}
+          <div class="b-alert b-alert--warning mt-2">
+            <i class="fas fa-undo"></i>
+            {% trans "Operator passed back this assignment. You can re-assign or close it." %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      <div class="text-muted" style="font-size:.84rem;text-align:center;padding:1.5rem 0;">
+        <i class="fas fa-inbox" style="font-size:1.5rem;display:block;margin-bottom:.5rem;opacity:.3;"></i>
+        {% trans "No assignments yet." %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div><!-- /right -->
+</div>
+
+{% endblock %}

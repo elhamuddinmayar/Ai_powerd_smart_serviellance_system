@@ -1,0 +1,733 @@
+# Butterfly System - Persian Translation
+# Copyright (C) 2026
+msgid ""
+msgstr ""
+"Project-Id-Version: Butterfly 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-05 12:48+0430\n"
+"PO-Revision-Date: 2026-04-05 12:48+0430\n"
+"Last-Translator: Butterfly Team\n"
+"Language-Team: Persian\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\surveillance\templates\base.html:93
+msgid "Dashboard"
+msgstr "داشبورد"
+
+#: .\surveillance\templates\base.html:96
+msgid "Accounts"
+msgstr "حساب‌های کاربری"
+
+#: .\surveillance\templates\base.html:117
+msgid "Logout"
+msgstr "خروج"
+
+#: .\surveillance\templates\registration\login.html:8
+msgid "Butterfly - System Access"
+msgstr "باترفلای - دسترسی به سیستم"
+
+#: .\surveillance\templates\registration\login.html:83
+msgid "SYSTEM STATUS"
+msgstr "وضعیت سیستم"
+
+#: .\surveillance\templates\registration\login.html:92
+msgid "Authorize"
+msgstr "احراز هویت"
+
+#: .\surveillance\templates\registration\login.html:95
+msgid "USERNAME OR EMAIL"
+msgstr "نام کاربری یا ایمیل"
+
+#: .\surveillance\templates\registration\login.html:96
+msgid "PASSWORD"
+msgstr "رمز عبور"
+
+#: .\surveillance\templates\registration\login.html:97
+msgid "Access System"
+msgstr "ورود به سیستم"
+
+#: .\surveillance\templates\registration\login.html:100
+#: .\surveillance\templates\surveillance\account_update.html:150
+msgid "Cancel"
+msgstr "لغو"
+
+#: .\surveillance\templates\registration\register.html:7
+msgid "AI System - Register"
+msgstr "سیستم هوش مصنوعی - ثبت‌نام"
+
+#: .\surveillance\templates\registration\register.html:55
+msgid "System Status"
+msgstr "وضعیت سیستم"
+
+#: .\surveillance\templates\registration\register.html:74
+msgid "Register Personnel"
+msgstr "ثبت پرسنل"
+
+#: .\surveillance\templates\registration\register.html:80
+msgid "Username"
+msgstr "نام کاربری"
+
+#: .\surveillance\templates\registration\register.html:85
+msgid "First Name"
+msgstr "نام"
+
+#: .\surveillance\templates\registration\register.html:89
+msgid "Last Name"
+msgstr "نام خانوادگی"
+
+#: .\surveillance\templates\registration\register.html:94
+msgid "Email"
+msgstr "ایمیل"
+
+#: .\surveillance\templates\registration\register.html:99
+msgid "Badge ID"
+msgstr "شناسه بدجه"
+
+#: .\surveillance\templates\registration\register.html:103
+msgid "Security Role"
+msgstr "نقش امنیتی"
+
+#: .\surveillance\templates\registration\register.html:112
+msgid "Profile Image"
+msgstr "تصویر پروفایل"
+
+#: .\surveillance\templates\registration\register.html:117
+#: .\surveillance\templates\surveillance\account_manage_details.html:96
+#: .\surveillance\templates\surveillance\account_update.html:132
+msgid "Emergency Contact"
+msgstr "تماس اضطراری"
+
+#: .\surveillance\templates\registration\register.html:122
+msgid "Password"
+msgstr "رمز عبور"
+
+#: .\surveillance\templates\registration\register.html:126
+msgid "Confirm"
+msgstr "تأیید"
+
+#: .\surveillance\templates\registration\register.html:131
+msgid "Register User"
+msgstr "ثبت کاربر"
+
+#: .\surveillance\templates\registration\register.html:135
+msgid "Retrun"
+msgstr "بازگشت"
+
+#: .\surveillance\templates\surveillance\account_manage.html:153
+msgid "USER ARCHIVE"
+msgstr "آرشیو کاربران"
+
+#: .\surveillance\templates\surveillance\account_manage.html:154
+msgid "System Administration & Database Integrity"
+msgstr "مدیریت سیستم و یکپارچگی پایگاه داده"
+
+#: .\surveillance\templates\surveillance\account_manage.html:159
+msgid "Register New User"
+msgstr "ثبت کاربر جدید"
+
+#: .\surveillance\templates\surveillance\account_manage.html:164
+msgid "Search ID or Name..."
+msgstr "جستجوی شناسه یا نام..."
+
+#: .\surveillance\templates\surveillance\account_manage.html:169
+msgid "Recently Joined"
+msgstr "اخیراً ملحق شده"
+
+#: .\surveillance\templates\surveillance\account_manage.html:170
+msgid "Oldest Members"
+msgstr "قدیمی‌ترین اعضا"
+
+#: .\surveillance\templates\surveillance\account_manage.html:172
+msgid "Name (A-Z)"
+msgstr "نام (الف-ی)"
+
+#: .\surveillance\templates\surveillance\account_manage.html:173
+msgid "Name (Z-A)"
+msgstr "نام (ی-الف)"
+
+#: .\surveillance\templates\surveillance\account_manage.html:175
+msgid "Rank: Admins First"
+msgstr "رتبه: ابتدا مدیران"
+
+#: .\surveillance\templates\surveillance\account_manage.html:176
+msgid "Rank: Observers First"
+msgstr "رتبه: ابتدا ناظران"
+
+#: .\surveillance\templates\surveillance\account_manage.html:178
+msgid "Role: Supervisors First"
+msgstr "نقش: ابتدا سرپرستان"
+
+#: .\surveillance\templates\surveillance\account_manage.html:179
+msgid "Role: Operators First"
+msgstr "نقش: ابتدا اپراتورها"
+
+#: .\surveillance\templates\surveillance\account_manage.html:183
+msgid "RESET"
+msgstr "بازنشانی"
+
+#: .\surveillance\templates\surveillance\account_manage.html:194
+msgid "Admin"
+msgstr "مدیر"
+
+#: .\surveillance\templates\surveillance\account_manage.html:196
+msgid "Supervisor"
+msgstr "سرپرست"
+
+#: .\surveillance\templates\surveillance\account_manage.html:198
+msgid "Operator"
+msgstr "اپراتور"
+
+#: .\surveillance\templates\surveillance\account_manage.html:209
+msgid "NAME:"
+msgstr "نام:"
+
+#: .\surveillance\templates\surveillance\account_manage.html:210
+msgid "BADGE:"
+msgstr "بدجه:"
+
+#: .\surveillance\templates\surveillance\account_manage.html:211
+msgid "CLEARANCE:"
+msgstr "سطح دسترسی:"
+
+#: .\surveillance\templates\surveillance\account_manage.html:217
+msgid "VIEW PROFILE"
+msgstr "مشاهده پروفایل"
+
+#: .\surveillance\templates\surveillance\account_manage.html:223
+msgid "Are you sure you want to delete this user? This action cannot be undone."
+msgstr "آیا مطمئن هستید که می‌خواهید این کاربر را حذف کنید؟ این عمل قابل بازگشت نیست."
+
+#: .\surveillance\templates\surveillance\account_manage.html:231
+msgid "No matching records found in the archive."
+msgstr "هیچ رکوردی در آرشیو یافت نشد."
+
+#: .\surveillance\templates\surveillance\account_manage.html:252
+msgid "RETURN TO HUB"
+msgstr "بازگشت به مرکز"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:74
+msgid "ON DUTY"
+msgstr "در حال خدمت"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:74
+msgid "OFF DUTY"
+msgstr "خارج از خدمت"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:81
+#: .\surveillance\templates\surveillance\account_update.html:108
+msgid "Badge Number"
+msgstr "شماره بدجه"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:86
+#: .\surveillance\templates\surveillance\account_update.html:115
+msgid "Role"
+msgstr "نقش"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:91
+#: .\surveillance\templates\surveillance\account_update.html:126
+msgid "Email Address"
+msgstr "آدرس ایمیل"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:102
+msgid "Joined Date"
+msgstr "تاریخ عضویت"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:110
+msgid "Edit Profile"
+msgstr "ویرایش پروفایل"
+
+#: .\surveillance\templates\surveillance\account_manage_details.html:115
+msgid "Return"
+msgstr "بازگشت"
+
+#: .\surveillance\templates\surveillance\account_update.html:100
+msgid "Editing"
+msgstr "در حال ویرایش"
+
+#: .\surveillance\templates\surveillance\account_update.html:139
+msgid "Update Photo"
+msgstr "به‌روزرسانی عکس"
+
+#: .\surveillance\templates\surveillance\account_update.html:146
+msgid "Save Changes"
+msgstr "ذخیره تغییرات"
+
+#: .\surveillance\templates\surveillance\dashboard.html:4
+msgid "Butterfly - Tactical Dashboard"
+msgstr "باترفلای - داشبورد تاکتیکی"
+
+#: .\surveillance\templates\surveillance\dashboard.html:116
+msgid "SYSTEM CONTROL"
+msgstr "کنترل سیستم"
+
+#: .\surveillance\templates\surveillance\dashboard.html:119
+msgid "Surveillance Hub"
+msgstr "مرکز نظارت"
+
+#: .\surveillance\templates\surveillance\dashboard.html:121
+msgid "Database and Subject enrollment has been moved to the Management Portal."
+msgstr "ثبت پایگاه داده و سوژه‌ها به پورتال مدیریت منتقل شده است."
+
+#: .\surveillance\templates\surveillance\dashboard.html:126
+msgid "Manage Watchlist"
+msgstr "مدیریت لیست نظارت"
+
+#: .\surveillance\templates\surveillance\dashboard.html:131
+#: .\surveillance\templates\surveillance\detection_history.html:4
+#: .\surveillance\templates\surveillance\detection_history.html:9
+msgid "Detection History"
+msgstr "تاریخچه تشخیص"
+
+#: .\surveillance\templates\surveillance\dashboard.html:135
+#: .\surveillance\templates\surveillance\notifications.html:4
+#: .\surveillance\templates\surveillance\notifications.html:9
+msgid "Notifications"
+msgstr "اعلان‌ها"
+
+#: .\surveillance\templates\surveillance\dashboard.html:143
+msgid "Optical Sensor Feed"
+msgstr "خوراک حسگر نوری"
+
+#: .\surveillance\templates\surveillance\dashboard.html:144
+msgid "ACTIVE"
+msgstr "فعال"
+
+#: .\surveillance\templates\surveillance\dashboard.html:147
+msgid "Scanning Environment..."
+msgstr "در حال اسکن محیط..."
+
+#: .\surveillance\templates\surveillance\dashboard.html:152
+msgid "Identity Confirmation"
+msgstr "تأیید هویت"
+
+#: .\surveillance\templates\surveillance\dashboard.html:158
+msgid "Activity Alerts"
+msgstr "هشدارهای فعالیت"
+
+#: .\surveillance\templates\surveillance\dashboard.html:164
+#: .\surveillance\templates\surveillance\dashboard.html:250
+msgid "CRITICAL"
+msgstr "بحرانی"
+
+#: .\surveillance\templates\surveillance\dashboard.html:164
+#: .\surveillance\templates\surveillance\dashboard.html:250
+msgid "FALL DETECTED"
+msgstr "سقوط شناسایی شد"
+
+#: .\surveillance\templates\surveillance\dashboard.html:169
+#: .\surveillance\templates\surveillance\dashboard.html:253
+msgid "GREETING"
+msgstr "سلام"
+
+#: .\surveillance\templates\surveillance\dashboard.html:169
+#: .\surveillance\templates\surveillance\dashboard.html:253
+msgid "Wave Detected"
+msgstr "حرکت دست شناسایی شد"
+
+#: .\surveillance\templates\surveillance\dashboard.html:174
+#: .\surveillance\templates\surveillance\dashboard.html:242
+msgid "CONFIRMED"
+msgstr "تأیید شده"
+
+#: .\surveillance\templates\surveillance\dashboard.html:184
+msgid "System Integrity & Recent Detections"
+msgstr "یکپارچگی سیستم و تشخیص‌های اخیر"
+
+#: .\surveillance\templates\surveillance\dashboard.html:191
+msgid "UPTIME"
+msgstr "زمان فعالیت"
+
+#: .\surveillance\templates\surveillance\dashboard.html:195
+msgid "LATENCY"
+msgstr "تأخیر"
+
+#: .\surveillance\templates\surveillance\dashboard.html:199
+msgid "ENCRYPTION"
+msgstr "رمزگذاری"
+
+#: .\surveillance\templates\surveillance\dashboard.html:206
+msgid "Recently Detected Persons"
+msgstr "افراد شناسایی‌شده اخیر"
+
+#: .\surveillance\templates\surveillance\dashboard.html:219
+msgid "No confirmed identities yet."
+msgstr "هنوز هیچ هویتی تأیید نشده است."
+
+#: .\surveillance\templates\surveillance\dashboard.html:306
+msgid "DISCONNECTED"
+msgstr "قطع شده"
+
+#: .\surveillance\templates\surveillance\detection_history.html:15
+msgid "Time"
+msgstr "زمان"
+
+#: .\surveillance\templates\surveillance\detection_history.html:16
+msgid "Count"
+msgstr "تعداد"
+
+#: .\surveillance\templates\surveillance\detection_history.html:17
+msgid "Action"
+msgstr "رویداد"
+
+#: .\surveillance\templates\surveillance\detection_history.html:18
+msgid "Matched Target"
+msgstr "هدف تطبیق‌یافته"
+
+#: .\surveillance\templates\surveillance\detection_history.html:19
+msgid "Snapshot"
+msgstr "تصویر لحظه‌ای"
+
+#: .\surveillance\templates\surveillance\detection_history.html:31
+msgid "FALL"
+msgstr "سقوط"
+
+#: .\surveillance\templates\surveillance\detection_history.html:33
+msgid "WAVE"
+msgstr "تکان دست"
+
+#: .\surveillance\templates\surveillance\detection_history.html:59
+msgid "No detection events recorded yet."
+msgstr "هنوز هیچ رویداد تشخیصی ثبت نشده است."
+
+#: .\surveillance\templates\surveillance\detection_history.html:73
+msgid "Page"
+msgstr "صفحه"
+
+#: .\surveillance\templates\surveillance\home.html:38
+msgid "SYSTEM HUB"
+msgstr "مرکز سیستم"
+
+#: .\surveillance\templates\surveillance\home.html:39
+msgid "Authorized Personnel Only - Neural Link Active"
+msgstr "فقط پرسنل مجاز - ارتباط عصبی فعال"
+
+#: .\surveillance\templates\surveillance\home.html:43
+msgid "Surveillance"
+msgstr "نظارت"
+
+#: .\surveillance\templates\surveillance\home.html:44
+msgid "Initialize live vision stream, occupancy counting, and gesture recognition protocols."
+msgstr "راه‌اندازی جریان تصویر زنده، شمارش حضور و پروتکل‌های تشخیص ژست."
+
+#: .\surveillance\templates\surveillance\home.html:49
+msgid "Database"
+msgstr "پایگاه داده"
+
+#: .\surveillance\templates\surveillance\home.html:50
+msgid "Access the User Archive, manage access levels, and enroll new personnel into the system."
+msgstr "دسترسی به آرشیو کاربران، مدیریت سطوح دسترسی و ثبت پرسنل جدید در سیستم."
+
+#: .\surveillance\templates\surveillance\notifications.html:39
+msgid "View Assignment"
+msgstr "مشاهده تخصیص"
+
+#: .\surveillance\templates\surveillance\notifications.html:47
+msgid "No notifications yet."
+msgstr "هنوز هیچ اعلانی وجود ندارد."
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:4
+msgid "My Assignments"
+msgstr "تخصیص‌های من"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:9
+msgid "My Assigned Targets"
+msgstr "اهداف تخصیص‌یافته به من"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:40
+msgid "Crime"
+msgstr "جرم"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:41
+msgid "Age"
+msgstr "سن"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:42
+msgid "Assigned by"
+msgstr "تخصیص‌داده‌شده توسط"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:60
+msgid "Acknowledge"
+msgstr "تأیید دریافت"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:69
+msgid "Pass this target back to the original uploader?"
+msgstr "آیا این هدف را به آپلودکننده اصلی بازمی‌گردانید؟"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:70
+msgid "Pass Back to Uploader"
+msgstr "بازگشت به آپلودکننده"
+
+#: .\surveillance\templates\surveillance\operator_assignments.html:80
+msgid "No targets currently assigned to you."
+msgstr "در حال حاضر هیچ هدفی به شما تخصیص داده نشده است."
+
+#: .\surveillance\templates\surveillance\target_management.html:4
+msgid "Watchlist Database"
+msgstr "پایگاه داده لیست نظارت"
+
+#: .\surveillance\templates\surveillance\target_management.html:44
+msgid "Database Actions"
+msgstr "عملیات پایگاه داده"
+
+#: .\surveillance\templates\surveillance\target_management.html:46
+msgid "Enroll New Subject"
+msgstr "ثبت سوژه جدید"
+
+#: .\surveillance\templates\surveillance\target_management.html:49
+msgid "Initialize full biometric enrollment for new surveillance targets."
+msgstr "راه‌اندازی ثبت کامل بیومتریک برای اهداف نظارتی جدید."
+
+#: .\surveillance\templates\surveillance\target_management.html:54
+msgid "Authorized Personnel Watchlist"
+msgstr "لیست نظارت پرسنل مجاز"
+
+#: .\surveillance\templates\surveillance\target_management.html:58
+msgid "IMAGE"
+msgstr "تصویر"
+
+#: .\surveillance\templates\surveillance\target_management.html:59
+msgid "NAME & ID"
+msgstr "نام و شناسه"
+
+#: .\surveillance\templates\surveillance\target_management.html:60
+msgid "EXPIRATION"
+msgstr "انقضا"
+
+#: .\surveillance\templates\surveillance\target_management.html:61
+msgid "STATUS"
+msgstr "وضعیت"
+
+#: .\surveillance\templates\surveillance\target_management.html:62
+msgid "ACTIONS"
+msgstr "عملیات"
+
+#: .\surveillance\templates\surveillance\target_management.html:76
+msgid "WATCHED"
+msgstr "تحت نظر"
+
+#: .\surveillance\templates\surveillance\target_management.html:77
+msgid "DETAILS"
+msgstr "جزئیات"
+
+#: .\surveillance\templates\surveillance\target_management.html:80
+msgid "Database Empty"
+msgstr "پایگاه داده خالی است"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:4
+msgid "Subject Profile"
+msgstr "پروفایل سوژه"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:130
+msgid "Back to Watchlist"
+msgstr "بازگشت به لیست نظارت"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:139
+msgid "Tazkira / ID Number"
+msgstr "تذکره / شماره شناسایی"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:144
+msgid "Enrolled By"
+msgstr "ثبت‌شده توسط"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:157
+msgid "Biometric & Personal Records"
+msgstr "سوابق بیومتریک و شخصی"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:161
+msgid "Father's Name"
+msgstr "نام پدر"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:165
+msgid "Age / Gender"
+msgstr "سن / جنسیت"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:169
+msgid "Marital Status"
+msgstr "وضعیت تأهل"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:173
+msgid "Place of Birth"
+msgstr "محل تولد"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:177
+msgid "Phone Number"
+msgstr "شماره تلفن"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:181
+msgid "Authorization Created"
+msgstr "تاریخ صدور مجوز"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:187
+msgid "Current Address"
+msgstr "آدرس فعلی"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:191
+msgid "Criminal Incident Log"
+msgstr "پرونده جرایم"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:194
+msgid "Primary Offense"
+msgstr "جرم اصلی"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:198
+msgid "Detailed Description"
+msgstr "توضیحات تفصیلی"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:210
+msgid "Assign Target to Operator"
+msgstr "تخصیص هدف به اپراتور"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:217
+msgid "Select Operator"
+msgstr "انتخاب اپراتور"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:219
+msgid "Choose operator"
+msgstr "یک اپراتور انتخاب کنید"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:226
+msgid "Note / Instructions"
+msgstr "یادداشت / دستورالعمل"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:228
+msgid "e.g. Monitor gate 3, report immediately on sighting"
+msgstr "مثال: دروازه ۳ را رصد کنید، بلافاصله پس از مشاهده گزارش دهید"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:232
+msgid "Assign"
+msgstr "تخصیص"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:239
+msgid "No operators are currently registered in the system."
+msgstr "در حال حاضر هیچ اپراتوری در سیستم ثبت نشده است."
+
+#: .\surveillance\templates\surveillance\target_management_details.html:246
+msgid "Assignment History"
+msgstr "تاریخچه تخصیص"
+
+#: .\surveillance\templates\surveillance\target_management_details.html:255
+msgid "by"
+msgstr "توسط"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:4
+msgid "New Subject Enrollment"
+msgstr "ثبت سوژه جدید"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:65
+msgid "Subject Enrollment System"
+msgstr "سیستم ثبت سوژه"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:72
+msgid "1. Core Biometrics"
+msgstr "۱. بیومتریک اصلی"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:84
+msgid "2. Personal Profile"
+msgstr "۲. پروفایل شخصی"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:92
+msgid "3. Identification & Contact"
+msgstr "۳. شناسایی و تماس"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:99
+msgid "4. Criminal Record & TTL"
+msgstr "۴. سوابق جرمی و مدت اعتبار"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:105
+msgid "Authorization Window"
+msgstr "بازه مجوز"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:107
+msgid "Permanent Access"
+msgstr "دسترسی دائمی"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:108
+msgid "1 Hour"
+msgstr "۱ ساعت"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:109
+msgid "12 Hours"
+msgstr "۱۲ ساعت"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:110
+msgid "1 Day"
+msgstr "۱ روز"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:111
+msgid "7 Days"
+msgstr "۷ روز"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:112
+msgid "Custom Date..."
+msgstr "تاریخ دلخواه..."
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:116
+msgid "Expiry Timestamp"
+msgstr "زمان انقضا"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:122
+msgid "Abort"
+msgstr "لغو"
+
+#: .\surveillance\templates\surveillance\target_management_registration.html:123
+msgid "Initialize Subject Enrollment"
+msgstr "شروع ثبت سوژه"
+
+#: .\surveillance\views.py:499
+msgid "Profile updated successfully."
+msgstr "پروفایل با موفقیت به‌روزرسانی شد."
+
+#~ msgid "Create Account"
+#~ msgstr "ایجاد حساب"
+
+#~ msgid "Alert"
+#~ msgstr "هشدار"
+
+#~ msgid "FIRST NAME"
+#~ msgstr "نام"
+
+#~ msgid "LAST NAME"
+#~ msgstr "نام خانوادگی"
+
+#~ msgid "EMAIL ADDRESS"
+#~ msgstr "آدرس ایمیل"
+
+#~ msgid "CONFIRM"
+#~ msgstr "تأیید"
+
+#~ msgid "Return to Login"
+#~ msgstr "بازگشت به ورود"
+
+#~ msgid "EMAIL:"
+#~ msgstr "ایمیل:"
+
+#~ msgid "JOINED:"
+#~ msgstr "عضویت:"
+
+#~ msgid "ADMINISTRATOR"
+#~ msgstr "مدیر سیستم"
+
+#~ msgid "OBSERVER"
+#~ msgstr "ناظر"
+
+#~ msgid "DEMOTE"
+#~ msgstr "تنزیل رتبه"
+
+#~ msgid "PROMOTE"
+#~ msgstr "ارتقا رتبه"
+
+#~ msgid "No users found matching your criteria."
+#~ msgstr "هیچ کاربری با معیارهای شما یافت نشد."
+
+#~ msgid "Prev"
+#~ msgstr "قبلی"
+
+#~ msgid "Next"
+#~ msgstr "بعدی"
+
+#~ msgid "BACK TO HUB"
+#~ msgstr "بازگشت به مرکز"

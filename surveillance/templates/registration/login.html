@@ -1,0 +1,118 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" 
+      dir="{% if LANGUAGE_CODE == 'fa' or LANGUAGE_CODE == 'ps' %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans "Butterfly - System Access" %}</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', 'Tahoma', sans-serif; 
+            background: #1a1a2e; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden; 
+            text-align: start;
+        }
+        
+        /* Notification Styling */
+        .msg-container { position: fixed; top: 20px; z-index: 9999; }
+        
+        /* Tactical positioning for notifications */
+        [dir="ltr"] .msg-container { right: 20px; }
+        [dir="rtl"] .msg-container { left: 20px; }
+
+        .toast-msg { 
+            background: #16213e; color: white; padding: 15px 25px; border-radius: 10px; 
+            margin-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            /* Logical property flips the border side automatically */
+            border-inline-start: 5px solid #4ecca3; 
+            animation: slideIn 0.5s ease-out; min-width: 250px;
+        }
+        .toast-msg.error { border-inline-start-color: #e94560; }
+        
+        @keyframes slideIn { 
+            from { transform: translateX({% if LANGUAGE_CODE == 'fa' or LANGUAGE_CODE == 'ps' %}-100%{% else %}100%{% endif %}); opacity: 0; } 
+            to { transform: translateX(0); opacity: 1; } 
+        }
+
+        /* Login Card */
+        .login-card { background: #16213e; border-radius: 20px; padding: 40px; border: 1px solid #0f3460; width: 100%; max-width: 400px; text-align: center; }
+        
+        h1 { 
+            color: #4ecca3; 
+            text-transform: uppercase; 
+            /* Remove letter spacing for non-latin scripts */
+            letter-spacing: {% if LANGUAGE_CODE == 'en' %}3px{% else %}0{% endif %}; 
+            font-size: 1.5rem; 
+            margin-bottom: 30px; 
+        }
+
+        input { 
+            width: 100%; padding: 12px; background: #1a1a2e; 
+            border: 1px solid #0f3460; border-radius: 10px; 
+            color: white; margin-bottom: 20px; box-sizing: border-box; 
+            outline: none; text-align: inherit;
+        }
+        input:focus { border-color: #4ecca3; }
+
+        .btn-cyber { 
+            width: 100%; padding: 12px; background: #4ecca3; 
+            border: none; border-radius: 10px; color: #1a1a2e; 
+            font-weight: bold; cursor: pointer; text-transform: uppercase; 
+            transition: 0.3s; 
+        }
+        .btn-cyber:hover { background: #45b791; transform: translateY(-2px); }
+
+        .links { margin-top: 20px; font-size: 0.8rem; }
+        .links a { color: #e94560; text-decoration: none; margin: 0 10px; }
+    </style>
+</head>
+<body>
+
+    {% if messages %}
+    <div class="msg-container" id="alert-box">
+        {% for message in messages %}
+            <div class="toast-msg {{ message.tags }}">
+                <strong style="display:block; font-size: 0.7rem; margin-bottom: 5px; opacity: 0.8;">
+                    {% trans "SYSTEM STATUS" %}
+                </strong>
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="login-card">
+        <h1>{% trans "Authorize" %}</h1>
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="identifier" placeholder="{% trans 'USERNAME OR EMAIL' %}" required>
+            <input type="password" name="password" placeholder="{% trans 'PASSWORD' %}" required>
+            <button type="submit" class="btn-cyber">{% trans "Access System" %}</button>
+        </form>
+        <div class="links">
+            <a href="{% url 'home' %}" style="color: #95a5a6;">{% trans "Cancel" %}</a>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(function() {
+            var alertBox = document.getElementById('alert-box');
+            if (alertBox) {
+                alertBox.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+                alertBox.style.opacity = "0";
+                // Adjusted slide-out for RTL
+                let exitX = document.documentElement.dir === "rtl" ? "-50px" : "50px";
+                alertBox.style.transform = `translateX(${exitX})`;
+                setTimeout(() => alertBox.remove(), 500);
+            }
+        }, 4000);
+    </script>
+</body>
+</html>

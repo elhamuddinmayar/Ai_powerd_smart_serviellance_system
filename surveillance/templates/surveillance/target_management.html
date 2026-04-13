@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Watchlist Database" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .manage-grid { 
+        display: grid; 
+        grid-template-columns: 300px 1fr; 
+        gap: 20px; 
+        max-width: 1400px; 
+        margin: 20px auto; 
+        padding: 0 20px;
+    }
+
+    .panel { background: #16213e; border-radius: 15px; border: 1px solid #0f3460; padding: 20px; height: fit-content; }
+    .panel-header { color: #4ecca3; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 20px; border-bottom: 1px solid #0f3460; padding-bottom: 10px; }
+
+    .btn-action { 
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        width: 80%; background: #4ecca3; color: #1a1a2e; border: none; 
+        padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; 
+        text-transform: uppercase; text-decoration: none; transition: 0.3s;
+    }
+    .btn-action:hover { background: #45b391; transform: translateY(-2px); }
+
+    .target-table { width: 100%; border-collapse: collapse; }
+    .target-table th { text-align: left; color: #95a5a6; font-size: 0.75rem; padding: 10px; border-bottom: 1px solid #0f3460; }
+    .target-table td { padding: 15px 10px; border-bottom: 1px solid #1a1a2e; vertical-align: middle; color: white; }
+    
+    .target-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #4ecca3; }
+    .target-link { color: #4ecca3; text-decoration: none; font-weight: bold; }
+    .target-link:hover { text-decoration: underline; }
+
+    .status-tag { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; background: rgba(78, 204, 163, 0.1); color: #4ecca3; }
+    .btn-view { background: #0f3460; color: #4ecca3; border: 1px solid #4ecca3; padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; text-decoration: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="manage-grid">
+    <div class="panel">
+        <div class="panel-header">{% trans "Database Actions" %}</div>
+        <a href="{% url 'target_registration' %}" class="btn-action">
+            <i class="fas fa-user-plus"></i> {% trans "Enroll New Subject" %}
+        </a>
+        <p style="color: #95a5a6; font-size: 0.75rem; margin-top: 15px; line-height: 1.4;">
+            {% trans "Initialize full biometric enrollment for new surveillance targets." %}
+        </p>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">{% trans "Authorized Personnel Watchlist" %}</div>
+        <table class="target-table">
+            <thead>
+                <tr>
+                    <th>{% trans "IMAGE" %}</th>
+                    <th>{% trans "NAME & ID" %}</th>
+                    <th>{% trans "EXPIRATION" %}</th>
+                    <th>{% trans "STATUS" %}</th>
+                    <th>{% trans "ACTIONS" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for person in targets %}
+                <tr>
+                    <td><img src="{{ person.image.url }}" class="target-img"></td>
+                    <td>
+                        <a href="{% url 'target_detail' person.pk %}" class="target-link">{{ person.name }} {{ person.last_name }}</a>
+                        <div style="font-size: 0.7rem; color: #95a5a6;">ID: {{ person.tazkira_number|default:"N/A" }}</div>
+                    </td>
+                    <td style="color: #95a5a6; font-size: 0.8rem;">
+                        {{ person.expires_at|date:"Y-m-d H:i"|default:"Permanent" }}
+                    </td>
+                    <td><span class="status-tag">{% trans "WATCHED" %}</span></td>
+                    <td><a href="{% url 'target_detail' person.pk %}" class="btn-view">{% trans "DETAILS" %}</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align: center; padding: 40px; color: #95a5a6;">{% trans "Database Empty" %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

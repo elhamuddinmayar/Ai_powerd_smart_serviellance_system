@@ -1,0 +1,152 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_CODE == 'fa' or LANGUAGE_CODE == 'ps' %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans "AI System - Register" %}</title>
+    <style>
+        body { font-family: 'Segoe UI', 'Tahoma', sans-serif; background: #1a1a2e; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; text-align: start; }
+
+        /* Notification Styling */
+        .msg-container { position: fixed; top: 20px; z-index: 9999; }
+        [dir="ltr"] .msg-container { right: 20px; }
+        [dir="rtl"] .msg-container { left: 20px; }
+
+        .toast-msg { 
+            background: #16213e; color: white; padding: 15px 25px; border-radius: 10px; 
+            margin-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            border-inline-start: 5px solid #4ecca3; animation: slideIn 0.5s ease-out; min-width: 250px;
+        }
+        .toast-msg.error { border-inline-start-color: #e94560; }
+        
+        @keyframes slideIn { 
+            from { transform: translateX({% if LANGUAGE_CODE == 'fa' or LANGUAGE_CODE == 'ps' %}-100%{% else %}100%{% endif %}); opacity: 0; } 
+            to { transform: translateX(0); opacity: 1; } 
+        }
+
+        /* --- Registration Card --- */
+        .login-card { background: #16213e; border-radius: 20px; padding: 30px; border: 1px solid #0f3460; width: 100%; max-width: 550px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        h1 { color: #4ecca3; text-transform: uppercase; letter-spacing: 2px; font-size: 1.3rem; margin-bottom: 20px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .full { grid-column: span 2; }
+        
+        label { display: block; text-align: start; font-size: 0.75rem; color: #4ecca3; margin-bottom: 5px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; background: #1a1a2e; border: 1px solid #0f3460; border-radius: 8px; color: white; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 0.9rem; }
+        input:focus, select:focus { border-color: #4ecca3; background: #1f1f3d; }
+        
+        /* Custom File Input */
+        input[type="file"] { padding: 8px; font-size: 0.8rem; cursor: pointer; }
+
+        .btn-cyber { width: 100%; padding: 14px; background: #4ecca3; border: none; border-radius: 10px; color: #1a1a2e; font-weight: bold; cursor: pointer; margin-top: 20px; text-transform: uppercase; transition: 0.3s; letter-spacing: 1px; }
+        .btn-cyber:hover { background: #45b791; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(78, 204, 163, 0.3); }
+        
+        .links { margin-top: 15px; font-size: 0.85rem; }
+        .links a { color: #e94560; text-decoration: none; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div class="msg-container" id="alert-box">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast-msg {{ message.tags }}">
+                    <strong style="display:block; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 4px; color: #4ecca3; opacity: 0.9;">{% trans "System Status" %}</strong>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if user_form.errors %}
+            {% for field in user_form %}
+                {% for error in field.errors %}
+                    <div class="toast-msg error">
+                        <strong style="display:block; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 4px; color: #e94560; opacity: 0.9;">{{ field.label }}</strong>
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="login-card">
+        <h1>{% trans "Register Personnel" %}</h1>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="grid">
+                <div class="full">
+                    <label>{% trans "Username" %}</label>
+                    <input type="text" name="username" placeholder="USER_ID" required value="{{ user_form.username.value|default_if_none:'' }}">
+                </div>
+
+                <div>
+                    <label>{% trans "First Name" %}</label>
+                    <input type="text" name="first_name" required value="{{ user_form.first_name.value|default_if_none:'' }}">
+                </div>
+                <div>
+                    <label>{% trans "Last Name" %}</label>
+                    <input type="text" name="last_name" required value="{{ user_form.last_name.value|default_if_none:'' }}">
+                </div>
+
+                <div class="full">
+                    <label>{% trans "Email" %}</label>
+                    <input type="email" name="email" required value="{{ user_form.email.value|default_if_none:'' }}">
+                </div>
+
+                <div>
+                    <label>{% trans "Badge ID" %}</label>
+                    <input type="text" name="badge_number" placeholder="SEC-001" required value="{{ user_form.badge_number.value|default_if_none:'' }}">
+                </div>
+                <div>
+                    <label>{% trans "Security Role" %}</label>
+                    <select name="role">
+                        {% for value, text in user_form.fields.role.choices %}
+                            <option value="{{ value }}" {% if user_form.role.value == value %}selected{% endif %}>{{ text }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="full">
+                    <label>{% trans "Profile Image" %}</label>
+                    <input type="file" name="profile_picture" accept="image/*">
+                </div>
+
+                <div class="full">
+                    <label>{% trans "Emergency Contact" %}</label>
+                    <input type="text" name="emergency_contact" placeholder="Phone or Name" required value="{{ user_form.emergency_contact.value|default_if_none:'' }}">
+                </div>
+
+                <div>
+                    <label>{% trans "Password" %}</label>
+                    <input type="password" name="password" required>
+                </div>
+                <div>
+                    <label>{% trans "Confirm" %}</label>
+                    <input type="password" name="password2" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-cyber">{% trans "Register User" %}</button>
+        </form>
+
+        <div class="links">
+            <a href="{% url 'account_manage' %}">{% trans "Retrun" %}</a>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(function() {
+            var alertBox = document.getElementById('alert-box');
+            if (alertBox) {
+                alertBox.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                alertBox.style.opacity = "0";
+                let exitX = document.documentElement.dir === "rtl" ? "-50px" : "50px";
+                alertBox.style.transform = `translateX(${exitX})`;
+                setTimeout(() => alertBox.remove(), 600);
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Detection History" %}{% endblock %}
+
+{% block content %}
+<div class="b-page-header">
+  <div>
+    <h1 class="b-page-title"><i class="fas fa-history"></i> {% trans "Detection History" %}</h1>
+    <p class="b-page-sub">
+      {% if request.user.profile.role == 'operator' %}
+        {% trans "Showing detections from your assignments only." %}
+      {% elif not is_admin %}
+        {% trans "Showing detections for targets you uploaded." %}
+      {% else %}
+        {% trans "All detection events across all cameras." %}
+      {% endif %}
+    </p>
+  </div>
+  <button class="b-btn b-btn--ghost" onclick="window.print()">
+    <i class="fas fa-print"></i> {% trans "Print" %}
+  </button>
+</div>
+
+<div class="b-table-wrap">
+  <table class="b-table">
+    <thead>
+      <tr>
+        <th>{% trans "Timestamp" %}</th>
+        <th>{% trans "Snapshot" %}</th>
+        <th>{% trans "Target" %}</th>
+        <th>{% trans "Camera" %}</th>
+        <th>{% trans "Action" %}</th>
+        <th>{% trans "Verification" %}</th>
+        <th>{% trans "Export" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in page_obj %}
+      <tr style="{% if event.matched_target %}background:rgba(233,69,96,.03){% endif %}">
+
+        <td style="font-size:.78rem;color:var(--text-muted);white-space:nowrap;font-family:var(--font-mono);">
+          {{ event.timestamp|date:"Y-m-d H:i:s" }}
+        </td>
+
+        <td>
+          {% if event.frame_snapshot %}
+            <img src="/media/{{ event.frame_snapshot }}" alt="snap"
+                 style="width:44px;height:44px;border-radius:5px;object-fit:cover;cursor:zoom-in;"
+                 onclick="openSnap(this.src)">
+          {% else %}
+            <span style="color:var(--text-muted);font-size:.8rem;">—</span>
+          {% endif %}
+        </td>
+
+        <td>
+          {% if event.matched_target %}
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            {% if event.matched_target.image %}
+            <img src="{{ event.matched_target.image.url }}" alt=""
+                 style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
+            {% endif %}
+            <span style="font-size:.84rem;font-weight:600;color:var(--danger);">
+              {{ event.matched_target_name }}
+            </span>
+          </div>
+          {% else %}
+          <span style="color:var(--text-muted);font-size:.8rem;">—</span>
+          {% endif %}
+        </td>
+
+        <td>
+          {% if event.camera %}
+          <div style="font-size:.84rem;color:var(--text);">{{ event.camera.name }}</div>
+          <div style="font-size:.72rem;color:var(--text-muted);">{{ event.camera.location }}</div>
+          {% else %}
+          <span style="color:var(--text-muted);font-size:.8rem;">—</span>
+          {% endif %}
+        </td>
+
+        <td>
+          <span class="b-badge
+            {% if event.action == 'Normal' %}b-badge--gray
+            {% elif 'FALL' in event.action %}b-badge--red
+            {% else %}b-badge--yellow{% endif %}">
+            {{ event.action }}
+          </span>
+        </td>
+
+        <td>
+          <span class="b-badge b-verif--{{ event.verification_status }}">
+            {{ event.get_verification_status_display }}
+          </span>
+        </td>
+
+        <td>
+          {% if event.verification_status == 'approved' %}
+          <a href="{% url 'export_detection_pdf' event.pk %}" class="b-btn b-btn--pdf b-btn--sm" target="_blank">
+            <i class="fas fa-file-pdf"></i> PDF
+          </a>
+          {% elif event.matched_target and event.verification_status == 'pending' %}
+          <span style="color:var(--text-muted);font-size:.75rem;">
+            <i class="fas fa-hourglass-half text-warn"></i> {% trans "Pending" %}
+          </span>
+          {% else %}
+          <span style="color:var(--text-muted);font-size:.8rem;">—</span>
+          {% endif %}
+        </td>
+
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" style="text-align:center;color:var(--text-muted);padding:3rem;">
+          <i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.3;"></i>
+          {% trans "No detection events found." %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="b-pagination">
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="b-page-btn">‹ {% trans "Prev" %}</a>
+  {% endif %}
+  <span class="b-page-info">
+    {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
+  </span>
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="b-page-btn">{% trans "Next" %} ›</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 50px auto;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    .profile-header {
+        background: linear-gradient(135deg, #0f3460, #16213e);
+        padding: 40px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+    .profile-pic {
+        width: 150px; height: 150px;
+        border-radius: 50%;
+        border: 4px solid var(--accent);
+        object-fit: cover;
+        margin-bottom: 15px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 40px;
+        gap: 30px;
+    }
+    .info-item label { color: var(--accent); font-size: 0.8rem; text-transform: uppercase; display: block; margin-bottom: 5px; }
+    .info-item p { font-size: 1.1rem; color: white; margin: 0; }
+    
+    .badge-status {
+        padding: 5px 15px; border-radius: 50px; font-size: 0.8rem;
+        background: {% if profile.is_on_duty %}#2ecc71{% else %}#e74c3c{% endif %};
+        color: white; font-weight: bold;
+    }
+
+    .action-footer {
+        padding: 30px;
+        text-align: center;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    /* Standardized Buttons as Links */
+    .btn-action { 
+        padding: 10px 25px; 
+        border-radius: 8px; 
+        font-weight: bold; 
+        text-decoration: none; 
+        display: inline-block; 
+        transition: 0.3s;
+    }
+    .btn-update { background: var(--accent); color: var(--bg); }
+    .btn-update:hover { opacity: 0.9; }
+    .btn-back { background: var(--border); color: white; }
+</style>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <img src="{{ profile.profile_picture.url }}" class="profile-pic">
+        <h1 style="color: white; margin: 0;">{{ target_user.get_full_name }}</h1>
+        <p style="color: var(--accent);">@{{ target_user.username }}</p>
+        
+        <div style="margin-top: 10px;">
+            <span class="badge-status">
+                {% if profile.is_on_duty %}{% trans "ON DUTY" %}{% else %}{% trans "OFF DUTY" %}{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <label>{% trans "Badge Number" %}</label>
+            <p>{{ profile.badge_number }}</p>
+        </div>
+
+        <div class="info-item">
+            <label>{% trans "Role" %}</label>
+            <p>{{ profile.get_role_display }}</p>
+        </div>
+
+        <div class="info-item">
+            <label>{% trans "Email Address" %}</label>
+            <p>{{ target_user.email|default:"N/A" }}</p>
+        </div>
+
+        <div class="info-item">
+            <label>{% trans "Emergency Contact" %}</label>
+            <p>{{ profile.emergency_contact }}</p>
+        </div>
+
+
+        <div class="info-item">
+            <label>{% trans "Joined Date" %}</label>
+            <p>{{ target_user.date_joined|date:"F d, Y" }}</p>
+        </div>
+    </div>
+
+    <div class="action-footer">
+        {% if request.user.is_superuser %}
+            <a href="{% url 'update_profile' target_user.id %}" class="btn-action btn-update">
+                {% trans "Edit Profile" %}
+            </a>
+        {% endif %}
+        
+        <a href="{% url 'account_manage' %}" class="btn-action btn-back">
+            {% trans "Return" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

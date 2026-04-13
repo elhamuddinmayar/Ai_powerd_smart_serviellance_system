@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Butterfly - Access Control{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --danger: #e74c3c;
+        --warning: #f1c40f;
+        --info: #3498db;
+        --success: #2ecc71;
+    }
+
+    .manage-wrapper {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    /* Actions Bar */
+    .top-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .btn-register-new {
+        background: var(--warning);
+        color: #1a1a1a;
+        padding: 12px 25px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+        transition: 0.3s;
+        box-shadow: 0 5px 15px rgba(241, 196, 15, 0.2);
+    }
+
+    .btn-register-new:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(241, 196, 15, 0.4);
+    }
+
+    /* Controls Bar Styling */
+    .controls-group {
+        display: flex;
+        gap: 15px;
+        flex-grow: 1;
+        max-width: 800px;
+        align-items: center;
+    }
+
+    .search-form {
+        display: flex;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        padding: 5px 20px;
+        flex-grow: 2;
+    }
+
+    .search-input {
+        background: transparent; border: none; color: white;
+        padding: 10px; width: 100%; outline: none;
+    }
+
+    .sort-select {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        color: var(--accent);
+        padding: 0 15px;
+        border-radius: 50px;
+        outline: none;
+        height: 45px;
+    }
+
+    /* User Grid */
+    .user-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+    }
+
+    .user-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        padding: 30px;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: 0.3s;
+    }
+
+    .user-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    .user-identity h3 { color: var(--accent); margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px; }
+    
+    /* Status Indicator Logic */
+    .status-indicator { height: 12px; width: 12px; border-radius: 50%; }
+    .status-online { background: var(--success); box-shadow: 0 0 10px var(--success); }
+    .status-offline { background: var(--danger); }
+
+    .user-details { font-size: 0.9rem; color: #bdc3c7; line-height: 1.8; margin-top: 10px; }
+    
+    /* Role Badges */
+    .role-badge { 
+        display: inline-block; 
+        padding: 4px 12px; 
+        border-radius: 4px; 
+        font-size: 0.7rem; 
+        font-weight: bold; 
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+    }
+    .badge-admin { background: rgba(241, 196, 15, 0.1); color: var(--warning); border: 1px solid var(--warning); }
+    .badge-supervisor { background: rgba(52, 152, 219, 0.1); color: var(--info); border: 1px solid var(--info); }
+    .badge-obs { background: rgba(149, 165, 166, 0.1); color: #95a5a6; border: 1px solid #95a5a6; }
+
+    .card-actions { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; gap: 12px; }
+    .action-link { flex: 1; text-align: center; padding: 10px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; transition: 0.3s; font-weight: bold; }
+    
+    .btn-view { border: 1px solid var(--info); color: var(--info); }
+    .btn-view:hover { background: var(--info); color: white; }
+    
+    .btn-delete { border: 1px solid var(--danger); color: var(--danger); max-width: 50px; }
+    .btn-delete:hover { background: var(--danger); color: white; }
+
+    /* Pagination Styles */
+    .pagination-wrapper { margin-top: 40px; display: flex; justify-content: center; gap: 10px; align-items: center; }
+    .page-link { padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; color: white; text-decoration: none; transition: 0.3s; }
+    .page-link:hover { border-color: var(--accent); color: var(--accent); }
+    .page-current { color: var(--accent); font-family: monospace; font-weight: bold; }
+</style>
+
+<div class="manage-wrapper">
+    <div class="header-section">
+        <h1 style="font-size: 3rem; letter-spacing: 8px;">{% trans "USER ARCHIVE" %}</h1>
+        <p style="color: #95a5a6;">{% trans "System Administration & Database Integrity" %}</p>
+    </div>
+
+    <div class="top-actions">
+        <a href="{% url 'register' %}" class="btn-register-new">
+            + {% trans "Register New User" %}
+        </a>
+
+        <form method="GET" action="{% url 'account_manage' %}" class="controls-group" id="masterForm">
+            <div class="search-form">
+                <input type="text" name="q" class="search-input" placeholder="{% trans 'Search ID or Name...' %}" value="{{ query|default:'' }}">
+                <button type="submit" style="background:transparent; border:none; color:var(--accent); cursor: pointer;">🔍</button>
+            </div>
+
+           <select name="sort" class="sort-select" onchange="this.form.submit()">
+            <option value="date_new" {% if current_sort == 'date_new' %}selected{% endif %}>{% trans "Recently Joined" %}</option>
+            <option value="date_old" {% if current_sort == 'date_old' %}selected{% endif %}>{% trans "Oldest Members" %}</option>
+            
+            <option value="name_asc" {% if current_sort == 'name_asc' %}selected{% endif %}>{% trans "Name (A-Z)" %}</option>
+            <option value="name_desc" {% if current_sort == 'name_desc' %}selected{% endif %}>{% trans "Name (Z-A)" %}</option>
+            
+            <option value="rank_admin" {% if current_sort == 'rank_admin' %}selected{% endif %}>{% trans "Rank: Admins First" %}</option>
+            <option value="rank_obs" {% if current_sort == 'rank_obs' %}selected{% endif %}>{% trans "Rank: Observers First" %}</option>
+
+            <option value="role_supervisor" {% if current_sort == 'role_supervisor' %}selected{% endif %}>{% trans "Role: Supervisors First" %}</option>
+            <option value="role_operator" {% if current_sort == 'role_operator' %}selected{% endif %}>{% trans "Role: Operators First" %}</option>
+        </select>
+            {% if is_filtered %}
+            <a href="{% url 'account_manage' %}" style="color: var(--danger); text-decoration: none; font-size: 0.75rem; border-bottom: 1px solid var(--danger); white-space: nowrap;">
+                ✕ {% trans "RESET" %}
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="user-grid">
+        {% for u in users %}
+        <div class="user-card">
+            <div class="user-identity">
+                {% if u.is_superuser or u.profile.role == 'admin' %}
+                    <span class="role-badge badge-admin">{% trans "Admin" %}</span>
+                {% elif u.profile.role == 'supervisor' %}
+                    <span class="role-badge badge-supervisor">{% trans "Supervisor" %}</span>
+                {% else %}
+                    <span class="role-badge badge-obs">{% trans "Operator" %}</span>
+                {% endif %}
+
+                <a href="{% url 'account_detail' u.id %}" style="text-decoration: none;">
+                    <h3>
+                        <div class="status-indicator {% if u.profile.is_on_duty %}status-online{% else %}status-offline{% endif %}"></div> 
+                        {{ u.username }}
+                    </h3>
+                </a>
+
+                <div class="user-details">
+                    <div><strong>{% trans "NAME:" %}</strong> {{ u.get_full_name|default:"---" }}</div>
+                    <div><strong>{% trans "BADGE:" %}</strong> {{ u.profile.badge_number }}</div>
+                    <div><strong>{% trans "CLEARANCE:" %}</strong> Level {{ u.profile.clearance_level|default:"1" }}</div>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <a href="{% url 'account_detail' u.id %}" class="action-link btn-view">
+                    {% trans "VIEW PROFILE" %}
+                </a>
+
+                {% if request.user.is_superuser and u != request.user %}
+                <a href="{% url 'delete_user' u.id %}" 
+                   class="action-link btn-delete" 
+                   onclick="return confirm('{% trans "Are you sure you want to delete this user? This action cannot be undone." %}')">
+                    🗑️
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #95a5a6;">
+            {% trans "No matching records found in the archive." %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if users.has_other_pages %}
+    <div class="pagination-wrapper">
+        {% if users.has_previous %}
+            <a href="?page={{ users.previous_page_number }}&q={{ query }}&sort={{ current_sort }}" class="page-link">«</a>
+        {% endif %}
+
+        <span class="page-current">{{ users.number }} / {{ users.paginator.num_pages }}</span>
+
+        {% if users.has_next %}
+            <a href="?page={{ users.next_page_number }}&q={{ query }}&sort={{ current_sort }}" class="page-link">»</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 50px; text-align: center;">
+        <a href="{% url 'home' %}" style="color: var(--accent); text-decoration: none; letter-spacing: 2px; font-weight: bold;">
+            « {% trans "RETURN TO HUB" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

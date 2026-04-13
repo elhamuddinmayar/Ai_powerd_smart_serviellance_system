@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% block title %}Camera Control{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title"><i class="fas fa-video"></i> Camera Control</h1>
+    <p class="page-subtitle">Live status of all registered cameras.</p>
+  </div>
+  {% if is_admin %}
+  <div class="page-header-right">
+    <button class="btn btn-discover" id="discoverBtn" onclick="discoverCameras()">
+      <i class="fas fa-search"></i> Discover Cameras
+    </button>
+    <a href="{% url 'camera_register' %}" class="btn btn-register">
+      <i class="fas fa-plus"></i> Add Camera
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Discovery result panel -->
+<div id="discoverPanel" class="discover-panel" style="display:none;">
+  <div class="discover-header">
+    <span><i class="fas fa-search"></i> Local Camera Discovery (Indices 0–5)</span>
+    <button onclick="document.getElementById('discoverPanel').style.display='none'">✕</button>
+  </div>
+  <div id="discoverResults" class="discover-results">Scanning...</div>
+</div>
+
+<!-- Camera grid -->
+<div class="cam-grid" id="camGrid">
+  {% for cam in cameras %}
+  <div class="cam-card" id="cam-{{ cam.id }}">
+    <div class="cam-card-top">
+      <div class="cam-indicator {{ cam.status }}" id="indicator-{{ cam.id }}"></div>
+      <div class="cam-title-block">
+        <div class="cam-name">{{ cam.name }}</div>
+        <div class="cam-loc"><i class="fas fa-map-marker-alt"></i> {{ cam.location }}</div>
+      </div>
+      {% if is_admin %}
+      <div class="cam-menu">
+        <a href="{% url 'camera_edit' cam.pk %}" class="cam-action" title="Edit">
+          <i class="fas fa-edit"></i>
+        </a>
+        <a href="{% url 'camera_delete' cam.pk %}" class="cam-action cam-del" title="Delete"
+           onclick="return confirm('Delete camera {{ cam.name }}?')">
+          <i class="fas fa-trash"></i>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="cam-source">
+      <i class="fas fa-plug"></i>
+      <code>{{ cam.index_or_url }}</code>
+    </div>
+
+    <div class="cam-status-row">
+      <span class="status-badge {{ cam.status }}" id="badge-{{ cam.id }}">
+        {{ cam.status|upper }}
+      </span>
+      <span class="cam-time" id="time-{{ cam.id }}">
+        {% if cam.last_seen_at %}Last seen: {{ cam.last_seen_at|date:"H:i:s" }}{% endif %}
+      </span>
+    </div>
+
+    {% if cam.went_offline_at %}
+    <div class="cam-offline-time" id="offline-{{ cam.id }}">
+      Offline since: {{ cam.went_offline_at|date:"Y-m-d H:i:s" }}
+    </div>
+    {% endif %}
+
+    {% if is_admin %}
+    <div class="cam-footer">
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggle-{{ cam.id }}"
+               {% if cam.is_active %}checked{% endif %}
+               onchange="toggleCamera({{ cam.id }}, this)">
+        <span class="toggle-track">
+          <span class="toggle-thumb"></span>
+        </span>
+        <span class="toggle-label" id="toggle-label-{{ cam.id }}">
+          {% if cam.is_active %}Active{% else %}Disabled{% endif %}
+        </span>
+      </label>
+    </div>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="empty-state">
+    <i class="fas fa-video-slash"></i>
+    <h2>No Cameras Registered</h2>
+    <p>Add a camera to get started.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<style>
+.page-header       { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+.page-header-right { display:flex; gap:.7rem; }
+.page-title        { font-size:1.8rem; display:flex; align-items:center; gap:.6rem; margin:0; }
+.page-subtitle     { color:#888; margin-top:.3rem; font-size:.9rem; }
+
+/* Discover */
+.btn { padding:.45rem 1rem; border-radius:7px; border:none; cursor:pointer;
+       font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:.4rem;
+       text-decoration:none; transition:opacity .15s; }
+.btn:hover { opacity:.85; }
+.btn-discover { background:rgba(52,152,219,.2); color:#3498db; }
+.btn-register { background:#3498db; color:#fff; }
+
+.discover-panel {
+  background:var(--card-bg,#1a1a2e);
+  border:1px solid rgba(52,152,219,.3);
+  border-radius:10px; padding:1rem; margin-bottom:1.5rem;
+}
+.discover-header {
+  display:flex; justify-content:space-between; align-items:center;
+  font-weight:600; color:#3498db; margin-bottom:.8rem;
+}
+.discover-header button { background:none; border:none; cursor:pointer; color:#888; font-size:1rem; }
+.discover-results { display:flex; flex-wrap:wrap; gap:.6rem; }
+.disc-item {
+  padding:.4rem .9rem; border-radius:6px; font-size:.83rem; font-weight:600;
+  display:flex; align-items:center; gap:.4rem;
+}
+.disc-item.found    { background:rgba(46,204,113,.15); color:#2ecc71; }
+.disc-item.notfound { background:rgba(255,255,255,.05); color:#666; }
+
+/* Camera grid */
+.cam-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.2rem; }
+
+.cam-card {
+  background: var(--card-bg,#1a1a2e);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px; padding: 1.1rem;
+  display: flex; flex-direction:column; gap:.7rem;
+  transition: box-shadow .2s;
+}
+.cam-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+
+.cam-card-top { display:flex; align-items:flex-start; gap:.7rem; }
+
+.cam-indicator {
+  width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:5px;
+  box-shadow:0 0 8px currentColor;
+}
+.cam-indicator.online  { background:#2ecc71; color:#2ecc71; animation:pulse-green 2s infinite; }
+.cam-indicator.offline { background:#e74c3c; color:#e74c3c; }
+.cam-indicator.unknown { background:#f39c12; color:#f39c12; animation:pulse-orange 2s infinite; }
+
+@keyframes pulse-green  { 0%,100%{box-shadow:0 0 4px #2ecc71} 50%{box-shadow:0 0 12px #2ecc71} }
+@keyframes pulse-orange { 0%,100%{box-shadow:0 0 4px #f39c12} 50%{box-shadow:0 0 12px #f39c12} }
+
+.cam-title-block { flex:1; }
+.cam-name { font-size:1rem; font-weight:700; color:#eee; }
+.cam-loc  { font-size:.78rem; color:#888; margin-top:.1rem; display:flex; align-items:center; gap:.3rem; }
+
+.cam-menu { display:flex; gap:.4rem; }
+.cam-action { color:#666; padding:.3rem; border-radius:4px; transition:color .15s; }
+.cam-action:hover     { color:#eee; }
+.cam-action.cam-del:hover { color:#e74c3c; }
+
+.cam-source { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#888; }
+.cam-source code { background:rgba(255,255,255,.06); padding:.1rem .4rem; border-radius:4px; font-size:.78rem; }
+
+.cam-status-row { display:flex; align-items:center; gap:.7rem; }
+
+.status-badge {
+  padding:.2rem .7rem; border-radius:4px; font-size:.75rem; font-weight:700;
+}
+.status-badge.online  { background:rgba(46,204,113,.15); color:#2ecc71; }
+.status-badge.offline { background:rgba(231,76,60,.15);  color:#e74c3c; }
+.status-badge.unknown { background:rgba(243,156,18,.15); color:#f39c12; }
+
+.cam-time { font-size:.75rem; color:#666; }
+.cam-offline-time { font-size:.75rem; color:#e74c3c; }
+
+/* Toggle switch */
+.toggle-switch { display:flex; align-items:center; gap:.6rem; cursor:pointer; user-select:none; }
+.toggle-switch input { display:none; }
+.toggle-track {
+  width:38px; height:20px; background:rgba(255,255,255,.1); border-radius:20px;
+  position:relative; transition:background .2s;
+}
+.toggle-thumb {
+  position:absolute; top:2px; left:2px; width:16px; height:16px;
+  background:#eee; border-radius:50%; transition:transform .2s;
+}
+.toggle-switch input:checked ~ .toggle-track { background:#2ecc71; }
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb { transform:translateX(18px); }
+.toggle-label { font-size:.83rem; color:#aaa; }
+
+.cam-footer { border-top:1px solid rgba(255,255,255,.05); padding-top:.7rem; }
+
+.empty-state { grid-column:1/-1; text-align:center; padding:4rem 2rem; color:#888; }
+.empty-state i { font-size:3.5rem; margin-bottom:1rem; display:block; color:#334; }
+.empty-state h2 { font-size:1.4rem; color:#aaa; margin-bottom:.4rem; }
+</style>
+
+<script>
+// ── WebSocket for real-time camera status ─────────────────────────────────
+const camWs = new WebSocket(`ws://${location.host}/ws/camera/`);
+
+camWs.onmessage = (e) => {
+  const d = JSON.parse(e.data);
+  if (d.type !== 'CAMERA_STATUS') return;
+  updateCameraCard(d.camera_id, d.status, d.timestamp);
+};
+
+function updateCameraCard(id, status, ts) {
+  const ind   = document.getElementById(`indicator-${id}`);
+  const badge = document.getElementById(`badge-${id}`);
+  const time  = document.getElementById(`time-${id}`);
+  if (!ind) return;
+  ind.className   = `cam-indicator ${status}`;
+  badge.className = `status-badge ${status}`;
+  badge.textContent = status.toUpperCase();
+  if (time) time.textContent = `Last seen: ${ts.split(' ')[1]}`;
+}
+
+// ── Toggle camera on/off ──────────────────────────────────────────────────
+function toggleCamera(id, checkbox) {
+  const label = document.getElementById(`toggle-label-${id}`);
+  fetch(`/cameras/${id}/toggle/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+  })
+  .then(r => r.json())
+  .then(d => {
+    label.textContent = d.is_active ? 'Active' : 'Disabled';
+    if (!d.is_active) {
+      updateCameraCard(id, 'offline', new Date().toISOString().replace('T',' ').slice(0,19));
+    }
+  })
+  .catch(() => { checkbox.checked = !checkbox.checked; });
+}
+
+// ── Camera discovery ──────────────────────────────────────────────────────
+function discoverCameras() {
+  const panel   = document.getElementById('discoverPanel');
+  const results = document.getElementById('discoverResults');
+  panel.style.display = 'block';
+  results.innerHTML   = '<span style="color:#888">Scanning indices 0–5...</span>';
+
+  fetch('/cameras/discover/')
+    .then(r => r.json())
+    .then(d => {
+      results.innerHTML = d.discovered.map(c => `
+        <div class="disc-item ${c.accessible ? 'found' : 'notfound'}">
+          <i class="fas fa-${c.accessible ? 'check-circle' : 'times-circle'}"></i>
+          ${c.label} — ${c.accessible ? 'ACCESSIBLE' : 'not found'}
+        </div>
+      `).join('');
+    })
+    .catch(() => { results.innerHTML = '<span style="color:#e74c3c">Discovery failed.</span>'; });
+}
+
+// ── Periodic sync (fallback if WS drops) ─────────────────────────────────
+setInterval(() => {
+  fetch('/cameras/status/')
+    .then(r => r.json())
+    .then(d => {
+      d.cameras.forEach(c => {
+        updateCameraCard(c.id, c.status, c.last_seen_at || '');
+      });
+    });
+}, 10000);
+
+function getCookie(name) {
+  const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+</script>
+{% endblock %}
