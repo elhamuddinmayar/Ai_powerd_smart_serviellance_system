@@ -105,19 +105,36 @@ def _push_notification(recipient, notification_type, title, message, assignment=
 @login_required
 def dashboard(request):
     now = timezone.now()
+    user = request.user
+
     targets = TargetPerson.objects.filter(
         models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=now)
     )
-    recent_events = DetectionEvent.objects.select_related(
+
+    # Scope recent events by role
+    events_qs = DetectionEvent.objects.select_related(
         'matched_target', 'camera'
-    ).order_by('-timestamp')[:20]
+    ).order_by('-timestamp')
+
+    if is_admin(user):
+        recent_events = events_qs[:20]
+    elif hasattr(user, 'profile') and user.profile.role == 'supervisor':
+        recent_events = events_qs.filter(
+            matched_target__isnull=False,
+            matched_target__uploaded_by=user
+        )[:20]
+    elif hasattr(user, 'profile') and user.profile.role == 'operator':
+        recent_events = events_qs.filter(
+            related_assignment__assigned_to=user
+        )[:20]
+    else:
+        recent_events = events_qs.none()
 
     return render(request, 'surveillance/dashboard.html', {
         'targets':       targets,
-        'is_admin':      is_admin(request.user),
+        'is_admin':      is_admin(user),
         'recent_events': recent_events,
     })
-
 
 @login_required
 def home(request):
@@ -146,31 +163,46 @@ def target_management(request):
 
 
 @login_required
-@user_passes_test(is_privileged_staff, login_url='home')
 def target_registration(request):
     if request.method == 'POST':
-        return upload_target(request)
-    form = TargetPersonForm()
-    return render(request, 'surveillance/target_management_registration.html', {
-        'form':     form,
-        'is_admin': True,
-    })
-
+        form = TargetPersonForm(request.POST, request.FILES)
+        if form.is_valid():
+            target = form.save(commit=False)
+            target.uploaded_by = request.user  # <-- critical
+            target.save()
+            return redirect('target_management')
+    else:
+        form = TargetPersonForm()
+    return render(request, 'surveillance/target_registration.html', {'form': form})
 
 @login_required
-@user_passes_test(is_admin, login_url='target_management')
 def target_detail(request, pk):
     target = get_object_or_404(TargetPerson, pk=pk)
+
+    # Block access if not admin AND not the supervisor who uploaded it
+    if not is_admin(request.user) and not is_privileged_staff(request.user):
+        return redirect('target_management')
+
+    if is_privileged_staff(request.user) and not is_admin(request.user):
+        # Supervisor can only see their own uploaded targets
+        if target.uploaded_by != request.user:
+            return redirect('target_management')
+
     assignments = TargetAssignment.objects.filter(target=target).select_related(
         'assigned_to', 'assigned_by'
     ).order_by('-created_at')
-    operators = User.objects.filter(profile__role='operator').select_related('profile')
+
+    operators = User.objects.filter(
+        profile__role='operator'
+    ).select_related('profile')
+
     return render(request, 'surveillance/target_management_details.html', {
         'target':      target,
         'assignments': assignments,
         'operators':   operators,
         'is_admin':    is_admin(request.user),
     })
+
 
 
 @login_required
@@ -833,25 +865,36 @@ def unread_notification_count(request):
 @login_required
 def detection_history(request):
     user = request.user
-    qs   = DetectionEvent.objects.select_related(
+
+    qs = DetectionEvent.objects.select_related(
         'matched_target', 'camera'
     ).order_by('-timestamp')
 
-    # Operators only see events from their own assignments
-    if is_operator(user) and not is_privileged_staff(user):
+    if is_admin(user):
+        pass  # sees everything
+
+    elif hasattr(user, 'profile') and user.profile.role == 'operator':
         qs = qs.filter(related_assignment__assigned_to=user)
-    elif not is_admin(user):
-        # Supervisors see events for their uploaded targets
-        qs = qs.filter(matched_target__uploaded_by=user)
+
+    elif hasattr(user, 'profile') and user.profile.role == 'supervisor':
+        # Supervisor sees ALL detections of targets they uploaded
+        # regardless of whether an assignment exists
+        from django.db.models import Q
+        qs = qs.filter(
+            matched_target__isnull=False,
+            matched_target__uploaded_by=user
+        )
+
+    else:
+        qs = qs.none()
 
     paginator = Paginator(qs, 30)
     page      = paginator.get_page(request.GET.get('page'))
+
     return render(request, 'surveillance/detection_history.html', {
         'page_obj': page,
         'is_admin': is_admin(user),
     })
-
-
 # ── User / account management
 
 @login_required
