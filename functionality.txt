@@ -4,4 +4,6 @@
 4:language changing (pashto,dari,english)
 5:adding time duration for targeted person
 6:running detection services in background with out tapping the dashboard option in template
+7: adding camera control part
+8:add
 

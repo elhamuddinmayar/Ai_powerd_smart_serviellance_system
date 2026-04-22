@@ -132,11 +132,20 @@ class CameraThread(threading.Thread):
 
     def _on_face_match(self, tid, name, aid, frame):
         _broadcast({"type": "TARGET_MATCH", "name": name, "camera": self.camera_name, "camera_id": self.camera_id})
-        # Note: Ensure you have a 'tasks.py' with async_save_detection defined
         try:
             from surveillance.tasks import async_save_detection
-            async_save_detection.delay(self.camera_id, 1, 'Normal', tid, name, aid)
-        except ImportError: pass
+            import base64
+
+            # Encode the frame as JPEG bytes → base64 string to pass to Celery
+            _, buf = cv2.imencode('.jpg', frame)
+            frame_b64 = base64.b64encode(buf).decode('utf-8')
+
+            async_save_detection.delay(
+                self.camera_id, 1, 'Normal', tid, name, aid,
+                frame_b64=frame_b64   # <-- pass the snapshot
+            )
+        except ImportError:
+            pass
 
     def analyze_pose(self, keypoints_data):
         if keypoints_data is None or len(keypoints_data.xy) == 0: 
@@ -175,59 +184,105 @@ class CameraThread(threading.Thread):
     def run(self):
         self.running = True
         model = get_yolo_model()
-        src = int(self.index_or_url) if self.index_or_url.isdigit() else self.index_or_url
-        cap = cv2.VideoCapture(src, cv2.CAP_DSHOW)
-        
+        src   = int(self.index_or_url) if self.index_or_url.isdigit() else self.index_or_url
+
         self._deepface.start()
         self.refresh_targets()
         _broadcast_camera_status(self.camera_id, self.camera_name, self.location, 'online')
 
-        frame_count = 0
+        frame_count      = 0
         last_action_save = 0
+        consecutive_fails = 0
+        MAX_FAILS = 10
+
+        def open_capture():
+            cap = cv2.VideoCapture(src, cv2.CAP_DSHOW)
+            cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            return cap
+
+        cap = open_capture()
 
         while self.running:
-            ret, frame = cap.read()
-            if not ret: 
-                time.sleep(0.1)
+            try:
+                ret, frame = cap.read()
+            except Exception as e:
+                print(f"[Camera {self.camera_id}] cap.read() exception: {e}")
+                ret, frame = False, None
+
+            # -- Handle bad read --
+            if not ret or frame is None:
+                consecutive_fails += 1
+                print(f"[Camera {self.camera_id}] Bad frame ({consecutive_fails}/{MAX_FAILS})")
+
+                if consecutive_fails >= MAX_FAILS:
+                    print(f"[Camera {self.camera_id}] Too many failures, reconnecting...")
+                    try:
+                        cap.release()
+                    except Exception:
+                        pass
+
+                    time.sleep(2)
+                    cap = open_capture()
+                    consecutive_fails = 0
+
+                    if not cap.isOpened():
+                        print(f"[Camera {self.camera_id}] Reconnect failed, retrying in 5s...")
+                        time.sleep(5)
+                else:
+                    time.sleep(0.1)
                 continue
 
-            if frame_count % 2 == 0:
-                results = model.predict(source=frame, conf=0.50, verbose=False)
-                
-                if results and len(results[0].boxes) > 0:
-                    person_count = len(results[0].boxes)
-                    action = self.analyze_pose(results[0].keypoints)
-                    
-                    if action != "Normal":
-                        # Standardized broadcast
-                        _broadcast({
-                            "type": "ALARM", 
-                            "action": action, 
-                            "camera": self.camera_name,
-                            "camera_id": self.camera_id
-                        })
-                        
-                        if (time.time() - last_action_save > 5):
-                            try:
-                                from surveillance.tasks import async_save_detection
-                                async_save_detection.delay(self.camera_id, person_count, action)
+            # -- Good frame, reset fail counter --
+            consecutive_fails = 0
+
+            try:
+                if frame_count % 2 == 0:
+                    results = model.predict(source=frame, conf=0.50, verbose=False)
+
+                    if results and len(results[0].boxes) > 0:
+                        person_count = len(results[0].boxes)
+                        action       = self.analyze_pose(results[0].keypoints)
+
+                        if action != "Normal":
+                            _broadcast({
+                                "type": "ALARM",
+                                "action": action,
+                                "camera": self.camera_name,
+                                "camera_id": self.camera_id
+                            })
+
+                            if (time.time() - last_action_save > 5):
+                                threading.Thread(
+                                    target=_save_detection,
+                                    args=(self.camera_id, person_count, action),
+                                    kwargs={"frame": frame.copy()},
+                                    daemon=True
+                                ).start()
                                 last_action_save = time.time()
-                            except: pass
 
-                    if frame_count % FACE_CHECK_INTERVAL == 0:
-                        boxes = [tuple(b[:4]) for b in results[0].boxes.xyxy.cpu().numpy()]
-                        self._deepface.submit(frame, boxes)
+                        if frame_count % FACE_CHECK_INTERVAL == 0:
+                            boxes = [tuple(b[:4]) for b in results[0].boxes.xyxy.cpu().numpy()]
+                            self._deepface.submit(frame, boxes)
 
-                    _broadcast({"type": "STAT_UPDATE", "count": person_count, "camera_id": self.camera_id})
-                else:
-                    _broadcast({"type": "STAT_UPDATE", "count": 0, "camera_id": self.camera_id})
+                        _broadcast({"type": "STAT_UPDATE", "count": person_count, "camera_id": self.camera_id})
+                    else:
+                        _broadcast({"type": "STAT_UPDATE", "count": 0, "camera_id": self.camera_id})
 
-            if frame_count % 600 == 0: self.refresh_targets()
+            except Exception as e:
+                print(f"[Camera {self.camera_id}] Processing error: {e}")
+
+            if frame_count % 600 == 0:
+                self.refresh_targets()
+
             frame_count += 1
 
-        cap.release()
-        _broadcast_camera_status(self.camera_id, self.camera_name, self.location, 'offline')
+        try:
+            cap.release()
+        except Exception:
+            pass
 
+        self._deepface.stop()
+        _broadcast_camera_status(self.camera_id, self.camera_name, self.location, 'offline')
     def stop(self):
         self.running = False
 

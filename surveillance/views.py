@@ -1,4 +1,5 @@
 import os
+import io
 from datetime import timedelta
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -675,7 +676,7 @@ def export_target_pdf(request, target_pk):
     user   = request.user
 
     if not is_admin(user) and target.uploaded_by != user:
-        raise PermissionDenied("You can only export targets you uploaded.")
+        raise PermissionDenied("You can only export targets your uploaded.")
 
     buffer = io.BytesIO()
     doc    = SimpleDocTemplate(
@@ -851,7 +852,7 @@ def detection_history(request):
     })
 
 
-# ── User / account management ─────────────────────────────────────────────────
+# ── User / account management
 
 @login_required
 @user_passes_test(is_admin, login_url='home')
