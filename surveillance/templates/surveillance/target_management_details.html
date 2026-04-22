@@ -17,9 +17,9 @@
     <a href="{% url 'export_target_pdf' target.pk %}" class="b-btn b-btn--pdf" target="_blank">
       <i class="fas fa-id-card"></i> {% trans "Full Dossier PDF" %}
     </a>
-    <button class="b-btn b-btn--ghost" onclick="window.print()">
-      <i class="fas fa-print"></i> {% trans "Print" %}
-    </button>
+    <button class="b-btn b-btn--ghost" onclick="printPage()">
+  <i class="fas fa-print"></i> {% trans "Print" %}
+</button>
     <a href="{% url 'target_management' %}" class="b-btn b-btn--ghost">
       <i class="fas fa-arrow-left"></i> {% trans "Back" %}
     </a>

@@ -16,7 +16,142 @@
 
   <!-- Main stylesheet -->
   <link rel="stylesheet" href="{% static 'css/butterfly.css' %}">
+  <style>
+      @media print {
 
+      /* 1. Hide all UI chrome */
+      nav,
+      header,
+      footer,
+      aside,
+      .sidebar,
+      .navbar,
+      .topbar,
+      .b-page-header button,
+      .b-pagination,
+      .b-btn--ghost,
+      .b-btn--pdf,
+      .b-btn--danger,
+      .b-btn--primary,
+      .verif-grid form,
+      .manage-grid .panel:first-child,
+      [class*="sidebar"],
+      [class*="navbar"],
+      [class*="nav-"],
+      [class*="menu"],
+      [class*="toast"],
+      [class*="modal"] {
+        display: none !important;
+      }
+
+      /* 2. Reset layout for print */
+      body {
+        background: white !important;
+        color: black !important;
+        font-size: 12px;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* 3. Make main content full width */
+      .main-content,
+      .content,
+      .container,
+      main,
+      [class*="content"] {
+        margin: 0 !important;
+        padding: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      /* 4. Clean tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+
+      th, td {
+        border: 1px solid #aaa !important;
+        padding: 5px 7px !important;
+        color: #000 !important;
+        background: white !important;
+      }
+
+      th {
+        background: #eee !important;
+        font-weight: bold;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* 5. Fix badges — remove colors, keep text */
+      .b-badge,
+      [class*="badge"],
+      [class*="tag"],
+      [class*="status"] {
+        background: none !important;
+        color: #000 !important;
+        border: 1px solid #999 !important;
+        padding: 1px 4px;
+        font-size: 10px;
+      }
+
+      /* 6. Fix images */
+      img {
+        max-width: 50px !important;
+        max-height: 50px !important;
+        object-fit: cover;
+      }
+
+      /* 7. Hide action buttons inside table cells */
+      td a,
+      td button,
+      td form {
+        display: none !important;
+      }
+
+      /* 8. Show page title */
+      .b-page-title {
+        font-size: 16px !important;
+        color: #000 !important;
+        display: block !important;
+        margin-bottom: 8px;
+      }
+
+      .b-page-sub {
+        font-size: 11px !important;
+        color: #555 !important;
+        display: block !important;
+        margin-bottom: 12px;
+      }
+
+      /* 9. Cards for verification page */
+      .b-card {
+        border: 1px solid #ccc !important;
+        background: white !important;
+        margin-bottom: 12px;
+        page-break-inside: avoid;
+      }
+
+      /* 10. Page break control */
+      tr {
+        page-break-inside: avoid;
+      }
+
+      /* 11. Print header with timestamp */
+      body::before {
+        content: "Butterfly Surveillance System — Printed: " attr(data-print-time);
+        display: block;
+        font-size: 11px;
+        color: #555;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 6px;
+        margin-bottom: 10px;
+      }
+    }
+</style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -156,7 +291,18 @@ function switchLang(code) {
   }).then(() => location.reload());
 }
 </script>
-
+<script>
+function printPage() {
+  // Stamp current datetime on body for the print header
+  document.body.setAttribute(
+    'data-print-time',
+    new Date().toLocaleString()
+  );
+  window.print();
+}
+</script>
 {% block extra_js %}{% endblock %}
+
+
 </body>
 </html>
