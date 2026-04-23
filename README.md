@@ -76,4 +76,9 @@ python manage.py runserver
 **Elhamuddin Mayar**  
 [![Portfolio](https://img.shields.io/badge/Portfolio-elhamuddinmayar.netlify.app-blue?style=flat-square)](https://elhamuddinmayar.netlify.app)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-elhamuddinmayar-blue?style=flat-square&logo=linkedin)](https://linkedin.com/in/elhamuddinmayar)
+**Abdulhaq Nikzad**   
+[![GitHub](https://img.shields.io/badge/GitHub-Nikzad--314-black?style=flat-square&logo=github)](https://github.com/Nikzad-314)  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Abdulhaq%20Nikzad-blue?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/abdulhaq-nikzad-110ba5311)
+
+
 
