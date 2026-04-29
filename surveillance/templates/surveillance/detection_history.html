@@ -18,8 +18,8 @@
     </p>
   </div>
   <button class="b-btn b-btn--ghost" onclick="printPage()">
-  <i class="fas fa-print"></i> {% trans "Print" %}
-</button>
+    <i class="fas fa-print"></i> {% trans "Print" %}
+  </button>
 </div>
 
 <div class="b-table-wrap">
@@ -29,25 +29,25 @@
         <th>{% trans "Timestamp" %}</th>
         <th>{% trans "Snapshot" %}</th>
         <th>{% trans "Target" %}</th>
-        <th>{% trans "Camera" %}</th>
+        <th class="col-camera">{% trans "Camera" %}</th>
         <th>{% trans "Action" %}</th>
-        <th>{% trans "Verification" %}</th>
+        <th class="col-verif">{% trans "Verification" %}</th>
         <th>{% trans "Export" %}</th>
       </tr>
     </thead>
     <tbody>
       {% for event in page_obj %}
-      <tr style="{% if event.matched_target %}background:rgba(233,69,96,.03){% endif %}">
+      <tr style="{% if event.matched_target %}background:rgba(233,69,96,.02){% endif %}">
 
-        <td style="font-size:.78rem;color:var(--text-muted);white-space:nowrap;font-family:var(--font-mono);">
+        <td style="font-size:.76rem;color:var(--text-muted);white-space:nowrap;font-family:var(--font-mono);">
           {{ event.timestamp|date:"Y-m-d H:i:s" }}
         </td>
 
         <td>
           {% if event.frame_snapshot %}
             <img src="/media/{{ event.frame_snapshot }}" alt="snap"
-                 style="width:44px;height:44px;border-radius:5px;object-fit:cover;cursor:zoom-in;"
-                 onclick="openSnap(this.src)">
+                 style="width:42px;height:42px;border-radius:5px;object-fit:cover;cursor:zoom-in;"
+                 onclick="openSnap(this.src)" loading="lazy">
           {% else %}
             <span style="color:var(--text-muted);font-size:.8rem;">—</span>
           {% endif %}
@@ -55,12 +55,12 @@
 
         <td>
           {% if event.matched_target %}
-          <div style="display:flex;align-items:center;gap:.5rem;">
+          <div style="display:flex;align-items:center;gap:.45rem;">
             {% if event.matched_target.image %}
             <img src="{{ event.matched_target.image.url }}" alt=""
-                 style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
+                 style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0;" loading="lazy">
             {% endif %}
-            <span style="font-size:.84rem;font-weight:600;color:var(--danger);">
+            <span style="font-size:.82rem;font-weight:600;color:var(--danger);">
               {{ event.matched_target_name }}
             </span>
           </div>
@@ -69,10 +69,10 @@
           {% endif %}
         </td>
 
-        <td>
+        <td class="col-camera">
           {% if event.camera %}
-          <div style="font-size:.84rem;color:var(--text);">{{ event.camera.name }}</div>
-          <div style="font-size:.72rem;color:var(--text-muted);">{{ event.camera.location }}</div>
+          <div style="font-size:.82rem;color:var(--text);">{{ event.camera.name }}</div>
+          <div style="font-size:.7rem;color:var(--text-muted);">{{ event.camera.location }}</div>
           {% else %}
           <span style="color:var(--text-muted);font-size:.8rem;">—</span>
           {% endif %}
@@ -87,7 +87,7 @@
           </span>
         </td>
 
-        <td>
+        <td class="col-verif">
           <span class="b-badge b-verif--{{ event.verification_status }}">
             {{ event.get_verification_status_display }}
           </span>
@@ -99,7 +99,7 @@
             <i class="fas fa-file-pdf"></i> PDF
           </a>
           {% elif event.matched_target and event.verification_status == 'pending' %}
-          <span style="color:var(--text-muted);font-size:.75rem;">
+          <span style="color:var(--text-muted);font-size:.73rem;">
             <i class="fas fa-hourglass-half text-warn"></i> {% trans "Pending" %}
           </span>
           {% else %}
@@ -111,7 +111,7 @@
       {% empty %}
       <tr>
         <td colspan="7" style="text-align:center;color:var(--text-muted);padding:3rem;">
-          <i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.3;"></i>
+          <i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.25;"></i>
           {% trans "No detection events found." %}
         </td>
       </tr>
@@ -120,7 +120,13 @@
   </table>
 </div>
 
-<!-- Pagination -->
+<!-- Hide less critical columns on mobile -->
+<style>
+  @media (max-width: 700px) {
+    .col-camera, .col-verif { display: none; }
+  }
+</style>
+
 {% if page_obj.has_other_pages %}
 <div class="b-pagination">
   {% if page_obj.has_previous %}

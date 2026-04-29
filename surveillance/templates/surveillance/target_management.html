@@ -5,82 +5,155 @@
 
 {% block extra_css %}
 <style>
-    .manage-grid { 
-        display: grid; 
-        grid-template-columns: 300px 1fr; 
-        gap: 20px; 
-        max-width: 1400px; 
-        margin: 20px auto; 
-        padding: 0 20px;
-    }
+  .panel {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    padding: 20px;
+    height: fit-content;
+  }
+  .panel-header {
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: .82rem;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    font-family: var(--font-mono);
+  }
+  .btn-action {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; background: var(--accent); color: #0a0e1a;
+    border: none; padding: 14px; border-radius: 8px; font-weight: 700;
+    cursor: pointer; text-transform: uppercase; text-decoration: none; transition: all .25s;
+    font-size: .82rem;
+  }
+  .btn-action:hover { background: #5de8b8; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78,204,163,.25); }
 
-    .panel { background: #16213e; border-radius: 15px; border: 1px solid #0f3460; padding: 20px; height: fit-content; }
-    .panel-header { color: #4ecca3; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 20px; border-bottom: 1px solid #0f3460; padding-bottom: 10px; }
+  .target-table { width: 100%; border-collapse: collapse; }
+  .target-table th {
+    text-align: left; color: var(--text-muted); font-size: .7rem;
+    padding: 10px 12px; border-bottom: 1px solid var(--border-accent);
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .target-table td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: .84rem; }
+  .target-table tbody tr:hover { background: rgba(78,204,163,.03); }
+  .target-table tbody tr:last-child td { border-bottom: none; }
 
-    .btn-action { 
-        display: flex; align-items: center; justify-content: center; gap: 10px;
-        width: 80%; background: #4ecca3; color: #1a1a2e; border: none; 
-        padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; 
-        text-transform: uppercase; text-decoration: none; transition: 0.3s;
-    }
-    .btn-action:hover { background: #45b391; transform: translateY(-2px); }
+  .target-img {
+    width: 46px; height: 46px;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--border-accent);
+  }
+  .target-link { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .target-link:hover { text-decoration: underline; }
+  .status-tag {
+    padding: 3px 8px; border-radius: 4px; font-size: .68rem;
+    font-weight: 700; background: var(--accent-dim); color: var(--accent);
+    text-transform: uppercase;
+  }
+  .btn-view {
+    background: rgba(78,204,163,.1); color: var(--accent);
+    border: 1px solid var(--border-accent); padding: 5px 11px;
+    border-radius: 5px; font-size: .73rem; text-decoration: none;
+    transition: all .2s;
+  }
+  .btn-view:hover { background: var(--accent-dim); }
 
-    .target-table { width: 100%; border-collapse: collapse; }
-    .target-table th { text-align: left; color: #95a5a6; font-size: 0.75rem; padding: 10px; border-bottom: 1px solid #0f3460; }
-    .target-table td { padding: 15px 10px; border-bottom: 1px solid #1a1a2e; vertical-align: middle; color: white; }
-    
-    .target-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #4ecca3; }
-    .target-link { color: #4ecca3; text-decoration: none; font-weight: bold; }
-    .target-link:hover { text-decoration: underline; }
-
-    .status-tag { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; background: rgba(78, 204, 163, 0.1); color: #4ecca3; }
-    .btn-view { background: #0f3460; color: #4ecca3; border: 1px solid #4ecca3; padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; text-decoration: none; }
+  /* Hide less-important columns on small screens */
+  @media (max-width: 700px) {
+    .col-expire, .col-status { display: none; }
+    .target-img { width: 36px; height: 36px; }
+    .target-table th, .target-table td { padding: 8px; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="manage-grid">
-    <div class="panel">
-        <div class="panel-header">{% trans "Database Actions" %}</div>
-        <a href="{% url 'target_registration' %}" class="btn-action">
-            <i class="fas fa-user-plus"></i> {% trans "Enroll New Subject" %}
-        </a>
-        <p style="color: #95a5a6; font-size: 0.75rem; margin-top: 15px; line-height: 1.4;">
-            {% trans "Initialize full biometric enrollment for new surveillance targets." %}
-        </p>
-    </div>
+<div class="b-page-header">
+  <div>
+    <h1 class="b-page-title"><i class="fas fa-crosshairs"></i> {% trans "Watchlist Database" %}</h1>
+    <p class="b-page-sub">{% trans "Manage and view all surveillance targets." %}</p>
+  </div>
+  {% comment %} <a href="{% url 'target_registration' %}" class="b-btn b-btn--primary">
+    <i class="fas fa-user-plus"></i> {% trans "Enroll New Subject" %}
+  </a> {% endcomment %}
+</div>
 
-    <div class="panel">
-        <div class="panel-header">{% trans "Authorized Personnel Watchlist" %}</div>
-        <table class="target-table">
-            <thead>
-                <tr>
-                    <th>{% trans "IMAGE" %}</th>
-                    <th>{% trans "NAME & ID" %}</th>
-                    <th>{% trans "EXPIRATION" %}</th>
-                    <th>{% trans "STATUS" %}</th>
-                    <th>{% trans "ACTIONS" %}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for person in targets %}
-                <tr>
-                    <td><img src="{{ person.image.url }}" class="target-img"></td>
-                    <td>
-                        <a href="{% url 'target_detail' person.pk %}" class="target-link">{{ person.name }} {{ person.last_name }}</a>
-                        <div style="font-size: 0.7rem; color: #95a5a6;">ID: {{ person.tazkira_number|default:"N/A" }}</div>
-                    </td>
-                    <td style="color: #95a5a6; font-size: 0.8rem;">
-                        {{ person.expires_at|date:"Y-m-d H:i"|default:"Permanent" }}
-                    </td>
-                    <td><span class="status-tag">{% trans "WATCHED" %}</span></td>
-                    <td><a href="{% url 'target_detail' person.pk %}" class="btn-view">{% trans "DETAILS" %}</a></td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5" style="text-align: center; padding: 40px; color: #95a5a6;">{% trans "Database Empty" %}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="manage-grid">
+
+  <!-- Actions panel -->
+  <div class="panel">
+    <div class="panel-header">{% trans "Database Actions" %}</div>
+    <a href="{% url 'target_registration' %}" class="btn-action">
+      <i class="fas fa-user-plus"></i> {% trans "Enroll New Subject" %}
+    </a>
+    <p style="color:var(--text-muted);font-size:.73rem;margin-top:14px;line-height:1.5;">
+      {% trans "Initialize full biometric enrollment for new surveillance targets." %}
+    </p>
+
+    <!-- Quick stats -->
+    <div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:.6rem;">
+      <div style="display:flex;justify-content:space-between;font-size:.78rem;
+                  padding:.5rem .7rem;background:rgba(0,0,0,.2);border-radius:6px;">
+        <span style="color:var(--text-muted);">{% trans "Total Targets" %}</span>
+        <span style="color:var(--accent);font-family:var(--font-mono);font-weight:700;">{{ targets|length }}</span>
+      </div>
     </div>
+  </div>
+
+  <!-- Watchlist table -->
+  <div class="panel">
+    <div class="panel-header">{% trans "Authorized Personnel Watchlist" %}</div>
+    <div class="b-table-wrap" style="border:none;border-radius:0;">
+      <table class="target-table">
+        <thead>
+          <tr>
+            <th>{% trans "IMAGE" %}</th>
+            <th>{% trans "NAME & ID" %}</th>
+            <th class="col-expire">{% trans "EXPIRATION" %}</th>
+            <th class="col-status">{% trans "STATUS" %}</th>
+            <th>{% trans "ACTIONS" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for person in targets %}
+          <tr>
+            <td>
+              <img src="{{ person.image.url }}" class="target-img" alt="{{ person.name }}"
+                   onclick="openSnap('{{ person.image.url }}')" style="cursor:zoom-in;">
+            </td>
+            <td>
+              <a href="{% url 'target_detail' person.pk %}" class="target-link">
+                {{ person.name }} {{ person.last_name }}
+              </a>
+              <div style="font-size:.7rem;color:var(--text-muted);margin-top:2px;">
+                ID: {{ person.tazkira_number|default:"N/A" }}
+              </div>
+            </td>
+            <td class="col-expire" style="color:var(--text-muted);font-size:.78rem;">
+              {{ person.expires_at|date:"Y-m-d H:i"|default:"Permanent" }}
+            </td>
+            <td class="col-status"><span class="status-tag">{% trans "WATCHED" %}</span></td>
+            <td>
+              <a href="{% url 'target_detail' person.pk %}" class="btn-view">
+                <i class="fas fa-eye"></i> {% trans "DETAILS" %}
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" style="text-align:center;padding:3rem;color:var(--text-muted);">
+              <i class="fas fa-database" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.2;"></i>
+              {% trans "Database Empty" %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

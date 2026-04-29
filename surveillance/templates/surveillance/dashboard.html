@@ -5,306 +5,319 @@
 
 {% block extra_css %}
 <style>
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: 1fr 1.5fr 1fr;
-        grid-template-rows: 1.5fr 1fr;
-        gap: 15px;
-        max-width: 1600px;
-        margin: auto;
-        height: calc(100vh - 100px);
-    }
+  /* ── Dashboard panels ── */
+  .panel {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .panel:hover { border-color: rgba(78,204,163,.15); }
 
-    .panel {
-        background: #16213e;
-        border-radius: 15px;
-        border: 1px solid #0f3460;
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
+  .panel-header {
+    padding: 10px 15px;
+    background: rgba(0,0,0,.25);
+    font-size: .72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
 
-    .panel-header {
-        padding: 10px 15px;
-        background: rgba(15, 52, 96, 0.8);
-        font-size: 0.75rem;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        border-bottom: 1px solid #0f3460;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+  .log-container { padding: 10px; overflow-y: auto; flex-grow: 1; max-height: 260px; }
 
-    .log-container { padding: 10px; overflow-y: auto; flex-grow: 1; }
+  .alert-item {
+    padding: 9px 11px;
+    border-radius: 7px;
+    margin-bottom: 7px;
+    font-size: .79rem;
+    border-left: 4px solid rgba(255,255,255,.2);
+    animation: slideIn .3s ease;
+    line-height: 1.4;
+  }
 
-    .alert-item {
-        padding: 10px; border-radius: 8px; margin-bottom: 8px;
-        font-size: 0.8rem;
-        border-{% if LANGUAGE_BIDI %}right{% else %}left{% endif %}: 4px solid rgba(255,255,255,0.3);
-        animation: slideIn 0.3s ease;
-    }
+  .match-bg  { background: rgba(15,52,96,.6);  border-left-color: var(--accent); }
+  .fall-bg   { background: rgba(123,17,19,.5); border-left-color: var(--danger); }
+  .wave-bg   { background: rgba(61,61,0,.5);   border-left-color: var(--warn); }
+  .normal-bg { background: rgba(26,37,64,.5);  border-left-color: rgba(255,255,255,.1); }
 
-    .match-bg  { background: #0f3460; border-color: #4ecca3; }
-    .fall-bg   { background: #7b1113; border-color: #ff4d4d; }
-    .wave-bg   { background: #3d3d00; border-color: #f1c40f; }
-    .normal-bg { background: #1a2540; border-color: #4a5568; }
+  .counter-view { justify-content: center; text-align: center; align-items: center; }
+  #counter {
+    font-size: clamp(3.5rem, 8vw, 7rem);
+    font-weight: bold;
+    color: var(--accent);
+    line-height: 1;
+    font-family: var(--font-mono);
+    transition: color .3s;
+  }
+  #label { font-size: .75rem; color: var(--text-muted); margin-top: 10px; letter-spacing: .1em; }
 
-    .counter-view { justify-content: center; text-align: center; }
-    #counter { font-size: 6rem; font-weight: bold; color: #4ecca3; line-height: 1; }
-    #label   { font-size: 0.75rem; color: #95a5a6; margin-top: 10px; }
+  .btn-action {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 90%; margin: 8px auto;
+    background: var(--accent); color: #0a0e1a;
+    border: none; padding: 13px 16px;
+    border-radius: 8px; font-weight: 700;
+    cursor: pointer; text-transform: uppercase;
+    text-decoration: none; transition: all .25s;
+    font-size: .8rem;
+  }
+  .btn-action:hover { background: #5de8b8; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78,204,163,.25); }
 
-    .btn-nav {
-        background: #4ecca3; color: #1a1a2e; border: none;
-        padding: 10px 20px; border-radius: 8px; font-weight: bold;
-        cursor: pointer; text-decoration: none; display: inline-block;
-        font-size: 0.8rem; margin-top: 15px; transition: 0.3s;
-    }
-    .btn-nav:hover { background: #45b791; transform: translateY(-2px); }
+  /* Live dot */
+  .dot { height: 7px; width: 7px; background: var(--accent); border-radius: 50%;
+         display: inline-block; margin-right: 5px; animation: blink 1.2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
 
-    .dot { height: 8px; width: 8px; background-color: #4ecca3; border-radius: 50%;
-           display: inline-block; margin-right: 5px; animation: blink 1s infinite; }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  /* Toast container */
+  #toast-container {
+    position: fixed; top: 70px;
+    {% if LANGUAGE_BIDI %}left: 16px;{% else %}right: 16px;{% endif %}
+    z-index: 9997;
+    display: flex; flex-direction: column; gap: 8px;
+    max-width: 320px;
+    width: calc(100vw - 32px);
+  }
+  .toast {
+    background: var(--card); border: 1px solid var(--border-accent);
+    border-radius: 10px; padding: 12px 16px;
+    font-size: .79rem; color: var(--text);
+    box-shadow: var(--shadow);
+    animation: slideIn .3s ease;
+    cursor: pointer;
+  }
+  .toast .toast-title { font-weight: 700; color: var(--accent); margin-bottom: 3px; }
+  .toast.pass-back  { border-color: var(--warn); }
+  .toast.pass-back .toast-title  { color: var(--warn); }
+  .toast.detection  { border-color: var(--danger); }
+  .toast.detection .toast-title  { color: var(--danger); }
 
-    .btn-action {
-        display: flex; align-items: center; justify-content: center; gap: 10px;
-        width: 80%; margin: 10px auto;
-        background: #4ecca3; color: #1a1a2e; border: none;
-        padding: 15px; border-radius: 8px; font-weight: bold;
-        cursor: pointer; text-transform: uppercase; text-decoration: none; transition: 0.3s;
-    }
-    .btn-action:hover {
-        background: #45b391; transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(78, 204, 163, 0.3);
-    }
+  /* Integrity stats */
+  .integrity-stat { text-align: center; }
+  .integrity-stat .val { color: var(--accent); font-size: 1.1rem; font-weight: 700; font-family: var(--font-mono); }
+  .integrity-stat .lbl { font-size: .6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
 
-    /* Notification toast */
-    #toast-container {
-        position: fixed; top: 20px;
-        {% if LANGUAGE_BIDI %}left: 20px;{% else %}right: 20px;{% endif %}
-        z-index: 9999; display: flex; flex-direction: column; gap: 10px;
-    }
-    .toast {
-        background: #16213e; border: 1px solid #4ecca3; border-radius: 10px;
-        padding: 14px 18px; min-width: 260px; max-width: 340px;
-        font-size: 0.8rem; color: #eee; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        animation: slideIn 0.3s ease;
-        cursor: pointer;
-    }
-    .toast .toast-title { font-weight: bold; color: #4ecca3; margin-bottom: 4px; }
-    .toast.pass-back { border-color: #f1c40f; }
-    .toast.pass-back .toast-title { color: #f1c40f; }
-    .toast.detection { border-color: #ff4d4d; }
-    .toast.detection .toast-title { color: #ff4d4d; }
+  /* ── Dashboard responsive ── */
+  @media (max-width: 1100px) {
+    #dash-sys    { order: 3; }
+    #dash-counter{ order: 1; grid-column: 1 / -1; min-height: 200px; }
+    #dash-id     { order: 2; }
+    #dash-action { order: 4; }
+    #dash-integrity { order: 5; grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 600px) {
+    #toast-container { top: 68px; right: 10px; left: 10px; max-width: none; width: auto; }
+    .panel-header { font-size: .66rem; }
+    .btn-action   { font-size: .75rem; padding: 11px; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Toast container for real-time notifications -->
 <div id="toast-container"></div>
 
 <div class="dashboard-grid">
 
-    <!-- System Control panel -->
-    <div class="panel" style="padding: 20px; text-align: center; justify-content: center;">
-        <div class="panel-header" style="position: absolute; top: 0; width: 100%; left: 0;">
-            <span><span class="dot"></span> {% trans "SYSTEM CONTROL" %}</span>
-        </div>
-
-        <h2 style="font-size: 0.8rem; color: #4ecca3;">{% trans "Surveillance Hub" %}</h2>
-        <p style="font-size: 0.7rem; color: #95a5a6;">
-            {% trans "Database and Subject enrollment has been moved to the Management Portal." %}
-        </p>
-
-        {% if is_admin or user.profile.role == 'supervisor' %}
-            <a href="{% url 'target_management' %}" class="btn-action">
-                <i class="fas fa-list-ul"></i> {% trans "Manage Watchlist" %}
-            </a>
+  <!-- System Control -->
+  <div class="panel" id="dash-sys" style="padding:20px;text-align:center;justify-content:center;">
+    <div class="panel-header" style="position:absolute;top:0;left:0;right:0;">
+      <span><span class="dot"></span> {% trans "SYSTEM CONTROL" %}</span>
+    </div>
+    <div style="margin-top:44px;">
+      <h2 style="font-size:.8rem;color:var(--accent);margin-bottom:6px;">{% trans "Surveillance Hub" %}</h2>
+      <p style="font-size:.72rem;color:var(--text-muted);line-height:1.5;margin-bottom:16px;">
+        {% trans "Database and Subject enrollment has been moved to the Management Portal." %}
+      </p>
+      {% if is_admin or user.profile.role == 'supervisor' %}
+      <a href="{% url 'target_management' %}" class="btn-action">
+        <i class="fas fa-list-ul"></i> {% trans "Manage Watchlist" %}
+      </a>
+      {% endif %}
+      <a href="{% url 'detection_history' %}" class="btn-action"
+         style="background:rgba(15,52,96,.8);color:var(--accent);border:1px solid var(--border-accent);">
+        <i class="fas fa-history"></i> {% trans "Detection History" %}
+      </a>
+      <a href="{% url 'notifications_list' %}" class="btn-action"
+         style="background:rgba(26,37,64,.8);color:var(--warn);border:1px solid rgba(243,156,18,.3);">
+        <i class="fas fa-bell"></i> {% trans "Notifications" %}
+        {% if unread_count %}
+          <span style="background:var(--danger);color:#fff;border-radius:50%;padding:2px 6px;font-size:.68rem;">{{ unread_count }}</span>
         {% endif %}
-
-        <a href="{% url 'detection_history' %}" class="btn-action" style="background:#0f3460; color:#4ecca3; border:1px solid #4ecca3;">
-            <i class="fas fa-history"></i> {% trans "Detection History" %}
-        </a>
-
-        <a href="{% url 'notifications_list' %}" class="btn-action" style="background:#1a2540; color:#f1c40f; border:1px solid #f1c40f;">
-            <i class="fas fa-bell"></i> {% trans "Notifications" %}
-            {% if unread_count %}<span style="background:#ff4d4d;color:#fff;border-radius:50%;padding:2px 6px;font-size:0.7rem;margin-left:4px;">{{ unread_count }}</span>{% endif %}
-        </a>
+      </a>
     </div>
+  </div>
 
-    <!-- Live counter -->
-    <div class="panel counter-view" id="main-view">
-        <div class="panel-header">
-            <span>{% trans "Optical Sensor Feed" %}</span>
-            <span id="sys-status">{% trans "ACTIVE" %}</span>
+  <!-- Live counter -->
+  <div class="panel counter-view" id="dash-counter">
+    <div class="panel-header" style="position:absolute;top:0;left:0;right:0;">
+      <span>{% trans "Optical Sensor Feed" %}</span>
+      <span id="sys-status" style="color:var(--accent);font-size:.68rem;">{% trans "ACTIVE" %}</span>
+    </div>
+    <div style="margin-top:20px;">
+      <div id="counter">00</div>
+      <div id="label">{% trans "Scanning Environment..." %}</div>
+    </div>
+  </div>
+
+  <!-- Identity confirmation -->
+  <div class="panel" id="dash-id">
+    <div class="panel-header" style="color:var(--accent);">
+      <span>{% trans "Identity Confirmation" %}</span>
+    </div>
+    <div class="log-container" id="id-log"></div>
+  </div>
+
+  <!-- Activity alerts -->
+  <div class="panel" id="dash-action">
+    <div class="panel-header" style="color:var(--warn);">
+      <span>{% trans "Activity Alerts" %}</span>
+    </div>
+    <div class="log-container" id="action-log">
+      {% for event in recent_events %}
+        {% if event.action == 'FALL DETECTED' %}
+          <div class="alert-item fall-bg">
+            <strong>{% trans "CRITICAL" %}:</strong> {% trans "FALL DETECTED" %}{% if event.matched_target_name %} — {{ event.matched_target_name }}{% endif %}
+            <br><small style="color:var(--text-muted);">{{ event.timestamp|date:"H:i:s" }}</small>
+          </div>
+        {% elif event.action == 'HAND WAVING' %}
+          <div class="alert-item wave-bg">
+            <strong>{% trans "GREETING" %}:</strong> {% trans "Wave Detected" %}
+            <br><small style="color:var(--text-muted);">{{ event.timestamp|date:"H:i:s" }}</small>
+          </div>
+        {% elif event.matched_target_name %}
+          <div class="alert-item match-bg">
+            <strong>{% trans "CONFIRMED" %}:</strong> {{ event.matched_target_name }}
+            <br><small style="color:var(--text-muted);">{{ event.timestamp|date:"H:i:s" }}</small>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- System Integrity + recent detections -->
+  <div class="panel" id="dash-integrity"
+       style="grid-column:2 / span 2;grid-row:2;padding:0;justify-content:flex-start;">
+    <div class="panel-header">
+      <span>{% trans "System Integrity & Recent Detections" %}</span>
+    </div>
+    <div style="display:flex;gap:0;flex-grow:1;overflow:hidden;flex-wrap:wrap;">
+
+      <!-- Integrity stats -->
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;
+                  gap:16px;padding:20px;min-width:160px;border-right:1px solid var(--border);">
+        <div class="integrity-stat"><div class="val">98%</div><div class="lbl">{% trans "UPTIME" %}</div></div>
+        <div class="integrity-stat"><div class="val">0.4ms</div><div class="lbl">{% trans "LATENCY" %}</div></div>
+        <div class="integrity-stat"><div class="val">SSL</div><div class="lbl">{% trans "ENCRYPTION" %}</div></div>
+      </div>
+
+      <!-- Recent persons -->
+      <div style="flex-grow:1;overflow-y:auto;padding:10px;min-width:200px;">
+        <div style="font-size:.63rem;color:var(--text-muted);margin-bottom:6px;
+                    text-transform:uppercase;letter-spacing:1px;">
+          {% trans "Recently Detected Persons" %}
         </div>
-        <div id="counter">00</div>
-        <div id="label">{% trans "Scanning Environment..." %}</div>
-    </div>
-
-    <!-- Identity confirmation (live) -->
-    <div class="panel">
-        <div class="panel-header" style="color:#4ecca3;"><span>{% trans "Identity Confirmation" %}</span></div>
-        <div class="log-container" id="id-log"></div>
-    </div>
-
-    <!-- Activity alerts (live) -->
-    <div class="panel" style="grid-row: 2;">
-        <div class="panel-header" style="color:#f1c40f;"><span>{% trans "Activity Alerts" %}</span></div>
-        <div class="log-container" id="action-log">
-            <!-- Pre-load recent events from DB on page load -->
-            {% for event in recent_events %}
-                {% if event.action == 'FALL DETECTED' %}
-                    <div class="alert-item fall-bg">
-                        <strong>{% trans "CRITICAL" %}:</strong> {% trans "FALL DETECTED" %}{% if event.matched_target_name %} — {{ event.matched_target_name }}{% endif %}
-                        <br><small>{{ event.timestamp|date:"H:i:s" }}</small>
-                    </div>
-                {% elif event.action == 'HAND WAVING' %}
-                    <div class="alert-item wave-bg">
-                        <strong>{% trans "GREETING" %}:</strong> {% trans "Wave Detected" %}
-                        <br><small>{{ event.timestamp|date:"H:i:s" }}</small>
-                    </div>
-                {% elif event.matched_target_name %}
-                    <div class="alert-item match-bg">
-                        <strong>{% trans "CONFIRMED" %}:</strong> {{ event.matched_target_name }}
-                        <br><small>{{ event.timestamp|date:"H:i:s" }}</small>
-                    </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- System integrity + recent detected persons -->
-    <div class="panel" style="grid-column: 2 / span 2; grid-row: 2; padding: 0; justify-content: flex-start;">
-        <div class="panel-header"><span>{% trans "System Integrity & Recent Detections" %}</span></div>
-
-        <div style="display: flex; gap: 0; flex-grow: 1; overflow: hidden;">
-            <!-- Integrity stats -->
-            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; padding: 20px; min-width: 200px; border-right: 1px solid #0f3460;">
-                <div style="text-align: center;">
-                    <div style="color: #4ecca3; font-size: 1.2rem; font-weight: bold;">98%</div>
-                    <div style="font-size: 0.6rem; color: #95a5a6;">{% trans "UPTIME" %}</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="color: #4ecca3; font-size: 1.2rem; font-weight: bold;">0.4ms</div>
-                    <div style="font-size: 0.6rem; color: #95a5a6;">{% trans "LATENCY" %}</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="color: #4ecca3; font-size: 1.2rem; font-weight: bold;">SSL/WSS</div>
-                    <div style="font-size: 0.6rem; color: #95a5a6;">{% trans "ENCRYPTION" %}</div>
-                </div>
+        {% for event in recent_events %}
+          {% if event.matched_target_name %}
+            <div class="alert-item match-bg" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <span>
+                <strong>{{ event.matched_target_name }}</strong><br>
+                <small style="color:var(--text-muted);">{{ event.action }} · {{ event.person_count }} in frame</small>
+              </span>
+              <small style="color:var(--accent);white-space:nowrap;">{{ event.timestamp|date:"d M H:i" }}</small>
             </div>
-
-            <!-- Recent matched persons list -->
-            <div style="flex-grow: 1; overflow-y: auto; padding: 10px;">
-                <div style="font-size: 0.65rem; color: #95a5a6; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;">
-                    {% trans "Recently Detected Persons" %}
-                </div>
-                {% for event in recent_events %}
-                    {% if event.matched_target_name %}
-                        <div class="alert-item match-bg" style="display:flex; justify-content:space-between; align-items:center;">
-                            <span>
-                                <strong>{{ event.matched_target_name }}</strong><br>
-                                <small style="color:#95a5a6;">{{ event.action }} · {{ event.person_count }} in frame</small>
-                            </span>
-                            <small style="color:#4ecca3; white-space:nowrap; margin-left:10px;">{{ event.timestamp|date:"d M H:i" }}</small>
-                        </div>
-                    {% endif %}
-                {% empty %}
-                    <p style="font-size:0.75rem; color:#4a5568; text-align:center; margin-top:20px;">{% trans "No confirmed identities yet." %}</p>
-                {% endfor %}
-            </div>
-        </div>
+          {% endif %}
+        {% empty %}
+          <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:20px;">
+            {% trans "No confirmed identities yet." %}
+          </p>
+        {% endfor %}
+      </div>
     </div>
+  </div>
 
-</div>
+</div><!-- /dashboard-grid -->
 
 <script>
-    const socket = new WebSocket('ws://' + window.location.host + '/ws/pose/');
+(function() {
+  const proto  = location.protocol === 'https:' ? 'wss' : 'ws';
+  const socket = new WebSocket(`${proto}://${location.host}/ws/pose/`);
 
-    const idLog      = document.getElementById('id-log');
-    const actionLog  = document.getElementById('action-log');
-    const counterDisplay = document.getElementById('counter');
-    const labelDisplay   = document.getElementById('label');
-    const mainView   = document.getElementById('main-view');
-    const toastContainer = document.getElementById('toast-container');
+  const idLog      = document.getElementById('id-log');
+  const actionLog  = document.getElementById('action-log');
+  const counterEl  = document.getElementById('counter');
+  const labelEl    = document.getElementById('label');
+  const mainView   = document.getElementById('dash-counter');
+  const toastCon   = document.getElementById('toast-container');
 
-    socket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
+  socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
 
-        // --- Live detection events ---
-        if (data.type === "TARGET_MATCH") {
-            createLogItem(idLog, "{% trans 'CONFIRMED' %}", data.name, "match-bg");
-        }
-
-        if (data.type === "STAT_UPDATE") {
-            counterDisplay.innerText = data.count.toString().padStart(2, '0');
-            labelDisplay.innerText   = data.message;
-
-            if (data.action === "FALL DETECTED") {
-                createLogItem(actionLog, "{% trans 'CRITICAL' %}", "{% trans 'FALL DETECTED' %}", "fall-bg");
-                triggerFlash("#e94560");
-            } else if (data.action === "HAND WAVING") {
-                createLogItem(actionLog, "{% trans 'GREETING' %}", "{% trans 'Wave Detected' %}", "wave-bg");
-            }
-
-            counterDisplay.style.color = (data.count === 0) ? "#95a5a6" : "#4ecca3";
-        }
-
-        // --- In-app notifications pushed from the server ---
-        if (data.type === "NOTIFICATION") {
-            showToast(data);
-
-            // Mark as read via WebSocket
-            socket.send(JSON.stringify({
-                type: "MARK_READ",
-                notification_id: data.notification_id
-            }));
-        }
-    };
-
-    function createLogItem(container, title, message, className) {
-        const item = document.createElement('div');
-        item.className = `alert-item ${className}`;
-        item.innerHTML = `<strong>${title}:</strong> ${message}<br><small>${new Date().toLocaleTimeString()}</small>`;
-        container.prepend(item);
-        if (container.children.length > 10) container.removeChild(container.lastChild);
+    if (data.type === 'TARGET_MATCH') {
+      createLogItem(idLog, "{% trans 'CONFIRMED' %}", data.name, 'match-bg');
     }
 
-    function triggerFlash(color) {
-        mainView.style.boxShadow = `inset 0 0 40px ${color}`;
-        setTimeout(() => mainView.style.boxShadow = "none", 800);
+    if (data.type === 'STAT_UPDATE') {
+      counterEl.innerText = data.count.toString().padStart(2, '0');
+      labelEl.innerText   = data.message;
+      counterEl.style.color = data.count === 0 ? 'var(--text-muted)' : 'var(--accent)';
+      if (data.action === 'FALL DETECTED') {
+        createLogItem(actionLog, "{% trans 'CRITICAL' %}", "{% trans 'FALL DETECTED' %}", 'fall-bg');
+        triggerFlash('var(--danger)');
+      } else if (data.action === 'HAND WAVING') {
+        createLogItem(actionLog, "{% trans 'GREETING' %}", "{% trans 'Wave Detected' %}", 'wave-bg');
+      }
     }
 
-    function showToast(data) {
-        const typeClass = {
-            'assignment': '',
-            'pass_back': 'pass-back',
-            'detection': 'detection',
-        }[data.notification_type] || '';
-
-        const toast = document.createElement('div');
-        toast.className = `toast ${typeClass}`;
-        toast.innerHTML = `
-            <div class="toast-title">${data.title}</div>
-            <div>${data.message.substring(0, 100)}${data.message.length > 100 ? '…' : ''}</div>
-            <small style="color:#95a5a6;">${data.created_at || ''}</small>
-        `;
-        toast.onclick = () => toast.remove();
-        toastContainer.prepend(toast);
-
-        // Auto-dismiss after 8 seconds
-        setTimeout(() => toast.remove(), 8000);
+    if (data.type === 'NOTIFICATION') {
+      showToast(data);
+      socket.send(JSON.stringify({ type: 'MARK_READ', notification_id: data.notification_id }));
     }
+  };
 
-    socket.onclose = () => {
-        document.getElementById('sys-status').innerText = "{% trans 'DISCONNECTED' %}";
-        counterDisplay.style.color = "#e94560";
-    };
+  function createLogItem(container, title, message, className) {
+    const item = document.createElement('div');
+    item.className = `alert-item ${className}`;
+    item.innerHTML = `<strong>${title}:</strong> ${message}<br>
+      <small style="color:var(--text-muted)">${new Date().toLocaleTimeString()}</small>`;
+    container.prepend(item);
+    if (container.children.length > 12) container.removeChild(container.lastChild);
+  }
+
+  function triggerFlash(color) {
+    mainView.style.boxShadow = `inset 0 0 60px ${color}44`;
+    setTimeout(() => mainView.style.boxShadow = 'none', 900);
+  }
+
+  function showToast(data) {
+    const typeClass = { assignment:'', pass_back:'pass-back', detection:'detection' }[data.notification_type] || '';
+    const toast = document.createElement('div');
+    toast.className = `toast ${typeClass}`;
+    toast.innerHTML = `
+      <div class="toast-title">${data.title}</div>
+      <div>${(data.message || '').substring(0, 100)}${(data.message || '').length > 100 ? '…' : ''}</div>
+      <small style="color:var(--text-muted)">${data.created_at || ''}</small>
+    `;
+    toast.onclick = () => toast.remove();
+    toastCon.prepend(toast);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 8000);
+  }
+
+  socket.onclose = () => {
+    document.getElementById('sys-status').innerText = "{% trans 'DISCONNECTED' %}";
+    document.getElementById('sys-status').style.color = 'var(--danger)';
+    counterEl.style.color = 'var(--danger)';
+  };
+})();
 </script>
 {% endblock %}

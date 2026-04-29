@@ -1,6 +1,6 @@
 /* ============================================================
-   BUTTERFLY SURVEILLANCE SYSTEM — Main JavaScript
-   Handles: navbar, toasts, WS notifications, photo/webcam/crop
+   BUTTERFLY SURVEILLANCE SYSTEM — Main JavaScript v2
+   Handles: navbar, toasts, WS, photo/webcam/crop, mobile UX
    ============================================================ */
 
 'use strict';
@@ -9,13 +9,30 @@
 (function initNav() {
   const toggle = document.getElementById('b-nav-toggle');
   const links  = document.getElementById('b-nav-links');
-  if (toggle && links) {
-    toggle.addEventListener('click', () => links.classList.toggle('open'));
-    document.addEventListener('click', e => {
-      if (!toggle.contains(e.target) && !links.contains(e.target))
-        links.classList.remove('open');
+  if (!toggle || !links) return;
+
+  toggle.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = links.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open);
+    toggle.innerHTML = open ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+  });
+
+  document.addEventListener('click', e => {
+    if (links.classList.contains('open') && !links.contains(e.target) && !toggle.contains(e.target)) {
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.innerHTML = '<i class="fas fa-bars"></i>';
+    }
+  });
+
+  // Close on nav link click (mobile)
+  links.querySelectorAll('.b-nav__link').forEach(link => {
+    link.addEventListener('click', () => {
+      links.classList.remove('open');
+      toggle.innerHTML = '<i class="fas fa-bars"></i>';
     });
-  }
+  });
 })();
 
 /* ── Toast system ──────────────────────────────────────────── */
@@ -32,15 +49,15 @@ const Toasts = (function() {
   }
 
   const ICONS = {
-    success: '<i class="fas fa-check-circle" style="color:#2ecc71"></i>',
-    error:   '<i class="fas fa-times-circle" style="color:#e74c3c"></i>',
-    warning: '<i class="fas fa-exclamation-triangle" style="color:#f39c12"></i>',
-    info:    '<i class="fas fa-info-circle" style="color:#3498db"></i>',
-    assignment: '<i class="fas fa-tasks" style="color:#4ecca3"></i>',
-    detection:  '<i class="fas fa-eye" style="color:#e74c3c"></i>',
-    approved:   '<i class="fas fa-check-double" style="color:#2ecc71"></i>',
-    rejected:   '<i class="fas fa-ban" style="color:#e74c3c"></i>',
-    pass_back:  '<i class="fas fa-undo" style="color:#f39c12"></i>',
+    success:      '<i class="fas fa-check-circle" style="color:#4ecca3"></i>',
+    error:        '<i class="fas fa-times-circle" style="color:#e94560"></i>',
+    warning:      '<i class="fas fa-exclamation-triangle" style="color:#f39c12"></i>',
+    info:         '<i class="fas fa-info-circle" style="color:#3498db"></i>',
+    assignment:   '<i class="fas fa-tasks" style="color:#4ecca3"></i>',
+    detection:    '<i class="fas fa-eye" style="color:#e94560"></i>',
+    approved:     '<i class="fas fa-check-double" style="color:#2ecc71"></i>',
+    rejected:     '<i class="fas fa-ban" style="color:#e94560"></i>',
+    pass_back:    '<i class="fas fa-undo" style="color:#f39c12"></i>',
     verification: '<i class="fas fa-shield-alt" style="color:#3498db"></i>',
   };
 
@@ -50,14 +67,15 @@ const Toasts = (function() {
     t.className = `b-toast b-toast--${type}`;
     t.innerHTML = `
       <div class="b-toast__icon">${ICONS[type] || ICONS.info}</div>
-      <div style="flex:1">
+      <div style="flex:1;min-width:0;">
         <div class="b-toast__title">${title}</div>
         ${message ? `<div class="b-toast__msg">${message}</div>` : ''}
       </div>
-      <button class="b-toast__close" onclick="this.closest('.b-toast').remove()">✕</button>
+      <button class="b-toast__close" aria-label="Close">✕</button>
     `;
+    t.querySelector('.b-toast__close').addEventListener('click', () => t.remove());
     c.appendChild(t);
-    if (duration > 0) setTimeout(() => t.remove(), duration);
+    if (duration > 0) setTimeout(() => { if (t.parentNode) t.remove(); }, duration);
     return t;
   }
 
@@ -69,7 +87,7 @@ const Toasts = (function() {
   document.querySelectorAll('[data-django-message]').forEach(el => {
     const type = el.dataset.messageType || 'info';
     const map  = { success:'success', error:'error', warning:'warning', info:'info', debug:'info' };
-    Toasts.show(map[type] || 'info', el.dataset.messageTitle || '', el.textContent.trim());
+    Toasts.show(map[type] || 'info', el.dataset.messageTitle || 'Notice', el.textContent.trim());
     el.remove();
   });
 })();
@@ -84,18 +102,19 @@ function updateNotifBadge(count) {
 
 /* ── WebSocket (surveillance channel) ─────────────────────── */
 (function initWS() {
-  const proto   = location.protocol === 'https:' ? 'wss' : 'ws';
-  const wsUrl   = `${proto}://${location.host}/ws/pose/`;
-  let   ws      = null;
-  let   retries = 0;
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const wsUrl = `${proto}://${location.host}/ws/pose/`;
+  let ws      = null;
+  let retries = 0;
+  let pingTimer = null;
 
   function connect() {
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
       retries = 0;
-      console.log('[BF] WS connected');
       ws.send(JSON.stringify({ type: 'PING' }));
+      pingTimer = setInterval(() => ws.readyState === 1 && ws.send(JSON.stringify({ type: 'PING' })), 25000);
     };
 
     ws.onmessage = ({ data }) => {
@@ -105,8 +124,8 @@ function updateNotifBadge(count) {
     };
 
     ws.onclose = () => {
+      clearInterval(pingTimer);
       const delay = Math.min(1000 * 2 ** retries++, 30000);
-      console.log(`[BF] WS closed — retry in ${delay}ms`);
       setTimeout(connect, delay);
     };
 
@@ -115,59 +134,40 @@ function updateNotifBadge(count) {
 
   function handleWS(msg) {
     switch (msg.type) {
-
       case 'NOTIFICATION': {
-        const type = msg.notification_type || 'info';
         const badge = document.querySelector('[data-notif-badge]');
-        if (badge) {
-          const cur = parseInt(badge.getAttribute('data-count') || '0', 10);
-          updateNotifBadge(cur + 1);
-        }
-        Toasts.show(type, msg.title, msg.message);
+        if (badge) updateNotifBadge((parseInt(badge.getAttribute('data-count') || '0', 10)) + 1);
+        Toasts.show(msg.notification_type || 'info', msg.title, msg.message);
         break;
       }
-
-      case 'INITIAL_NOTIFICATIONS': {
+      case 'INITIAL_NOTIFICATIONS':
         (msg.notifications || []).forEach(n =>
           Toasts.show(n.notification_type || 'info', n.title, n.message, 8000)
         );
         break;
-      }
-
       case 'TARGET_MATCH':
         Toasts.show('detection', `TARGET MATCH: ${msg.name}`, `Camera: ${msg.camera}`, 10000);
         break;
-
       case 'ALARM':
         Toasts.show('warning', `ALARM: ${msg.action}`, `Camera: ${msg.camera}`, 8000);
         break;
-
       case 'STAT_UPDATE':
-        document.querySelectorAll(`[data-stat-camera="${msg.camera_id}"]`).forEach(el => {
-          el.textContent = msg.count;
-        });
+        document.querySelectorAll(`[data-stat-camera="${msg.camera_id}"]`).forEach(el => { el.textContent = msg.count; });
         break;
-
       case 'CAMERA_STATUS':
         document.querySelectorAll(`[data-cam-status="${msg.camera_id}"]`).forEach(el => {
           el.textContent = msg.status;
           el.className   = `b-badge b-badge--${msg.status === 'online' ? 'green' : 'gray'}`;
         });
         break;
-
-      case 'PONG':
-        break;
     }
   }
 
-  // Only connect if user is logged in (check for nav presence)
   if (document.querySelector('.b-nav')) connect();
-
-  // Expose for other scripts
   window.BFSocket = { send: d => ws && ws.readyState === 1 && ws.send(JSON.stringify(d)) };
 })();
 
-/* ── Live notification count polling (fallback) ────────────── */
+/* ── Notification count polling (fallback) ─────────────────── */
 (function pollNotifCount() {
   const badge = document.querySelector('[data-notif-badge]');
   if (!badge) return;
@@ -182,72 +182,50 @@ function updateNotifBadge(count) {
   setInterval(poll, 30000);
 })();
 
-/* ══════════════════════════════════════════════════════════════
-   PHOTO UPLOADER WITH WEBCAM CAPTURE + CROP
-   ══════════════════════════════════════════════════════════════
-
-   Usage in HTML:
-     <div class="b-photo-uploader" data-uploader data-field="id_image">
-       <img class="b-photo-preview" src="/static/img/placeholder.png" alt="photo">
-       ...buttons rendered by macro in base.html
-     </div>
-*/
-
+/* ═══════════════════════════════════════════════════════════
+   PHOTO UPLOADER WITH WEBCAM + CROP
+   ═══════════════════════════════════════════════════════════ */
 (function initPhotoUploaders() {
-
   document.querySelectorAll('[data-uploader]').forEach(uploader => {
-    const fieldId  = uploader.dataset.field;
-    const input    = document.getElementById(fieldId);
-    const preview  = uploader.querySelector('.b-photo-preview');
+    const fieldId = uploader.dataset.field;
+    const input   = document.getElementById(fieldId);
+    const preview = uploader.querySelector('.b-photo-preview');
     if (!input || !preview) return;
 
-    /* ── File pick ── */
+    /* File pick */
     uploader.querySelector('[data-action="pick"]')?.addEventListener('click', () => input.click());
-
     input.addEventListener('change', () => {
       const file = input.files[0];
-      if (file) {
-        const url = URL.createObjectURL(file);
-        preview.src = url;
-      }
+      if (file) preview.src = URL.createObjectURL(file);
     });
 
-    /* ── Webcam capture ── */
-    const camBtn    = uploader.querySelector('[data-action="webcam"]');
-    const cropBtn   = uploader.querySelector('[data-action="crop"]');
-    const cancelBtn = uploader.querySelector('[data-action="cancel"]');
-    const useBtn    = uploader.querySelector('[data-action="use"]');
-    const snapBtn   = uploader.querySelector('[data-action="snap"]');
-    const recropBtn = uploader.querySelector('[data-action="recrop"]');
-
-    // Elements inside the modal bound to THIS uploader
-    const modalId   = uploader.dataset.modal;
-    const modal     = document.getElementById(modalId);
+    const modalId = uploader.dataset.modal;
+    const modal   = document.getElementById(modalId);
     if (!modal) return;
 
-    const video     = modal.querySelector('.b-cam-video');
-    const canvas    = modal.querySelector('.b-cam-canvas');
-    const cropWrap  = modal.querySelector('.b-cam-cropper-wrap');
-    const cropImg   = modal.querySelector('.b-cam-cropper-img');
-    const snapBtnM  = modal.querySelector('[data-modal-snap]');
-    const useBtnM   = modal.querySelector('[data-modal-use]');
-    const cancelM   = modal.querySelector('[data-modal-cancel]');
+    const video    = modal.querySelector('.b-cam-video');
+    const canvas   = modal.querySelector('.b-cam-canvas');
+    const cropWrap = modal.querySelector('.b-cam-cropper-wrap');
+    const cropImg  = modal.querySelector('.b-cam-cropper-img');
+    const snapBtnM = modal.querySelector('[data-modal-snap]');
+    const useBtnM  = modal.querySelector('[data-modal-use]');
+    const cancelM  = modal.querySelector('[data-modal-cancel]');
 
-    let stream      = null;
+    let stream = null;
     let capturedDataURL = null;
-    let cropRect    = null;
+    let cropRect = null;
 
     function closeModal() {
       modal.classList.remove('open');
       if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
       video.srcObject = null;
       cropWrap.style.display = 'none';
-      video.style.display   = 'block';
-      snapBtnM && (snapBtnM.style.display = 'inline-flex');
-      useBtnM  && (useBtnM.style.display  = 'none');
+      video.style.display    = 'block';
+      if (snapBtnM) snapBtnM.style.display = 'inline-flex';
+      if (useBtnM)  useBtnM.style.display  = 'none';
     }
 
-    camBtn?.addEventListener('click', async () => {
+    uploader.querySelector('[data-action="webcam"]')?.addEventListener('click', async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
@@ -266,54 +244,43 @@ function updateNotifBadge(count) {
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
     snapBtnM?.addEventListener('click', () => {
-      // Draw current frame to canvas
       canvas.width  = video.videoWidth  || 640;
       canvas.height = video.videoHeight || 480;
       canvas.getContext('2d').drawImage(video, 0, 0);
       capturedDataURL = canvas.toDataURL('image/jpeg', .92);
-
-      // Stop video, show crop UI
       if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-      video.style.display   = 'none';
+      video.style.display    = 'none';
       snapBtnM.style.display = 'none';
       cropWrap.style.display = 'block';
       cropImg.src = capturedDataURL;
-
-      useBtnM && (useBtnM.style.display = 'inline-flex');
-
-      // Init crop interaction
+      if (useBtnM) useBtnM.style.display = 'inline-flex';
       initCrop(cropWrap, cropImg);
     });
 
     useBtnM?.addEventListener('click', () => {
       if (!capturedDataURL) return;
-
-      // If a crop rect was drawn, slice it
-      let finalDataURL = capturedDataURL;
       if (cropRect) {
-        const tmpCanvas = document.createElement('canvas');
-        const img       = new Image();
+        const img = new Image();
         img.onload = () => {
           const scaleX = img.naturalWidth  / cropImg.clientWidth;
           const scaleY = img.naturalHeight / cropImg.clientHeight;
-          const w = cropRect.w * scaleX;
-          const h = cropRect.h * scaleY;
-          const x = cropRect.x * scaleX;
-          const y = cropRect.y * scaleY;
-          tmpCanvas.width  = w;
-          tmpCanvas.height = h;
-          tmpCanvas.getContext('2d').drawImage(img, x, y, w, h, 0, 0, w, h);
-          finalDataURL = tmpCanvas.toDataURL('image/jpeg', .92);
-          applyPhoto(finalDataURL);
+          const tmpCanvas = document.createElement('canvas');
+          tmpCanvas.width  = cropRect.w * scaleX;
+          tmpCanvas.height = cropRect.h * scaleY;
+          tmpCanvas.getContext('2d').drawImage(img,
+            cropRect.x * scaleX, cropRect.y * scaleY,
+            cropRect.w * scaleX, cropRect.h * scaleY,
+            0, 0, tmpCanvas.width, tmpCanvas.height
+          );
+          applyPhoto(tmpCanvas.toDataURL('image/jpeg', .92));
         };
         img.src = capturedDataURL;
       } else {
-        applyPhoto(finalDataURL);
+        applyPhoto(capturedDataURL);
       }
     });
 
     function applyPhoto(dataURL) {
-      // Convert base64 → File and assign to input
       fetch(dataURL)
         .then(r => r.blob())
         .then(blob => {
@@ -322,14 +289,12 @@ function updateNotifBadge(count) {
           dt.items.add(file);
           input.files = dt.files;
           preview.src = dataURL;
-          Toasts.show('success', 'Photo captured', 'Image ready — remember to save the form.', 4000);
+          Toasts.show('success', 'Photo captured', 'Image ready — save the form to apply.', 4000);
           closeModal();
         });
     }
 
-    /* ── Crop interaction ── */
     function initCrop(wrap, img) {
-      // Remove old overlay
       wrap.querySelector('.b-crop-overlay')?.remove();
       wrap.querySelector('.b-crop-box')?.remove();
 
@@ -341,52 +306,67 @@ function updateNotifBadge(count) {
       box.className = 'b-crop-box';
       wrap.appendChild(box);
 
-      let start = null;
-      let dragging = false;
+      let start = null, dragging = false;
 
-      overlay.addEventListener('mousedown', e => {
-        const rect = img.getBoundingClientRect();
-        start = {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
+      function getPos(e, rect) {
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: Math.min(Math.max(clientX - rect.left, 0), rect.width),
+          y: Math.min(Math.max(clientY - rect.top,  0), rect.height),
         };
-        dragging = true;
-        cropRect  = null;
-        box.style.display = 'none';
-      });
+      }
 
-      document.addEventListener('mousemove', e => {
-        if (!dragging || !start) return;
+      function startCrop(e) {
+        e.preventDefault();
         const rect = img.getBoundingClientRect();
-        const cx   = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
-        const cy   = Math.min(Math.max(e.clientY - rect.top,  0), rect.height);
-        const x = Math.min(start.x, cx);
-        const y = Math.min(start.y, cy);
-        const w = Math.abs(cx - start.x);
-        const h = Math.abs(cy - start.y);
+        const pos  = getPos(e, rect);
+        start = pos;
+        dragging = true;
+        cropRect = null;
+        box.style.display = 'none';
+      }
+
+      function moveCrop(e) {
+        if (!dragging || !start) return;
+        e.preventDefault();
+        const rect = img.getBoundingClientRect();
+        const pos  = getPos(e, rect);
+        const x = Math.min(start.x, pos.x);
+        const y = Math.min(start.y, pos.y);
+        const w = Math.abs(pos.x - start.x);
+        const h = Math.abs(pos.y - start.y);
         box.style.left   = x + 'px';
         box.style.top    = y + 'px';
         box.style.width  = w + 'px';
         box.style.height = h + 'px';
         box.style.display = w > 10 && h > 10 ? 'block' : 'none';
-      });
+      }
 
-      document.addEventListener('mouseup', e => {
+      function endCrop(e) {
         if (!dragging) return;
         dragging = false;
         if (!start) return;
         const rect = img.getBoundingClientRect();
-        const cx   = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
-        const cy   = Math.min(Math.max(e.clientY - rect.top,  0), rect.height);
-        const x = Math.min(start.x, cx);
-        const y = Math.min(start.y, cy);
+        const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        const cx = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+        const cy = Math.min(Math.max(clientY - rect.top,  0), rect.height);
         const w = Math.abs(cx - start.x);
         const h = Math.abs(cy - start.y);
-        if (w > 10 && h > 10) {
-          cropRect = { x, y, w, h };
-        }
+        if (w > 10 && h > 10) cropRect = { x: Math.min(start.x, cx), y: Math.min(start.y, cy), w, h };
         start = null;
-      });
+      }
+
+      /* Mouse events */
+      overlay.addEventListener('mousedown', startCrop);
+      document.addEventListener('mousemove', moveCrop);
+      document.addEventListener('mouseup',   endCrop);
+
+      /* Touch events for mobile */
+      overlay.addEventListener('touchstart', startCrop, { passive: false });
+      document.addEventListener('touchmove',  moveCrop, { passive: false });
+      document.addEventListener('touchend',   endCrop);
     }
   });
 })();
@@ -403,7 +383,7 @@ function bfAcknowledge(pk, csrfToken, cardEl) {
       cardEl.classList.remove('status-pending');
       cardEl.classList.add('status-acknowledged');
       cardEl.querySelector('[data-ack-btn]')?.remove();
-      const badge = cardEl.querySelector('.b-badge');
+      const badge = cardEl.querySelector('.b-badge[class*="status"]');
       if (badge) { badge.textContent = 'Acknowledged'; badge.className = 'b-badge b-status--acknowledged'; }
       Toasts.show('success', 'Acknowledged', 'Assignment marked as acknowledged.');
     }
@@ -424,3 +404,9 @@ document.getElementById('snapModal')?.addEventListener('click', function() {
 
 /* ── Confirm dialogs ───────────────────────────────────────── */
 function bfConfirm(msg) { return confirm(msg); }
+
+/* ── Print helper ──────────────────────────────────────────── */
+function printPage() {
+  document.body.setAttribute('data-print-time', new Date().toLocaleString());
+  window.print();
+}

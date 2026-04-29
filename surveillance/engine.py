@@ -313,27 +313,42 @@ class CameraThread(threading.Thread):
     def analyze_pose(self, keypoints_data):
         if keypoints_data is None or len(keypoints_data.xy) == 0:
             return "Normal"
+        
         try:
-            kp   = keypoints_data.xy[0].cpu().numpy()
-            conf = keypoints_data.conf[0].cpu().numpy()
+            # Get coordinates and confidence scores
+            kp = keypoints_data.xy[0].cpu().numpy()   # [x, y] for 17 points
+            conf = keypoints_data.conf[0].cpu().numpy() # Confidence for 17 points
 
-            # HAND WAVING
-            if any(conf[1:3] > 0.5):
-                eye_y = np.mean([kp[i][1] for i in [1, 2] if conf[i] > 0.5])
-                if (conf[9]  > 0.5 and kp[9][1]  < (eye_y - 10)) or \
-                   (conf[10] > 0.5 and kp[10][1] < (eye_y - 10)):
+            # Indices: 0:Nose, 1:L-Eye, 2:R-Eye, 9:L-Wrist, 10:R-Wrist, 11:L-Hip, 12:R-Hip
+            
+            # --- HAND WAVING CHECK ---
+            # Calculate a reliable head-level (using nose or eyes)
+            if conf[0] > 0.5:
+                head_y = kp[0][1]
+                
+                # Check Left Wrist (9) OR Right Wrist (10)
+                left_hand_up = conf[9] > 0.5 and kp[9][1] < head_y
+                right_hand_up = conf[10] > 0.5 and kp[10][1] < head_y
+
+                if left_hand_up or right_hand_up:
                     return "HAND WAVING"
 
-            # FALL DETECTED
+            # --- FALL DETECTION CHECK ---
+            # A fall is often detected when the head (0) is below the hip level (11/12)
+            # OR when the distance between shoulders and hips becomes horizontal.
             if conf[0] > 0.5 and (conf[11] > 0.5 or conf[12] > 0.5):
+                # Average hip height
                 hip_y = np.mean([kp[i][1] for i in [11, 12] if conf[i] > 0.5])
-                if kp[0][1] > (hip_y - 40):
+                
+                # If nose is significantly lower than hips, it's a fall
+                # (Remember: higher Y value means lower on the screen)
+                if kp[0][1] > hip_y:
                     return "FALL DETECTED"
 
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Pose Analysis Error: {e}")
+            
         return "Normal"
-
     def refresh_targets(self):
         try:
             from surveillance.models import TargetPerson, TargetAssignment
@@ -491,3 +506,4 @@ def probe_camera_index(idx: int, timeout: float = 3.0) -> bool:
     threading.Thread(target=_try, daemon=True).start()
     ev.wait(timeout=timeout)
     return result[0]
+

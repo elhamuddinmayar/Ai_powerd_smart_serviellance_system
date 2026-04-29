@@ -1,6 +1,1715 @@
-1:email services checking ,and email login feature
-2:Tapping camera starting and closing not working sometime 
-3:real time notification is not exits using signals 
-4:Turn templates into responsive Desings 
-5: ERD,Usecase and other neccessory digram has to be plabe.
-6:the pdf printing tools has to be solved 
+import os
+import io
+from datetime import timedelta
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import User, Group
+from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail
+from django.core.paginator import Paginator
+from django.conf import settings
+from django.db import models
+from django.http import JsonResponse, HttpResponse, Http404
+from django.shortcuts import redirect, render, get_object_or_404
+from django.utils import timezone
+from django.utils.translation import gettext as _
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+# ReportLab PDF
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage, HRFlowable
+)
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+
+from .forms import UserRegistrationForm, LoginForm, TargetPersonForm, UserUpdateForm
+from .models import (
+    TargetPerson, SecurityProfile, DetectionEvent,
+    TargetAssignment, Notification
+)
+
+
+#   Role helpers 
+
+def is_admin(user):
+    if not user.is_authenticated:
+        return False
+    return user.is_superuser or (
+        hasattr(user, 'profile') and user.profile.role == 'admin'
+    )
+
+
+def is_privileged_staff(user):
+    return user.is_authenticated and (
+        user.is_superuser or (
+            hasattr(user, 'profile') and user.profile.role in ['admin', 'supervisor']
+        )
+    )
+
+
+def is_operator(user):
+    return user.is_authenticated and (
+        hasattr(user, 'profile') and user.profile.role == 'operator'
+    )
+
+
+# ── Notification push ─────────────────────────────────────────────────────────
+
+def _push_notification(recipient, notification_type, title, message, assignment=None, event=None):
+    #we are creating object in database
+    notif = Notification.objects.create(
+        recipient=recipient,
+        notification_type=notification_type,
+        title=title,
+        message=message,
+        related_assignment=assignment,
+        related_event=event,
+    )
+    #for live update to push notifiaction we have to work in channel
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"user_{recipient.id}",
+        {
+            "type":              "send_notification",
+            "notification_id":   notif.id,
+            "notification_type": notification_type,
+            "title":             title,
+            "message":           message,
+            "created_at":        notif.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    )
+    #if someone was out of system the operator can send email to him
+    if recipient.email:
+        try:
+            send_mail(
+                subject=f"[Butterfly] {title}",
+                message=message,
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@butterfly.local'),
+                recipient_list=[recipient.email],
+                fail_silently=True,
+            )
+        except Exception as e:
+            print(f"[Notification] Email error: {e}")
+
+    return notif
+
+
+# ── Core pages ────────────────────────────────────────────────────────────────
+
+@login_required
+def dashboard(request):
+    now = timezone.now()
+    user = request.user
+
+    targets = TargetPerson.objects.filter(
+        models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=now)
+    )
+
+    # Scope recent events by role
+    events_qs = DetectionEvent.objects.select_related(
+        'matched_target', 'camera'
+    ).order_by('-timestamp')
+
+    if is_admin(user):
+        recent_events = events_qs[:20]
+    elif hasattr(user, 'profile') and user.profile.role == 'supervisor':
+        recent_events = events_qs.filter(
+            matched_target__isnull=False,
+            matched_target__uploaded_by=user
+        )[:20]
+    elif hasattr(user, 'profile') and user.profile.role == 'operator':
+        recent_events = events_qs.filter(
+            related_assignment__assigned_to=user
+        )[:20]
+    else:
+        recent_events = events_qs.none()
+
+    return render(request, 'surveillance/dashboard.html', {
+        'targets':       targets,
+        'is_admin':      is_admin(user),
+        'recent_events': recent_events,
+    })
+
+@login_required
+def home(request):
+    unread_count = Notification.objects.filter(
+        recipient=request.user, is_read=False
+    ).count()
+    return render(request, 'surveillance/home.html', {
+        'is_admin':    is_admin(request.user),
+        'unread_count': unread_count,
+    })
+
+
+# ── Target management — scoped by role ───────────────────────────────────────
+
+@login_required
+@user_passes_test(is_privileged_staff, login_url='home')
+def target_management(request):
+    user    = request.user
+    base_qs = TargetPerson.objects.all().order_by('-id')
+    targets = base_qs if is_admin(user) else base_qs.filter(uploaded_by=user)
+
+    return render(request, 'surveillance/target_management.html', {
+        'targets':  targets,
+        'is_admin': is_admin(user),
+    })
+
+
+@login_required
+def target_registration(request):
+    if request.method == 'POST':
+        form = TargetPersonForm(request.POST, request.FILES)
+        if form.is_valid():
+            target = form.save(commit=False)
+            target.uploaded_by = request.user  # <-- critical
+            target.save()
+            return redirect('target_management')
+    else:
+        form = TargetPersonForm()
+    return render(request, 'surveillance/target_registration.html', {'form': form})
+
+@login_required
+def target_detail(request, pk):
+    target = get_object_or_404(TargetPerson, pk=pk)
+
+    # Block access if not admin AND not the supervisor who uploaded it
+    if not is_admin(request.user) and not is_privileged_staff(request.user):
+        return redirect('target_management')
+
+    if is_privileged_staff(request.user) and not is_admin(request.user):
+        # Supervisor can only see their own uploaded targets
+        if target.uploaded_by != request.user:
+            return redirect('target_management')
+
+    assignments = TargetAssignment.objects.filter(target=target).select_related(
+        'assigned_to', 'assigned_by'
+    ).order_by('-created_at')
+
+    operators = User.objects.filter(
+        profile__role='operator'
+    ).select_related('profile')
+
+    return render(request, 'surveillance/target_management_details.html', {
+        'target':      target,
+        'assignments': assignments,
+        'operators':   operators,
+        'is_admin':    is_admin(request.user),
+    })
+
+
+
+@login_required
+@user_passes_test(is_privileged_staff, login_url='home')
+def upload_target(request):
+    if request.method == 'POST':
+        form = TargetPersonForm(request.POST, request.FILES)
+        if form.is_valid():
+            target             = form.save(commit=False)
+            target.uploaded_by = request.user
+
+            duration = request.POST.get('duration')
+            now      = timezone.now()
+            durations = {
+                "1h":  timedelta(hours=1),
+                "12h": timedelta(hours=12),
+                "1d":  timedelta(days=1),
+                "7d":  timedelta(days=7),
+            }
+            if duration in durations:
+                target.expires_at = now + durations[duration]
+            elif duration == "custom":
+                custom_date = request.POST.get('custom_date')
+                if custom_date:
+                    try:
+                        target.expires_at = timezone.make_aware(
+                            timezone.datetime.fromisoformat(custom_date)
+                        )
+                    except ValueError:
+                        pass
+
+            target.save()
+            messages.success(request, f"Subject '{target.name}' successfully enrolled.")
+            return redirect('target_management')
+        else:
+            for field, errors in form.errors.items():
+                messages.error(request, f"{field}: {errors[0]}")
+            return render(request, 'surveillance/target_management_registration.html', {
+                'form': form, 'is_admin': True,
+            })
+    return redirect('target_registration')
+
+
+# ── Assignment workflow ───────────────────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_privileged_staff, login_url='home')
+def assign_target(request, target_pk):
+    if request.method != 'POST':
+        return redirect('target_management')
+
+    target      = get_object_or_404(TargetPerson, pk=target_pk)
+    operator_id = request.POST.get('operator_id')
+    note        = request.POST.get('note', '')
+    operator    = get_object_or_404(User, pk=operator_id)
+
+    if not is_admin(request.user) and target.uploaded_by != request.user:
+        messages.error(request, "You can only assign targets you uploaded.")
+        return redirect('target_management')
+
+    assignment = TargetAssignment.objects.create(
+        target=target,
+        assigned_by=request.user,
+        assigned_to=operator,
+        note=note,
+        status='pending',
+    )
+
+    _push_notification(
+        recipient=operator,
+        notification_type='assignment',
+        title=f"New target assigned: {target.name}",
+        message=(
+            f"You have been assigned to monitor '{target.name} {target.last_name}'.\n"
+            f"Assigned by: {request.user.get_full_name() or request.user.username}\n"
+            f"Note: {note or 'None'}"
+        ),
+        assignment=assignment,
+    )
+
+    messages.success(request, f"Target '{target.name}' assigned to {operator.username}.")
+    return redirect('target_management')
+
+
+@login_required
+def pass_back_target(request, assignment_pk):
+    assignment = get_object_or_404(
+        TargetAssignment, pk=assignment_pk, assigned_to=request.user
+    )
+    assignment.status = 'passed_back'
+    assignment.save()
+
+    uploader = assignment.target.uploaded_by
+    if uploader:
+        _push_notification(
+            recipient=uploader,
+            notification_type='pass_back',
+            title=f"Update on target: {assignment.target.name}",
+            message=(
+                f"Operator {request.user.username} has passed back the target "
+                f"'{assignment.target.name} {assignment.target.last_name}'.\n"
+                f"Assignment ID: #{assignment.pk}"
+            ),
+            assignment=assignment,
+        )
+
+    messages.success(request, "Target passed back to the original uploader.")
+    return redirect('operator_assignments')
+
+
+@login_required
+def operator_assignments(request):
+    """
+    Operators see their own assignments.
+    Admins/supervisors can also view this for reference.
+    """
+    assignments = TargetAssignment.objects.filter(
+        assigned_to=request.user
+    ).select_related('target', 'assigned_by').order_by('-created_at')
+
+    return render(request, 'surveillance/operator_assignments.html', {
+        'assignments': assignments,
+        'is_admin':    is_admin(request.user),
+    })
+
+
+@login_required
+def acknowledge_assignment(request, assignment_pk):
+    assignment = get_object_or_404(
+        TargetAssignment, pk=assignment_pk, assigned_to=request.user
+    )
+    assignment.status = 'acknowledged'
+    assignment.save()
+    return JsonResponse({'status': 'ok'})
+
+
+# ── Verification workflow ─────────────────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_privileged_staff, login_url='home')
+def pending_verifications(request):
+    """
+    Admin/supervisor sees all detection events that need verification.
+    Supervisor sees only those linked to targets they uploaded.
+    """
+    user = request.user
+    qs   = DetectionEvent.objects.filter(
+        verification_status='pending'
+    ).select_related('matched_target', 'camera', 'related_assignment__assigned_to')
+
+    if not is_admin(user):
+        qs = qs.filter(matched_target__uploaded_by=user)
+
+    return render(request, 'surveillance/pending_verifications.html', {
+        'events':   qs.order_by('-timestamp'),
+        'is_admin': is_admin(user),
+    })
+
+
+@login_required
+@user_passes_test(is_privileged_staff, login_url='home')
+def verify_detection(request, event_pk):
+    """
+    POST: admin/supervisor approves or rejects a detection event.
+    Payload: { action: 'approve'|'reject', note: str }
+    Then notifies the operator who reported it.
+    """
+    if request.method != 'POST':
+        return redirect('pending_verifications')
+
+    event  = get_object_or_404(DetectionEvent, pk=event_pk)
+    action = request.POST.get('action')
+    note   = request.POST.get('note', '')
+
+    if action not in ('approve', 'reject'):
+        messages.error(request, "Invalid action.")
+        return redirect('pending_verifications')
+
+    # Guard: supervisor can only verify targets they uploaded
+    if not is_admin(request.user):
+        if event.matched_target and event.matched_target.uploaded_by != request.user:
+            messages.error(request, "You can only verify detections of targets you uploaded.")
+            return redirect('pending_verifications')
+
+    event.verification_status = 'approved' if action == 'approve' else 'rejected'
+    event.verified_by         = request.user
+    event.verified_at         = timezone.now()
+    event.verification_note   = note
+    event.save(update_fields=[
+        'verification_status', 'verified_by', 'verified_at', 'verification_note'
+    ])
+
+    # Notify the operator who submitted this detection
+    assignment = event.related_assignment
+    if assignment and assignment.assigned_to:
+        operator = assignment.assigned_to
+        if action == 'approve':
+            notif_type = 'approved'
+            title      = f"Detection approved: {event.matched_target_name}"
+            msg        = (
+                f"Your detection of '{event.matched_target_name}' has been APPROVED by "
+                f"{request.user.get_full_name() or request.user.username}.\n"
+                f"Note: {note or 'None'}\n"
+                f"You may now export the PDF report."
+            )
+        else:
+            notif_type = 'rejected'
+            title      = f"Detection rejected: {event.matched_target_name}"
+            msg        = (
+                f"Your detection of '{event.matched_target_name}' was REJECTED by "
+                f"{request.user.get_full_name() or request.user.username}.\n"
+                f"Note: {note or 'None'}"
+            )
+
+        _push_notification(
+            recipient=operator,
+            notification_type=notif_type,
+            title=title,
+            message=msg,
+            assignment=assignment,
+            event=event,
+        )
+
+    label = "approved" if action == 'approve' else "rejected"
+    messages.success(request, f"Detection event #{event_pk} {label}.")
+    return redirect('pending_verifications')
+
+
+# ── PDF export ────────────────────────────────────────────────────────────────
+
+def _build_detection_pdf(event: DetectionEvent) -> bytes:
+    """
+    Build a professional A4 PDF for an approved detection event using ReportLab.
+    Contains: target info table, detection metadata, snapshot image.
+    """
+    buffer = io.BytesIO()
+    doc    = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=2*cm, leftMargin=2*cm,
+        topMargin=2*cm, bottomMargin=2*cm,
+    )
+    styles   = getSampleStyleSheet()
+    elements = []
+
+    # ── Title block ──────────────────────────────────────────────────────────
+    title_style = ParagraphStyle(
+        'CustomTitle', parent=styles['Title'],
+        fontSize=20, textColor=colors.HexColor('#1a1a2e'),
+        spaceAfter=4,
+    )
+    sub_style = ParagraphStyle(
+        'SubTitle', parent=styles['Normal'],
+        fontSize=10, textColor=colors.grey,
+        alignment=TA_CENTER, spaceAfter=16,
+    )
+    elements.append(Paragraph("BUTTERFLY SURVEILLANCE SYSTEM", title_style))
+    elements.append(Paragraph("OFFICIAL DETECTION REPORT", sub_style))
+    elements.append(HRFlowable(width="100%", thickness=2,
+                                color=colors.HexColor('#1a1a2e'), spaceAfter=16))
+
+    # ── Status banner ────────────────────────────────────────────────────────
+    status_color = colors.HexColor('#1e7e34') if event.verification_status == 'approved' \
+                   else colors.HexColor('#c0392b')
+    status_label = event.get_verification_status_display().upper()
+    banner_data  = [[Paragraph(
+        f'<font color="white"><b>STATUS: {status_label}</b></font>',
+        ParagraphStyle('Banner', parent=styles['Normal'],
+                       fontSize=12, alignment=TA_CENTER)
+    )]]
+    banner_table = Table(banner_data, colWidths=[17*cm])
+    banner_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), status_color),
+        ('ROWBACKGROUNDS', (0,0), (-1,-1), [status_color]),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('ROUNDEDCORNERS', [4]),
+    ]))
+    elements.append(banner_table)
+    elements.append(Spacer(1, 16))
+
+    # ── Target information ───────────────────────────────────────────────────
+    target = event.matched_target
+    elements.append(Paragraph("SUBJECT INFORMATION",
+                               ParagraphStyle('SectionHead', parent=styles['Heading2'],
+                                              textColor=colors.HexColor('#1a1a2e'),
+                                              fontSize=13, spaceAfter=8)))
+
+    if target:
+        info_data = [
+            ["Full Name",       f"{target.name} {target.last_name}"],
+            ["Father's Name",   target.father_name],
+            ["Date of Birth",   f"Age: {target.age}"],
+            ["Gender",          target.get_gender_display()],
+            ["Place of Birth",  target.place_of_birth],
+            ["Marital Status",  target.marital_status],
+            ["Occupation",      target.job],
+            ["Tazkira No.",     target.tazkira_number or "N/A"],
+            ["Phone",           target.phone_number],
+            ["Address",         target.address],
+            ["Crime/Charge",    target.crime],
+            ["Description",     target.description or "N/A"],
+        ]
+    else:
+        info_data = [["Name", event.matched_target_name]]
+
+    label_style = ParagraphStyle('Label', parent=styles['Normal'],
+                                  fontSize=9, textColor=colors.grey)
+    value_style = ParagraphStyle('Value', parent=styles['Normal'],
+                                  fontSize=10, textColor=colors.black)
+
+    table_data = [[
+        Paragraph(row[0], label_style),
+        Paragraph(str(row[1]), value_style)
+    ] for row in info_data]
+
+    info_table = Table(table_data, colWidths=[5*cm, 12*cm])
+    info_table.setStyle(TableStyle([
+        ('BACKGROUND',   (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
+        ('GRID',         (0, 0), (-1,-1), 0.5, colors.HexColor('#cccccc')),
+        ('TOPPADDING',   (0, 0), (-1,-1), 5),
+        ('BOTTOMPADDING',(0, 0), (-1,-1), 5),
+        ('LEFTPADDING',  (0, 0), (-1,-1), 8),
+        ('RIGHTPADDING', (0, 0), (-1,-1), 8),
+        ('VALIGN',       (0, 0), (-1,-1), 'TOP'),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 16))
+
+    # ── Detection metadata ───────────────────────────────────────────────────
+    elements.append(Paragraph("DETECTION DETAILS",
+                               ParagraphStyle('SectionHead', parent=styles['Heading2'],
+                                              textColor=colors.HexColor('#1a1a2e'),
+                                              fontSize=13, spaceAfter=8)))
+
+    camera_name = event.camera.name if event.camera else "Unknown"
+    location    = event.camera.location if event.camera else "Unknown"
+    verifier    = event.verified_by.get_full_name() or event.verified_by.username \
+                  if event.verified_by else "N/A"
+    verified_at = event.verified_at.strftime("%Y-%m-%d %H:%M:%S") \
+                  if event.verified_at else "N/A"
+    operator    = "N/A"
+    if event.related_assignment and event.related_assignment.assigned_to:
+        op = event.related_assignment.assigned_to
+        operator = op.get_full_name() or op.username
+
+    det_data = [
+        ["Detection Time", event.timestamp.strftime("%Y-%m-%d %H:%M:%S")],
+        ["Camera",         camera_name],
+        ["Location",       location],
+        ["Action",         event.action],
+        ["Person Count",   str(event.person_count)],
+        ["Detected By",    f"Operator: {operator}"],
+        ["Verified By",    verifier],
+        ["Verified At",    verified_at],
+        ["Verifier Note",  event.verification_note or "None"],
+    ]
+    det_table_data = [[
+        Paragraph(row[0], label_style),
+        Paragraph(str(row[1]), value_style)
+    ] for row in det_data]
+
+    det_table = Table(det_table_data, colWidths=[5*cm, 12*cm])
+    det_table.setStyle(TableStyle([
+        ('BACKGROUND',   (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
+        ('GRID',         (0, 0), (-1,-1), 0.5, colors.HexColor('#cccccc')),
+        ('TOPPADDING',   (0, 0), (-1,-1), 5),
+        ('BOTTOMPADDING',(0, 0), (-1,-1), 5),
+        ('LEFTPADDING',  (0, 0), (-1,-1), 8),
+        ('RIGHTPADDING', (0, 0), (-1,-1), 8),
+        ('VALIGN',       (0, 0), (-1,-1), 'TOP'),
+    ]))
+    elements.append(det_table)
+    elements.append(Spacer(1, 16))
+
+    # ── Target reference photo ───────────────────────────────────────────────
+    photos_added = False
+    elements.append(Paragraph("EVIDENCE PHOTOS",
+                               ParagraphStyle('SectionHead', parent=styles['Heading2'],
+                                              textColor=colors.HexColor('#1a1a2e'),
+                                              fontSize=13, spaceAfter=8)))
+
+    photo_row = []
+
+    # Reference photo (target registration image)
+    if target and target.image:
+        try:
+            ref_path = target.image.path
+            if os.path.isfile(ref_path):
+                ref_img = RLImage(ref_path, width=7*cm, height=7*cm)
+                ref_img.hAlign = 'CENTER'
+                photo_row.append([Paragraph("Reference Photo", sub_style), ref_img])
+                photos_added = True
+        except Exception as e:
+            print(f"[PDF] Reference photo error: {e}")
+
+    # Capture snapshot from detection event
+    if event.frame_snapshot:
+        try:
+            snap_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                'media', str(event.frame_snapshot)
+            )
+            if os.path.isfile(snap_path):
+                snap_img = RLImage(snap_path, width=7*cm, height=7*cm)
+                snap_img.hAlign = 'CENTER'
+                photo_row.append([Paragraph("Capture Snapshot", sub_style), snap_img])
+                photos_added = True
+        except Exception as e:
+            print(f"[PDF] Snapshot error: {e}")
+
+    if photo_row:
+        # Build a two-column photo table
+        col_data = [[item[0] for item in photo_row],
+                    [item[1] for item in photo_row]]
+        col_widths = [8.5*cm] * len(photo_row)
+        photo_table = Table(
+            [[photo_row[i][1] for i in range(len(photo_row))],
+             [photo_row[i][0] for i in range(len(photo_row))]],
+            colWidths=col_widths
+        )
+        photo_table.setStyle(TableStyle([
+            ('ALIGN',   (0,0), (-1,-1), 'CENTER'),
+            ('VALIGN',  (0,0), (-1,-1), 'MIDDLE'),
+            ('TOPPADDING',   (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING',(0,0), (-1,-1), 4),
+        ]))
+        elements.append(photo_table)
+    else:
+        elements.append(Paragraph("No photos available.", styles['Normal']))
+
+    elements.append(Spacer(1, 20))
+    elements.append(HRFlowable(width="100%", thickness=1,
+                                color=colors.HexColor('#cccccc'), spaceAfter=8))
+
+    # ── Footer ───────────────────────────────────────────────────────────────
+    footer_style = ParagraphStyle('Footer', parent=styles['Normal'],
+                                   fontSize=8, textColor=colors.grey,
+                                   alignment=TA_CENTER)
+    generated_at = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+    elements.append(Paragraph(
+        f"Generated by Butterfly Surveillance System · {generated_at} · CONFIDENTIAL",
+        footer_style
+    ))
+
+    doc.build(elements)
+    return buffer.getvalue()
+
+
+@login_required
+def export_detection_pdf(request, event_pk):
+    """
+    Export a single detection event as PDF.
+    Rules:
+      - Operator: can only export events from their own assignments, only if approved
+      - Supervisor: can export events of targets they uploaded, only if approved
+      - Admin: can export any event
+    """
+    event = get_object_or_404(
+        DetectionEvent.objects.select_related(
+            'matched_target', 'camera', 'verified_by',
+            'related_assignment__assigned_to', 'related_assignment__assigned_by'
+        ),
+        pk=event_pk
+    )
+    user = request.user
+
+    # Permission check
+    if is_admin(user):
+        pass  # full access
+    elif is_privileged_staff(user):
+        if event.matched_target and event.matched_target.uploaded_by != user:
+            raise PermissionDenied("You can only export detections of your targets.")
+        if event.verification_status != 'approved':
+            messages.error(request, "PDF export is only available for approved detections.")
+            return redirect('pending_verifications')
+    else:
+        # Operator
+        assignment = event.related_assignment
+        if not assignment or assignment.assigned_to != user:
+            raise PermissionDenied("You can only export detections from your own assignments.")
+        if event.verification_status != 'approved':
+            messages.error(request, "PDF export is only available after admin/supervisor approval.")
+            return redirect('operator_assignments')
+
+    pdf_bytes = _build_detection_pdf(event)
+    target_name = event.matched_target_name or "unknown"
+    filename = f"detection_{target_name.replace(' ', '_')}_{event.pk}.pdf"
+
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required
+@user_passes_test(is_privileged_staff, login_url='home')
+def export_target_pdf(request, target_pk):
+    """
+    Export full target dossier as PDF (admin/supervisor by target name/last_name).
+    Includes all detection events for this target.
+    """
+    target = get_object_or_404(TargetPerson, pk=target_pk)
+    user   = request.user
+
+    if not is_admin(user) and target.uploaded_by != user:
+        raise PermissionDenied("You can only export targets your uploaded.")
+
+    buffer = io.BytesIO()
+    doc    = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        rightMargin=2*cm, leftMargin=2*cm,
+        topMargin=2*cm, bottomMargin=2*cm,
+    )
+    styles   = getSampleStyleSheet()
+    elements = []
+
+    title_style = ParagraphStyle('T', parent=styles['Title'],
+                                  fontSize=18, textColor=colors.HexColor('#1a1a2e'),
+                                  spaceAfter=4)
+    sub_style   = ParagraphStyle('S', parent=styles['Normal'],
+                                  fontSize=10, textColor=colors.grey,
+                                  alignment=TA_CENTER, spaceAfter=12)
+    label_style = ParagraphStyle('L', parent=styles['Normal'],
+                                  fontSize=9, textColor=colors.grey)
+    value_style = ParagraphStyle('V', parent=styles['Normal'],
+                                  fontSize=10, textColor=colors.black)
+
+    elements.append(Paragraph("BUTTERFLY SURVEILLANCE SYSTEM", title_style))
+    elements.append(Paragraph("TARGET PERSON DOSSIER", sub_style))
+    elements.append(HRFlowable(width="100%", thickness=2,
+                                color=colors.HexColor('#1a1a2e'), spaceAfter=12))
+
+    # Target photo
+    if target.image:
+        try:
+            img_path = target.image.path
+            if os.path.isfile(img_path):
+                t_img = RLImage(img_path, width=5*cm, height=5*cm)
+                t_img.hAlign = 'RIGHT'
+                elements.append(t_img)
+        except Exception:
+            pass
+
+    # Target info
+    info_rows = [
+        ["Full Name",      f"{target.name} {target.last_name}"],
+        ["Father's Name",  target.father_name],
+        ["Age",            str(target.age)],
+        ["Gender",         target.get_gender_display()],
+        ["Place of Birth", target.place_of_birth],
+        ["Marital Status", target.marital_status],
+        ["Occupation",     target.job],
+        ["Tazkira No.",    target.tazkira_number or "N/A"],
+        ["Phone",          target.phone_number],
+        ["Address",        target.address],
+        ["Crime/Charge",   target.crime],
+        ["Description",    target.description or "N/A"],
+        ["Registered At",  target.created_at.strftime("%Y-%m-%d %H:%M:%S")],
+        ["Status",         "FOUND" if target.is_found else "ACTIVE"],
+    ]
+    tbl = Table(
+        [[Paragraph(r[0], label_style), Paragraph(str(r[1]), value_style)] for r in info_rows],
+        colWidths=[5*cm, 12*cm]
+    )
+    tbl.setStyle(TableStyle([
+        ('BACKGROUND',    (0,0), (0,-1), colors.HexColor('#f0f0f0')),
+        ('GRID',          (0,0), (-1,-1), 0.5, colors.HexColor('#cccccc')),
+        ('TOPPADDING',    (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING',   (0,0), (-1,-1), 8),
+        ('RIGHTPADDING',  (0,0), (-1,-1), 8),
+        ('VALIGN',        (0,0), (-1,-1), 'TOP'),
+    ]))
+    elements.append(tbl)
+    elements.append(Spacer(1, 16))
+
+    # Detection events
+    elements.append(Paragraph("DETECTION HISTORY",
+                               ParagraphStyle('SH', parent=styles['Heading2'],
+                                              textColor=colors.HexColor('#1a1a2e'),
+                                              fontSize=13, spaceAfter=8)))
+
+    events = DetectionEvent.objects.filter(
+        matched_target=target
+    ).select_related('camera').order_by('-timestamp')
+
+    if events.exists():
+        ev_header = [
+            Paragraph("Timestamp", label_style),
+            Paragraph("Camera", label_style),
+            Paragraph("Action", label_style),
+            Paragraph("Status", label_style),
+        ]
+        ev_rows = [ev_header] + [[
+            Paragraph(e.timestamp.strftime("%Y-%m-%d %H:%M"), value_style),
+            Paragraph(e.camera.name if e.camera else "N/A", value_style),
+            Paragraph(e.action, value_style),
+            Paragraph(e.get_verification_status_display(), value_style),
+        ] for e in events]
+
+        ev_table = Table(ev_rows, colWidths=[5*cm, 4.5*cm, 4*cm, 3.5*cm])
+        ev_table.setStyle(TableStyle([
+            ('BACKGROUND',    (0,0), (-1,0), colors.HexColor('#1a1a2e')),
+            ('TEXTCOLOR',     (0,0), (-1,0), colors.white),
+            ('GRID',          (0,0), (-1,-1), 0.5, colors.HexColor('#cccccc')),
+            ('ROWBACKGROUNDS',(0,1), (-1,-1),
+             [colors.white, colors.HexColor('#f8f8f8')]),
+            ('TOPPADDING',    (0,0), (-1,-1), 5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+            ('LEFTPADDING',   (0,0), (-1,-1), 6),
+        ]))
+        elements.append(ev_table)
+    else:
+        elements.append(Paragraph("No detections recorded.", styles['Normal']))
+
+    elements.append(Spacer(1, 20))
+    elements.append(HRFlowable(width="100%", thickness=1,
+                                color=colors.HexColor('#cccccc'), spaceAfter=8))
+    elements.append(Paragraph(
+        f"Generated by Butterfly Surveillance System · "
+        f"{timezone.now().strftime('%Y-%m-%d %H:%M:%S')} · CONFIDENTIAL",
+        ParagraphStyle('Footer', parent=styles['Normal'],
+                        fontSize=8, textColor=colors.grey, alignment=TA_CENTER)
+    ))
+
+    doc.build(elements)
+
+    filename = f"target_{target.name}_{target.last_name}_{target.pk}.pdf"
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+# ── Notifications ─────────────────────────────────────────────────────────────
+
+@login_required
+def notifications_list(request):
+    notifs = Notification.objects.filter(
+        recipient=request.user
+    ).order_by('-created_at')[:50]
+    Notification.objects.filter(
+        recipient=request.user, is_read=False
+    ).update(is_read=True)
+    return render(request, 'surveillance/notifications.html', {
+        'notifications': notifs,
+        'is_admin':      is_admin(request.user),
+    })
+
+
+@login_required
+def unread_notification_count(request):
+    count = Notification.objects.filter(
+        recipient=request.user, is_read=False
+    ).count()
+    return JsonResponse({'count': count})
+
+
+# ── Detection history ─────────────────────────────────────────────────────────
+
+@login_required
+def detection_history(request):
+    user = request.user
+
+    qs = DetectionEvent.objects.select_related(
+        'matched_target', 'camera'
+    ).order_by('-timestamp')
+
+    if is_admin(user):
+        pass  # sees everything
+
+    elif hasattr(user, 'profile') and user.profile.role == 'operator':
+        qs = qs.filter(related_assignment__assigned_to=user)
+
+    elif hasattr(user, 'profile') and user.profile.role == 'supervisor':
+        # Supervisor sees ALL detections of targets they uploaded
+        # regardless of whether an assignment exists
+        from django.db.models import Q
+        qs = qs.filter(
+            matched_target__isnull=False,
+            matched_target__uploaded_by=user
+        )
+
+    else:
+        qs = qs.none()
+
+    paginator = Paginator(qs, 30)
+    page      = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'surveillance/detection_history.html', {
+        'page_obj': page,
+        'is_admin': is_admin(user),
+    })
+# ── User / account management
+
+@login_required
+@user_passes_test(is_admin, login_url='home')
+def account_manage(request):
+    query     = request.GET.get('q', '')
+    sort_type = request.GET.get('sort', '-date_joined')
+
+    users_list = User.objects.select_related('profile').filter(
+        models.Q(username__icontains=query) | models.Q(email__icontains=query)
+    )
+    sort_map = {
+        'name_asc':        'username',
+        'name_desc':       '-username',
+        'date_old':        'date_joined',
+        'date_new':        '-date_joined',
+        'rank_admin':      ['-is_staff', 'username'],
+        'rank_obs':        ['is_staff', 'username'],
+        'role_supervisor': ['-profile__role', 'username'],
+        'role_operator':   ['profile__role', 'username'],
+    }
+    order = sort_map.get(sort_type, '-date_joined')
+    if isinstance(order, list):
+        users_list = users_list.order_by(*order)
+    else:
+        users_list = users_list.order_by(order)
+
+    paginator  = Paginator(users_list, 6)
+    users      = paginator.get_page(request.GET.get('page'))
+    is_filtered = bool(query or sort_type not in ['-date_joined', 'date_new'])
+
+    return render(request, 'surveillance/account_manage.html', {
+        'users':        users,
+        'query':        query,
+        'current_sort': sort_type,
+        'is_admin':     True,
+        'is_filtered':  is_filtered,
+    })
+
+
+@login_required
+@user_passes_test(is_admin, login_url='home')
+def delete_user(request, user_id):
+    if request.user.id == user_id:
+        messages.error(request, "CRITICAL: You cannot terminate your own access.")
+        return redirect('account_manage')
+    user_to_delete = get_object_or_404(User, id=user_id)
+    username       = user_to_delete.username
+    user_to_delete.delete()
+    messages.success(request, f"User '{username}' has been removed from the system.")
+    return redirect('account_manage')
+
+
+@login_required
+@user_passes_test(is_admin, login_url='home')
+def toggle_admin_role(request, user_id):
+    user_to_mod = get_object_or_404(User, id=user_id)
+    admin_group, _ = Group.objects.get_or_create(name='Admin')
+    if user_to_mod.groups.filter(name='Admin').exists():
+        user_to_mod.groups.remove(admin_group)
+        user_to_mod.is_staff = False
+        messages.info(request, f"Access Level: Observer - {user_to_mod.username}")
+    else:
+        user_to_mod.groups.add(admin_group)
+        user_to_mod.is_staff = True
+        messages.success(request, f"Access Level: Admin - {user_to_mod.username}")
+    user_to_mod.save()
+    return redirect('account_manage')
+
+
+def register(request):
+    if request.method == 'POST':
+        user_form = UserRegistrationForm(request.POST, request.FILES)
+        if user_form.is_valid():
+            new_user = user_form.save(commit=False)
+            new_user.set_password(user_form.cleaned_data['password'])
+            new_user.save()
+            SecurityProfile.objects.create(
+                user=new_user,
+                badge_number=user_form.cleaned_data['badge_number'],
+                profile_picture=user_form.cleaned_data.get('profile_picture'),
+                role=user_form.cleaned_data['role'],
+                emergency_contact=user_form.cleaned_data['emergency_contact'],
+            )
+            messages.success(request, f'Security Profile for {new_user.username} Initialized!')
+            return redirect("login")
+    else:
+        user_form = UserRegistrationForm()
+    return render(request, 'registration/register.html', {'user_form': user_form})
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            identifier = form.cleaned_data.get('identifier')
+            password   = form.cleaned_data.get('password')
+            user_obj   = User.objects.filter(email=identifier).first()
+            username   = user_obj.username if user_obj else identifier
+            user       = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, 'Access Granted.')
+                return redirect('home')
+            else:
+                messages.error(request, 'Invalid Credentials.')
+    else:
+        form = LoginForm()
+    return render(request, 'registration/login.html', {'form': form})
+
+
+def log_out_view(request):
+    logout(request)
+    messages.info(request, "Session Terminated.")
+    return redirect("login")
+
+
+@login_required
+def account_detail(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    if not request.user.is_superuser and request.user.id != target_user.id:
+        raise PermissionDenied("You do not have permission to view this profile.")
+    return render(request, 'surveillance/account_manage_details.html', {
+        'target_user': target_user,
+        'profile':     target_user.profile,
+    })
+
+
+@staff_member_required
+def account_update(request, pk):
+    target_user = get_object_or_404(User, id=pk)
+    profile     = target_user.profile
+
+    if request.method == 'POST':
+        form = UserUpdateForm(request.POST, request.FILES, instance=target_user)
+        if form.is_valid():
+            form.save()
+            profile.badge_number       = form.cleaned_data['badge_number']
+            profile.role               = form.cleaned_data['role']
+            profile.emergency_contact  = form.cleaned_data['emergency_contact']
+            if form.cleaned_data.get('profile_picture'):
+                profile.profile_picture = form.cleaned_data['profile_picture']
+            profile.save()
+            messages.success(request, _("Profile updated successfully."))
+            return redirect('account_detail', user_id=target_user.id)
+    else:
+        initial_data = {
+            'badge_number':      profile.badge_number,
+            'role':              profile.role,
+            'emergency_contact': profile.emergency_contact,
+        }
+        form = UserUpdateForm(instance=target_user, initial=initial_data)
+
+    return render(request, 'surveillance/account_update.html', {
+        'form':        form,
+        'target_user': target_user,
+        'profile':     profile,
+    })
+
+
+
+
+
+
+    from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.http import JsonResponse
+from django.utils import timezone
+from .models import Camera
+from .forms import CameraForm
+from surveillance.engine import engine_manager, _broadcast_camera_status, probe_camera_index
+
+
+def is_admin(user):
+    return user.is_authenticated and (
+        user.is_superuser or
+        (hasattr(user, 'profile') and user.profile.role == 'admin')
+    )
+
+
+@login_required
+def camera_dashboard(request):
+    cameras = Camera.objects.all()
+    return render(request, 'camera/camera_dashboard.html', {
+        'cameras':  cameras,
+        'is_admin': is_admin(request.user),
+    })
+
+
+@login_required
+@user_passes_test(is_admin, login_url='home')
+def camera_register(request):
+    if request.method == 'POST':
+        form = CameraForm(request.POST)
+        if form.is_valid():
+            cam = form.save()
+            if cam.is_active:
+                engine_manager.start_camera(cam)
+            messages.success(request, f"Camera '{cam.name}' registered successfully.")
+            return redirect('camera_dashboard')
+        else:
+            messages.error(request, "Please fix the errors below.")
+    else:
+        form = CameraForm()
+    return render(request, 'camera/camera_register.html', {
+        'form':     form,
+        'is_admin': True,
+    })
+
+
+@login_required
+@user_passes_test(is_admin, login_url='home')
+def camera_edit(request, pk):
+    cam = get_object_or_404(Camera, pk=pk)
+    if request.method == 'POST':
+        form = CameraForm(request.POST, instance=cam)
+        if form.is_valid():
+            cam = form.save()
+            # Invalidate face embedding cache in case the camera changed
+            engine_manager.invalidate_target_cache()
+            engine_manager.stop_camera(cam.pk)
+            if cam.is_active:
+                engine_manager.start_camera(cam)
+            messages.success(request, f"Camera '{cam.name}' updated.")
+            return redirect('camera_dashboard')
+    else:
+        form = CameraForm(instance=cam)
+    return render(request, 'camera/camera_register.html', {
+        'form':     form,
+        'is_admin': True,
+        'editing':  cam,
+    })
+
+
+@login_required
+@user_passes_test(is_admin, login_url='home')
+def camera_delete(request, pk):
+    cam = get_object_or_404(Camera, pk=pk)
+    engine_manager.stop_camera(cam.pk)
+    name = cam.name
+    cam.delete()
+    messages.success(request, f"Camera '{name}' removed.")
+    return redirect('camera_dashboard')
+
+
+@login_required
+@user_passes_test(is_admin, login_url='home')
+def camera_toggle(request, pk):
+    cam          = get_object_or_404(Camera, pk=pk)
+    cam.is_active = not cam.is_active
+
+    if cam.is_active:
+        cam.status = 'unknown'
+        cam.save()
+        engine_manager.start_camera(cam)
+    else:
+        engine_manager.stop_camera(cam.pk)
+        cam.status          = 'offline'
+        cam.went_offline_at = timezone.now()
+        cam.save()
+        _broadcast_camera_status(cam.pk, cam.name, cam.location, 'offline')
+
+    return JsonResponse({
+        'is_active': cam.is_active,
+        'name':      cam.name,
+        'status':    cam.status,
+    })
+
+
+@login_required
+def camera_status_json(request):
+    """
+    Full camera status list for the dashboard. Called on page load and
+    periodically by the camera dashboard JS to sync state.
+    """
+    cameras = Camera.objects.all().values(
+        'id', 'name', 'location', 'index_or_url',
+        'status', 'is_active', 'last_seen_at', 'went_offline_at'
+    )
+    data = []
+    for c in cameras:
+        c['last_seen_at']    = c['last_seen_at'].strftime("%Y-%m-%d %H:%M:%S") \
+                               if c['last_seen_at'] else None
+        c['went_offline_at'] = c['went_offline_at'].strftime("%Y-%m-%d %H:%M:%S") \
+                               if c['went_offline_at'] else None
+        c['is_running']      = c['id'] in engine_manager.running_ids()
+        data.append(c)
+    return JsonResponse({'cameras': data})
+
+
+@login_required
+@user_passes_test(is_admin, login_url='home')
+def discover_cameras(request):
+    """
+    Probe integer indices 0–5 and return which are accessible.
+    Useful for the admin to find which index their USB/virtual camera is on
+    after a server restart. Non-blocking — uses probe_camera_index().
+    """
+    found = []
+    for idx in range(6):
+        accessible = probe_camera_index(idx, timeout=3.0)
+        found.append({
+            'index':      idx,
+            'accessible': accessible,
+            'label':      f"Camera {idx}",
+        })
+    return JsonResponse({'discovered': found})
+import os
+import cv2
+import uuid
+import threading
+import time
+import numpy as np
+import torch
+from django.utils import timezone
+from django.conf import settings
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from ultralytics import YOLO
+from deepface import DeepFace
+
+# -- Path Configuration --
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+YOLO_PATH = os.path.join(BASE_DIR, 'surveillance', 'models', 'yolo11n_models', 'yolo11n-pose.pt')
+
+# -- Detection Constants --
+DEEPFACE_MODEL      = "Facenet512"
+DEEPFACE_BACKEND    = "retinaface"
+THRESHOLD           = 0.30
+FACE_CHECK_INTERVAL = 5
+MATCH_COOLDOWN_SEC  = 15
+
+# -- YOLO Model Loader --
+_yolo_model = None
+_yolo_lock  = threading.Lock()
+
+def get_yolo_model():
+    global _yolo_model
+    with _yolo_lock:
+        if _yolo_model is None:
+            model = YOLO(YOLO_PATH)
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            model.to(device)
+            _yolo_model = model
+        return _yolo_model
+
+# -- Broadcast Helpers --
+def _broadcast(data):
+    try:
+        cl = get_channel_layer()
+        if cl:
+            async_to_sync(cl.group_send)(
+                "surveillance_group",
+                {"type": "forward_to_websocket", "payload": data},
+            )
+    except Exception:
+        pass
+
+def _broadcast_camera_status(camera_id, camera_name, location, status):
+    _broadcast({
+        "type": "CAMERA_STATUS",
+        "camera_id": camera_id,
+        "status": status,
+        "timestamp": timezone.now().isoformat()
+    })
+
+# -- Save snapshot to disk, returns relative path or None --
+def _save_snapshot(frame):
+    try:
+        filename = f"{uuid.uuid4().hex}.jpg"
+        save_dir = os.path.join(settings.MEDIA_ROOT, 'snapshots')
+        os.makedirs(save_dir, exist_ok=True)
+        full_path = os.path.join(save_dir, filename)
+        cv2.imwrite(full_path, frame)
+        return f"snapshots/{filename}"   # relative to MEDIA_ROOT
+    except Exception as e:
+        print(f"[snapshot] Failed to save: {e}")
+        return None
+
+# -- Save detection event to DB (no Celery) --
+def _save_detection(camera_id, person_count, action,
+                    matched_target_id=None, matched_name='',
+                    assignment_id=None, frame=None):
+    try:
+        import django
+        django.setup() if not django.apps.registry.apps.ready else None
+    except Exception:
+        pass
+
+    try:
+        from surveillance.models import DetectionEvent, TargetPerson, TargetAssignment, Notification
+
+        target_obj     = TargetPerson.objects.filter(pk=matched_target_id).first() if matched_target_id else None
+        assignment_obj = TargetAssignment.objects.filter(pk=assignment_id).first() if assignment_id else None
+
+        # Save snapshot image
+        snapshot_relative_path = _save_snapshot(frame) if frame is not None else None
+
+        # Build the event without frame_snapshot first
+        event = DetectionEvent(
+            timestamp=timezone.now(),
+            person_count=person_count,
+            action=action,
+            matched_target=target_obj,
+            matched_target_name=matched_name,
+            camera_id=camera_id,
+            related_assignment=assignment_obj,
+            verification_status='pending' if (matched_target_id or action != 'Normal') else 'unreviewed',
+        )
+
+        # Assign snapshot path correctly to ImageField
+        if snapshot_relative_path:
+            event.frame_snapshot.name = snapshot_relative_path
+
+        event.save()
+
+        channel_layer = get_channel_layer()
+
+        # Notify supervisor/admin if target matched
+        if matched_target_id and assignment_obj and assignment_obj.assigned_by:
+            notif = Notification.objects.create(
+                recipient=assignment_obj.assigned_by,
+                notification_type='verification',
+                title=f"Target Found: {matched_name}",
+                message=f"Detected on Camera {camera_id}",
+                related_assignment=assignment_obj,
+                related_event=event,
+            )
+            try:
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{assignment_obj.assigned_by.id}",
+                    {
+                        "type": "send_notification",
+                        "notification_id": notif.id,
+                        "title": notif.title,
+                        "message": notif.message,
+                        "created_at": notif.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    }
+                )
+            except Exception as e:
+                print(f"[notification] WebSocket send failed: {e}")
+
+        # Also notify the target's uploaded_by (supervisor) directly
+        # even if no assignment exists — this fixes supervisor history
+        if matched_target_id and target_obj and target_obj.uploaded_by:
+            supervisor = target_obj.uploaded_by
+            # Only notify if not already notified via assignment
+            if not (assignment_obj and assignment_obj.assigned_by == supervisor):
+                try:
+                    Notification.objects.create(
+                        recipient=supervisor,
+                        notification_type='detection',
+                        title=f"Your target detected: {matched_name}",
+                        message=f"Detected on Camera {camera_id}",
+                        related_event=event,
+                    )
+                    async_to_sync(channel_layer.group_send)(
+                        f"user_{supervisor.id}",
+                        {
+                            "type": "send_notification",
+                            "title": f"Target Detected: {matched_name}",
+                            "message": f"Detected on Camera {camera_id}",
+                            "created_at": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        }
+                    )
+                except Exception as e:
+                    print(f"[supervisor notify] Failed: {e}")
+
+        # Broadcast activity log for non-normal actions
+        if action != 'Normal':
+            try:
+                async_to_sync(channel_layer.group_send)(
+                    "surveillance_group",
+                    {
+                        "type": "forward_to_websocket",
+                        "payload": {
+                            "type": "ACTIVITY_LOG",
+                            "action": action,
+                            "camera_id": camera_id,
+                            "timestamp": event.timestamp.strftime("%H:%M:%S")
+                        }
+                    }
+                )
+            except Exception as e:
+                print(f"[activity_log] Broadcast failed: {e}")
+
+        print(f"[_save_detection] Saved event {event.id} | action={action} | target={matched_name} | snapshot={snapshot_relative_path}")
+        return event.id
+
+    except Exception as e:
+        import traceback
+        print(f"[_save_detection] ERROR: {e}")
+        traceback.print_exc()
+        return None
+
+# -- Face Recognition Worker Thread --
+class DeepFaceWorker(threading.Thread):
+    def __init__(self, on_match):
+        super().__init__(daemon=True)
+        self._queue  = []
+        self._lock   = threading.Lock()
+        self._event  = threading.Event()
+        self.on_match = on_match
+        self.targets  = []
+        self.running  = True
+        self._embedding_cache = {}
+        self._last_match_time = {}
+
+    def submit(self, frame, boxes):
+        h, w = frame.shape[:2]
+        crops = []
+        for (x1, y1, x2, y2) in boxes:
+            pw, ph = int((x2 - x1) * 0.2), int((y2 - y1) * 0.2)
+            nx1 = max(0, int(x1) - pw)
+            ny1 = max(0, int(y1) - ph)
+            nx2 = min(w, int(x2) + pw)
+            ny2 = min(h, int(y2) + ph)
+            crops.append(frame[ny1:ny2, nx1:nx2])
+
+        with self._lock:
+            self._queue = [(frame.copy(), crops)]
+        self._event.set()
+
+    def run(self):
+        while self.running:
+            self._event.wait()
+            self._event.clear()
+            item = None
+            with self._lock:
+                if self._queue:
+                    item = self._queue.pop(0)
+            if not item or not self.targets:
+                continue
+
+            full_frame, crops = item
+
+            for target in self.targets:
+                if (time.time() - self._last_match_time.get(target['id'], 0)) < MATCH_COOLDOWN_SEC:
+                    continue
+
+                # Cache target embedding
+                if target['id'] not in self._embedding_cache:
+                    try:
+                        res = DeepFace.represent(
+                            img_path=target['path'],
+                            model_name=DEEPFACE_MODEL,
+                            detector_backend=DEEPFACE_BACKEND
+                        )
+                        if res:
+                            self._embedding_cache[target['id']] = np.array(res[0]['embedding'])
+                    except Exception as e:
+                        print(f"[DeepFace] Target embed failed: {e}")
+                        continue
+
+                t_vec = self._embedding_cache.get(target['id'])
+                if t_vec is None:
+                    continue
+
+                for crop in crops:
+                    try:
+                        res = DeepFace.represent(
+                            img_path=crop,
+                            model_name=DEEPFACE_MODEL,
+                            detector_backend=DEEPFACE_BACKEND
+                        )
+                        if res:
+                            c_vec = np.array(res[0]['embedding'])
+                            dist  = 1.0 - (
+                                np.dot(c_vec, t_vec) /
+                                (np.linalg.norm(c_vec) * np.linalg.norm(t_vec))
+                            )
+                            if dist <= THRESHOLD:
+                                self._last_match_time[target['id']] = time.time()
+                                self.on_match(
+                                    target['id'],
+                                    target['name'],
+                                    target.get('assignment_id'),
+                                    full_frame.copy()
+                                )
+                                break
+                    except Exception:
+                        continue
+
+    def stop(self):
+        self.running = False
+        self._event.set()   # unblock the wait() so thread exits cleanly
+
+
+# -- Main Camera Thread --
+class CameraThread(threading.Thread):
+    def __init__(self, camera_obj):
+        super().__init__(daemon=True)
+        self.camera_id    = camera_obj.id
+        self.camera_name  = camera_obj.name
+        self.location     = camera_obj.location
+        self.index_or_url = camera_obj.index_or_url
+        self.running      = False
+        self._deepface    = DeepFaceWorker(self._on_face_match)
+
+    def _on_face_match(self, tid, name, aid, frame):
+        # 1. Broadcast real-time alert immediately
+        _broadcast({
+            "type": "TARGET_MATCH",
+            "name": name,
+            "camera": self.camera_name,
+            "camera_id": self.camera_id
+        })
+
+        # 2. Save to DB with snapshot — runs in DeepFaceWorker thread
+        _save_detection(
+            camera_id=self.camera_id,
+            person_count=1,
+            action='Normal',
+            matched_target_id=tid,
+            matched_name=name,
+            assignment_id=aid,
+            frame=frame,
+        )
+
+    def analyze_pose(self, keypoints_data):
+        if keypoints_data is None or len(keypoints_data.xy) == 0:
+            return "Normal"
+        
+        try:
+            # Get coordinates and confidence scores
+            kp = keypoints_data.xy[0].cpu().numpy()   # [x, y] for 17 points
+            conf = keypoints_data.conf[0].cpu().numpy() # Confidence for 17 points
+
+            # Indices: 0:Nose, 1:L-Eye, 2:R-Eye, 9:L-Wrist, 10:R-Wrist, 11:L-Hip, 12:R-Hip
+            
+            # --- HAND WAVING CHECK ---
+            # Calculate a reliable head-level (using nose or eyes)
+            if conf[0] > 0.5:
+                head_y = kp[0][1]
+                
+                # Check Left Wrist (9) OR Right Wrist (10)
+                left_hand_up = conf[9] > 0.5 and kp[9][1] < head_y
+                right_hand_up = conf[10] > 0.5 and kp[10][1] < head_y
+
+                if left_hand_up or right_hand_up:
+                    return "HAND WAVING"
+
+            # --- FALL DETECTION CHECK ---
+            # A fall is often detected when the head (0) is below the hip level (11/12)
+            # OR when the distance between shoulders and hips becomes horizontal.
+            if conf[0] > 0.5 and (conf[11] > 0.5 or conf[12] > 0.5):
+                # Average hip height
+                hip_y = np.mean([kp[i][1] for i in [11, 12] if conf[i] > 0.5])
+                
+                # If nose is significantly lower than hips, it's a fall
+                # (Remember: higher Y value means lower on the screen)
+                if kp[0][1] > hip_y:
+                    return "FALL DETECTED"
+
+        except Exception as e:
+            print(f"Pose Analysis Error: {e}")
+            
+        return "Normal"
+    def refresh_targets(self):
+        try:
+            from surveillance.models import TargetPerson, TargetAssignment
+            active = TargetPerson.objects.filter(is_found=False).distinct()
+            t_list = []
+            for t in active:
+                ass = TargetAssignment.objects.filter(target=t).last()
+                t_list.append({
+                    "id":            t.pk,
+                    "name":          t.name,
+                    "path":          t.image.path,
+                    "assignment_id": ass.pk if ass else None
+                })
+            self._deepface.targets = t_list
+        except Exception as e:
+            print(f"[refresh_targets] Error: {e}")
+
+    def run(self):
+        self.running = True
+        model = get_yolo_model()
+        src   = int(self.index_or_url) if self.index_or_url.isdigit() else self.index_or_url
+
+        self._deepface.start()
+        self.refresh_targets()
+        _broadcast_camera_status(self.camera_id, self.camera_name, self.location, 'online')
+
+        frame_count       = 0
+        last_action_save  = 0
+        consecutive_fails = 0
+        MAX_FAILS         = 10
+
+        def open_capture():
+            cap = cv2.VideoCapture(src, cv2.CAP_DSHOW)
+            cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            return cap
+
+        cap = open_capture()
+
+        while self.running:
+            try:
+                ret, frame = cap.read()
+            except Exception as e:
+                print(f"[Camera {self.camera_id}] cap.read() exception: {e}")
+                ret, frame = False, None
+
+            # Handle bad frame
+            if not ret or frame is None:
+                consecutive_fails += 1
+                print(f"[Camera {self.camera_id}] Bad frame ({consecutive_fails}/{MAX_FAILS})")
+
+                if consecutive_fails >= MAX_FAILS:
+                    print(f"[Camera {self.camera_id}] Too many failures, reconnecting...")
+                    try:
+                        cap.release()
+                    except Exception:
+                        pass
+                    time.sleep(2)
+                    cap = open_capture()
+                    consecutive_fails = 0
+                    if not cap.isOpened():
+                        print(f"[Camera {self.camera_id}] Reconnect failed, retrying in 5s...")
+                        time.sleep(5)
+                else:
+                    time.sleep(0.1)
+                continue
+
+            # Good frame
+            consecutive_fails = 0
+
+            try:
+                if frame_count % 2 == 0:
+                    results = model.predict(source=frame, conf=0.50, verbose=False)
+
+                    if results and len(results[0].boxes) > 0:
+                        person_count = len(results[0].boxes)
+                        action       = self.analyze_pose(results[0].keypoints)
+
+                        if action != "Normal":
+                            _broadcast({
+                                "type": "ALARM",
+                                "action": action,
+                                "camera": self.camera_name,
+                                "camera_id": self.camera_id
+                            })
+
+                            if (time.time() - last_action_save > 5):
+                                # Save pose alarm in background thread with snapshot
+                                threading.Thread(
+                                    target=_save_detection,
+                                    args=(self.camera_id, person_count, action),
+                                    kwargs={"frame": frame.copy()},
+                                    daemon=True
+                                ).start()
+                                last_action_save = time.time()
+
+                        if frame_count % FACE_CHECK_INTERVAL == 0:
+                            boxes = [tuple(b[:4]) for b in results[0].boxes.xyxy.cpu().numpy()]
+                            self._deepface.submit(frame, boxes)
+
+                        _broadcast({"type": "STAT_UPDATE", "count": person_count, "camera_id": self.camera_id})
+                    else:
+                        _broadcast({"type": "STAT_UPDATE", "count": 0, "camera_id": self.camera_id})
+
+            except Exception as e:
+                print(f"[Camera {self.camera_id}] Processing error: {e}")
+
+            if frame_count % 600 == 0:
+                self.refresh_targets()
+
+            frame_count += 1
+
+        try:
+            cap.release()
+        except Exception:
+            pass
+
+        self._deepface.stop()
+        _broadcast_camera_status(self.camera_id, self.camera_name, self.location, 'offline')
+
+    def stop(self):
+        self.running = False
+
+
+# -- Engine Manager --
+class EngineManager:
+    def __init__(self):
+        self._threads = {}
+
+    def start_camera(self, camera_obj):
+        if camera_obj.id in self._threads and self._threads[camera_obj.id].is_alive():
+            return
+        t = CameraThread(camera_obj)
+        self._threads[camera_obj.id] = t
+        t.start()
+
+    def stop_camera(self, camera_id):
+        t = self._threads.pop(camera_id, None)
+        if t:
+            t.stop()
+
+
+engine_manager = EngineManager()
+
+
+def probe_camera_index(idx: int, timeout: float = 3.0) -> bool:
+    result = [False]
+    ev = threading.Event()
+    def _try():
+        cap = cv2.VideoCapture(idx, cv2.CAP_DSHOW)
+        if cap.isOpened():
+            ok, _ = cap.read()
+            result[0] = ok
+        cap.release()
+        ev.set()
+    threading.Thread(target=_try, daemon=True).start()
+    ev.wait(timeout=timeout)
+    return result[0]

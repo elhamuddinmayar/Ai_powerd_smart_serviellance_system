@@ -7,6 +7,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0e1a">
   <title>{% block title %}Butterfly AI{% endblock %} — Butterfly</title>
 
   <!-- Font Awesome -->
@@ -16,153 +17,20 @@
 
   <!-- Main stylesheet -->
   <link rel="stylesheet" href="{% static 'css/butterfly.css' %}">
-  <style>
-      @media print {
 
-      /* 1. Hide all UI chrome */
-      nav,
-      header,
-      footer,
-      aside,
-      .sidebar,
-      .navbar,
-      .topbar,
-      .b-page-header button,
-      .b-pagination,
-      .b-btn--ghost,
-      .b-btn--pdf,
-      .b-btn--danger,
-      .b-btn--primary,
-      .verif-grid form,
-      .manage-grid .panel:first-child,
-      [class*="sidebar"],
-      [class*="navbar"],
-      [class*="nav-"],
-      [class*="menu"],
-      [class*="toast"],
-      [class*="modal"] {
-        display: none !important;
-      }
-
-      /* 2. Reset layout for print */
-      body {
-        background: white !important;
-        color: black !important;
-        font-size: 12px;
-        margin: 0;
-        padding: 0;
-      }
-
-      /* 3. Make main content full width */
-      .main-content,
-      .content,
-      .container,
-      main,
-      [class*="content"] {
-        margin: 0 !important;
-        padding: 10px !important;
-        width: 100% !important;
-        max-width: 100% !important;
-      }
-
-      /* 4. Clean tables */
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 11px;
-      }
-
-      th, td {
-        border: 1px solid #aaa !important;
-        padding: 5px 7px !important;
-        color: #000 !important;
-        background: white !important;
-      }
-
-      th {
-        background: #eee !important;
-        font-weight: bold;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-
-      /* 5. Fix badges — remove colors, keep text */
-      .b-badge,
-      [class*="badge"],
-      [class*="tag"],
-      [class*="status"] {
-        background: none !important;
-        color: #000 !important;
-        border: 1px solid #999 !important;
-        padding: 1px 4px;
-        font-size: 10px;
-      }
-
-      /* 6. Fix images */
-      img {
-        max-width: 50px !important;
-        max-height: 50px !important;
-        object-fit: cover;
-      }
-
-      /* 7. Hide action buttons inside table cells */
-      td a,
-      td button,
-      td form {
-        display: none !important;
-      }
-
-      /* 8. Show page title */
-      .b-page-title {
-        font-size: 16px !important;
-        color: #000 !important;
-        display: block !important;
-        margin-bottom: 8px;
-      }
-
-      .b-page-sub {
-        font-size: 11px !important;
-        color: #555 !important;
-        display: block !important;
-        margin-bottom: 12px;
-      }
-
-      /* 9. Cards for verification page */
-      .b-card {
-        border: 1px solid #ccc !important;
-        background: white !important;
-        margin-bottom: 12px;
-        page-break-inside: avoid;
-      }
-
-      /* 10. Page break control */
-      tr {
-        page-break-inside: avoid;
-      }
-
-      /* 11. Print header with timestamp */
-      body::before {
-        content: "Butterfly Surveillance System — Printed: " attr(data-print-time);
-        display: block;
-        font-size: 11px;
-        color: #555;
-        border-bottom: 1px solid #ccc;
-        padding-bottom: 6px;
-        margin-bottom: 10px;
-      }
-    }
-</style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 
 <!-- ══ NAVBAR ═══════════════════════════════════════════════ -->
-<nav class="b-nav">
-  <!-- Brand -->
-  <a href="{% url 'home' %}" class="b-nav__brand">BUTTERFLY</a>
+<nav class="b-nav" role="navigation" aria-label="Main navigation">
 
-  <!-- Mobile toggle -->
-  <button class="b-nav__toggle" id="b-nav-toggle" aria-label="Menu">
+  <!-- Brand -->
+  <a href="{% url 'home' %}" class="b-nav__brand" aria-label="Butterfly Home">BUTTERFLY</a>
+
+  <!-- Mobile toggle — sits after brand, pushed right by flex -->
+  <button class="b-nav__toggle" id="b-nav-toggle"
+          aria-label="Open menu" aria-expanded="false" aria-controls="b-nav-links">
     <i class="fas fa-bars"></i>
   </button>
 
@@ -217,7 +85,7 @@
 
     {% if user.is_authenticated %}
       <!-- Notifications bell -->
-      <a href="{% url 'notifications_list' %}" class="notif-bell" title="Notifications">
+      <a href="{% url 'notifications_list' %}" class="notif-bell" title="Notifications" aria-label="Notifications">
         <i class="fas fa-bell"></i>
         <span class="notif-badge" data-notif-badge data-count="{{ unread_count|default:0 }}">
           {% if unread_count %}{{ unread_count }}{% endif %}
@@ -229,18 +97,18 @@
         {% if user.profile.profile_picture %}
           <img class="b-nav__avatar" src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}">
         {% else %}
-          <span class="b-nav__avatar" style="background:var(--panel-2);display:flex;align-items:center;justify-content:center;font-size:.9rem;">
+          <span class="b-nav__avatar" style="background:var(--panel-2);display:flex;align-items:center;justify-content:center;font-size:.85rem;">
             <i class="fas fa-user"></i>
           </span>
         {% endif %}
         <span>{{ user.username }}</span>
         <span class="b-badge b-badge--{% if user.profile.role == 'admin' or user.is_superuser %}green{% elif user.profile.role == 'supervisor' %}blue{% else %}gray{% endif %}"
-              style="font-size:.6rem;padding:.1rem .4rem;">
+              style="font-size:.58rem;padding:.1rem .35rem;">
           {{ user.profile.role|upper }}
         </span>
       </a>
 
-      <a href="{% url 'logout' %}" class="b-nav__link danger" title="Logout">
+      <a href="{% url 'logout' %}" class="b-nav__link danger" title="Logout" aria-label="Logout">
         <i class="fas fa-sign-out-alt"></i>
       </a>
     {% else %}
@@ -251,7 +119,7 @@
   </div>
 </nav>
 
-<!-- ══ DJANGO MESSAGES (hidden, consumed by JS) ══════════════ -->
+<!-- ══ DJANGO MESSAGES (consumed by JS) ─────────────────────── -->
 {% if messages %}
   {% for message in messages %}
     <div data-django-message
@@ -261,48 +129,31 @@
   {% endfor %}
 {% endif %}
 
-<!-- ══ SNAP MODAL ════════════════════════════════════════════ -->
-<div id="snapModal" class="b-snap-modal">
+<!-- ══ SNAP MODAL ────────────────────────────────────────────── -->
+<div id="snapModal" class="b-snap-modal" role="dialog" aria-modal="true" aria-label="Snapshot viewer">
   <img id="snapModalImg" src="" alt="Snapshot">
 </div>
 
-<!-- ══ MAIN CONTENT ══════════════════════════════════════════ -->
-<main class="b-main">
+<!-- ══ MAIN CONTENT ─────────────────────────────────────────── -->
+<main class="b-main" id="main-content">
   {% block content %}{% endblock %}
 </main>
 
-<!-- ══ SCRIPTS ═══════════════════════════════════════════════ -->
+<!-- ══ SCRIPTS ──────────────────────────────────────────────── -->
 <script src="{% static 'js/butterfly.js' %}"></script>
 
 <script>
 function switchLang(code) {
-  // We create a placeholder URL and replace 'LANGUAGE_CODE' with the actual code
   let url = "{% url 'set_lang' lang_code='placeholder' %}".replace('placeholder', code);
-
   fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'X-CSRFToken': '{{ csrf_token }}'
-    },
-    // Since the lang_code is now in the URL path, you don't strictly need it in the body,
-    // but keeping it doesn't hurt if your view expects it.
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}' },
     body: 'language=' + encodeURIComponent(code) + '&next=' + encodeURIComponent(location.pathname)
   }).then(() => location.reload());
 }
 </script>
-<script>
-function printPage() {
-  // Stamp current datetime on body for the print header
-  document.body.setAttribute(
-    'data-print-time',
-    new Date().toLocaleString()
-  );
-  window.print();
-}
-</script>
-{% block extra_js %}{% endblock %}
 
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>
