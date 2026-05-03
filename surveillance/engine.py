@@ -13,7 +13,7 @@ from ultralytics import YOLO
 from deepface import DeepFace
 
 # -- Path Configuration --
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 YOLO_PATH = os.path.join(BASE_DIR, 'surveillance', 'models', 'yolo11n_models', 'yolo11n-pose.pt')
 
 # -- Detection Constants --
@@ -23,19 +23,51 @@ THRESHOLD           = 0.30
 FACE_CHECK_INTERVAL = 5
 MATCH_COOLDOWN_SEC  = 15
 
-# -- YOLO Model Loader --
+# ── Shared JPEG frame buffer ──────────────────────────────────────────────────
+# ONE buffer per camera_id, written by CameraThread, read by any number of
+# MJPEG streaming responses simultaneously — no second VideoCapture needed.
+_frame_buffers: dict = {}   # { camera_id: bytes }
+_frame_locks:   dict = {}   # { camera_id: threading.Lock }
+
+
+def set_frame(camera_id, jpeg_bytes):
+    """Push a new JPEG frame into the shared buffer. Called by CameraThread."""
+    if camera_id not in _frame_locks:
+        _frame_locks[camera_id] = threading.Lock()
+    with _frame_locks[camera_id]:
+        _frame_buffers[camera_id] = jpeg_bytes
+
+
+def get_frame(camera_id):
+    """Return the latest JPEG bytes for a camera, or None if not available."""
+    lock = _frame_locks.get(camera_id)
+    if not lock:
+        return None
+    with lock:
+        return _frame_buffers.get(camera_id)
+
+
+def clear_frame_buffer(camera_id):
+    """Remove the buffer entry when a camera stops."""
+    _frame_buffers.pop(camera_id, None)
+    _frame_locks.pop(camera_id, None)
+
+
+# -- YOLO Model Loader (singleton, loaded once) --
 _yolo_model = None
 _yolo_lock  = threading.Lock()
+
 
 def get_yolo_model():
     global _yolo_model
     with _yolo_lock:
         if _yolo_model is None:
-            model = YOLO(YOLO_PATH)
+            model  = YOLO(YOLO_PATH)
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
             model.to(device)
             _yolo_model = model
         return _yolo_model
+
 
 # -- Broadcast Helpers --
 def _broadcast(data):
@@ -49,28 +81,51 @@ def _broadcast(data):
     except Exception:
         pass
 
+
 def _broadcast_camera_status(camera_id, camera_name, location, status):
     _broadcast({
-        "type": "CAMERA_STATUS",
+        "type":      "CAMERA_STATUS",
         "camera_id": camera_id,
-        "status": status,
-        "timestamp": timezone.now().isoformat()
+        "name":      camera_name,
+        "location":  location,
+        "status":    status,
+        "timestamp": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
     })
+    # Also push to camera_group so the camera dashboard WS updates
+    try:
+        cl = get_channel_layer()
+        if cl:
+            async_to_sync(cl.group_send)(
+                "camera_group",
+                {
+                    "type": "forward_to_websocket",
+                    "payload": {
+                        "type":      "CAMERA_STATUS",
+                        "camera_id": camera_id,
+                        "name":      camera_name,
+                        "location":  location,
+                        "status":    status,
+                        "timestamp": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    }
+                }
+            )
+    except Exception:
+        pass
 
-# -- Save snapshot to disk, returns relative path or None --
+
 def _save_snapshot(frame):
     try:
-        filename = f"{uuid.uuid4().hex}.jpg"
-        save_dir = os.path.join(settings.MEDIA_ROOT, 'snapshots')
+        filename  = f"{uuid.uuid4().hex}.jpg"
+        save_dir  = os.path.join(settings.MEDIA_ROOT, 'snapshots')
         os.makedirs(save_dir, exist_ok=True)
         full_path = os.path.join(save_dir, filename)
         cv2.imwrite(full_path, frame)
-        return f"snapshots/{filename}"   # relative to MEDIA_ROOT
+        return f"snapshots/{filename}"
     except Exception as e:
         print(f"[snapshot] Failed to save: {e}")
         return None
 
-# -- Save detection event to DB (no Celery) --
+
 def _save_detection(camera_id, person_count, action,
                     matched_target_id=None, matched_name='',
                     assignment_id=None, frame=None):
@@ -84,12 +139,10 @@ def _save_detection(camera_id, person_count, action,
         from surveillance.models import DetectionEvent, TargetPerson, TargetAssignment, Notification
 
         target_obj     = TargetPerson.objects.filter(pk=matched_target_id).first() if matched_target_id else None
-        assignment_obj = TargetAssignment.objects.filter(pk=assignment_id).first() if assignment_id else None
+        assignment_obj = TargetAssignment.objects.filter(pk=assignment_id).first()  if assignment_id    else None
 
-        # Save snapshot image
         snapshot_relative_path = _save_snapshot(frame) if frame is not None else None
 
-        # Build the event without frame_snapshot first
         event = DetectionEvent(
             timestamp=timezone.now(),
             person_count=person_count,
@@ -101,7 +154,6 @@ def _save_detection(camera_id, person_count, action,
             verification_status='pending' if (matched_target_id or action != 'Normal') else 'unreviewed',
         )
 
-        # Assign snapshot path correctly to ImageField
         if snapshot_relative_path:
             event.frame_snapshot.name = snapshot_relative_path
 
@@ -109,7 +161,6 @@ def _save_detection(camera_id, person_count, action,
 
         channel_layer = get_channel_layer()
 
-        # Notify supervisor/admin if target matched
         if matched_target_id and assignment_obj and assignment_obj.assigned_by:
             notif = Notification.objects.create(
                 recipient=assignment_obj.assigned_by,
@@ -123,21 +174,18 @@ def _save_detection(camera_id, person_count, action,
                 async_to_sync(channel_layer.group_send)(
                     f"user_{assignment_obj.assigned_by.id}",
                     {
-                        "type": "send_notification",
-                        "notification_id": notif.id,
-                        "title": notif.title,
-                        "message": notif.message,
-                        "created_at": notif.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                        "type":              "send_notification",
+                        "notification_id":   notif.id,
+                        "title":             notif.title,
+                        "message":           notif.message,
+                        "created_at":        notif.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                     }
                 )
             except Exception as e:
                 print(f"[notification] WebSocket send failed: {e}")
 
-        # Also notify the target's uploaded_by (supervisor) directly
-        # even if no assignment exists — this fixes supervisor history
         if matched_target_id and target_obj and target_obj.uploaded_by:
             supervisor = target_obj.uploaded_by
-            # Only notify if not already notified via assignment
             if not (assignment_obj and assignment_obj.assigned_by == supervisor):
                 try:
                     Notification.objects.create(
@@ -150,16 +198,15 @@ def _save_detection(camera_id, person_count, action,
                     async_to_sync(channel_layer.group_send)(
                         f"user_{supervisor.id}",
                         {
-                            "type": "send_notification",
-                            "title": f"Target Detected: {matched_name}",
-                            "message": f"Detected on Camera {camera_id}",
+                            "type":       "send_notification",
+                            "title":      f"Target Detected: {matched_name}",
+                            "message":    f"Detected on Camera {camera_id}",
                             "created_at": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
                         }
                     )
                 except Exception as e:
                     print(f"[supervisor notify] Failed: {e}")
 
-        # Broadcast activity log for non-normal actions
         if action != 'Normal':
             try:
                 async_to_sync(channel_layer.group_send)(
@@ -167,8 +214,8 @@ def _save_detection(camera_id, person_count, action,
                     {
                         "type": "forward_to_websocket",
                         "payload": {
-                            "type": "ACTIVITY_LOG",
-                            "action": action,
+                            "type":      "ACTIVITY_LOG",
+                            "action":    action,
                             "camera_id": camera_id,
                             "timestamp": event.timestamp.strftime("%H:%M:%S")
                         }
@@ -177,7 +224,7 @@ def _save_detection(camera_id, person_count, action,
             except Exception as e:
                 print(f"[activity_log] Broadcast failed: {e}")
 
-        print(f"[_save_detection] Saved event {event.id} | action={action} | target={matched_name} | snapshot={snapshot_relative_path}")
+        print(f"[_save_detection] Saved event {event.id} | action={action} | target={matched_name}")
         return event.id
 
     except Exception as e:
@@ -186,16 +233,17 @@ def _save_detection(camera_id, person_count, action,
         traceback.print_exc()
         return None
 
+
 # -- Face Recognition Worker Thread --
 class DeepFaceWorker(threading.Thread):
     def __init__(self, on_match):
         super().__init__(daemon=True)
-        self._queue  = []
-        self._lock   = threading.Lock()
-        self._event  = threading.Event()
-        self.on_match = on_match
-        self.targets  = []
-        self.running  = True
+        self._queue           = []
+        self._lock            = threading.Lock()
+        self._event           = threading.Event()
+        self.on_match         = on_match
+        self.targets          = []
+        self.running          = True
         self._embedding_cache = {}
         self._last_match_time = {}
 
@@ -231,7 +279,6 @@ class DeepFaceWorker(threading.Thread):
                 if (time.time() - self._last_match_time.get(target['id'], 0)) < MATCH_COOLDOWN_SEC:
                     continue
 
-                # Cache target embedding
                 if target['id'] not in self._embedding_cache:
                     try:
                         res = DeepFace.represent(
@@ -276,7 +323,7 @@ class DeepFaceWorker(threading.Thread):
 
     def stop(self):
         self.running = False
-        self._event.set()   # unblock the wait() so thread exits cleanly
+        self._event.set()
 
 
 # -- Main Camera Thread --
@@ -291,15 +338,12 @@ class CameraThread(threading.Thread):
         self._deepface    = DeepFaceWorker(self._on_face_match)
 
     def _on_face_match(self, tid, name, aid, frame):
-        # 1. Broadcast real-time alert immediately
         _broadcast({
-            "type": "TARGET_MATCH",
-            "name": name,
-            "camera": self.camera_name,
+            "type":      "TARGET_MATCH",
+            "name":      name,
+            "camera":    self.camera_name,
             "camera_id": self.camera_id
         })
-
-        # 2. Save to DB with snapshot — runs in DeepFaceWorker thread
         _save_detection(
             camera_id=self.camera_id,
             person_count=1,
@@ -313,42 +357,27 @@ class CameraThread(threading.Thread):
     def analyze_pose(self, keypoints_data):
         if keypoints_data is None or len(keypoints_data.xy) == 0:
             return "Normal"
-        
         try:
-            # Get coordinates and confidence scores
-            kp = keypoints_data.xy[0].cpu().numpy()   # [x, y] for 17 points
-            conf = keypoints_data.conf[0].cpu().numpy() # Confidence for 17 points
+            kp   = keypoints_data.xy[0].cpu().numpy()
+            conf = keypoints_data.conf[0].cpu().numpy()
 
-            # Indices: 0:Nose, 1:L-Eye, 2:R-Eye, 9:L-Wrist, 10:R-Wrist, 11:L-Hip, 12:R-Hip
-            
-            # --- HAND WAVING CHECK ---
-            # Calculate a reliable head-level (using nose or eyes)
             if conf[0] > 0.5:
-                head_y = kp[0][1]
-                
-                # Check Left Wrist (9) OR Right Wrist (10)
-                left_hand_up = conf[9] > 0.5 and kp[9][1] < head_y
+                head_y        = kp[0][1]
+                left_hand_up  = conf[9]  > 0.5 and kp[9][1]  < head_y
                 right_hand_up = conf[10] > 0.5 and kp[10][1] < head_y
-
                 if left_hand_up or right_hand_up:
                     return "HAND WAVING"
 
-            # --- FALL DETECTION CHECK ---
-            # A fall is often detected when the head (0) is below the hip level (11/12)
-            # OR when the distance between shoulders and hips becomes horizontal.
             if conf[0] > 0.5 and (conf[11] > 0.5 or conf[12] > 0.5):
-                # Average hip height
                 hip_y = np.mean([kp[i][1] for i in [11, 12] if conf[i] > 0.5])
-                
-                # If nose is significantly lower than hips, it's a fall
-                # (Remember: higher Y value means lower on the screen)
                 if kp[0][1] > hip_y:
                     return "FALL DETECTED"
 
         except Exception as e:
             print(f"Pose Analysis Error: {e}")
-            
+
         return "Normal"
+
     def refresh_targets(self):
         try:
             from surveillance.models import TargetPerson, TargetAssignment
@@ -366,6 +395,24 @@ class CameraThread(threading.Thread):
         except Exception as e:
             print(f"[refresh_targets] Error: {e}")
 
+    def _update_db_status(self, status):
+        """Update Camera model status in DB without blocking the capture loop."""
+        try:
+            from camera.models import Camera
+            if status == 'online':
+                Camera.objects.filter(pk=self.camera_id).update(
+                    status='online',
+                    last_seen_at=timezone.now(),
+                    went_offline_at=None,
+                )
+            else:
+                Camera.objects.filter(pk=self.camera_id).update(
+                    status='offline',
+                    went_offline_at=timezone.now(),
+                )
+        except Exception as e:
+            print(f"[Camera {self.camera_id}] DB status update failed: {e}")
+
     def run(self):
         self.running = True
         model = get_yolo_model()
@@ -373,16 +420,20 @@ class CameraThread(threading.Thread):
 
         self._deepface.start()
         self.refresh_targets()
-        _broadcast_camera_status(self.camera_id, self.camera_name, self.location, 'online')
 
         frame_count       = 0
         last_action_save  = 0
         consecutive_fails = 0
         MAX_FAILS         = 10
+        is_online         = False
 
         def open_capture():
+            """Open VideoCapture with CAP_DSHOW on Windows for faster startup."""
             cap = cv2.VideoCapture(src, cv2.CAP_DSHOW)
             cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            # Reduce resolution for faster streaming if not already set
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
             return cap
 
         cap = open_capture()
@@ -394,10 +445,15 @@ class CameraThread(threading.Thread):
                 print(f"[Camera {self.camera_id}] cap.read() exception: {e}")
                 ret, frame = False, None
 
-            # Handle bad frame
+            # ── Handle bad frame ─────────────────────────────────────────────
             if not ret or frame is None:
                 consecutive_fails += 1
-                print(f"[Camera {self.camera_id}] Bad frame ({consecutive_fails}/{MAX_FAILS})")
+
+                # Mark offline on first failure after being online
+                if is_online and consecutive_fails == 1:
+                    is_online = False
+                    self._update_db_status('offline')
+                    _broadcast_camera_status(self.camera_id, self.camera_name, self.location, 'offline')
 
                 if consecutive_fails >= MAX_FAILS:
                     print(f"[Camera {self.camera_id}] Too many failures, reconnecting...")
@@ -409,15 +465,32 @@ class CameraThread(threading.Thread):
                     cap = open_capture()
                     consecutive_fails = 0
                     if not cap.isOpened():
-                        print(f"[Camera {self.camera_id}] Reconnect failed, retrying in 5s...")
                         time.sleep(5)
                 else:
                     time.sleep(0.1)
                 continue
 
-            # Good frame
+            # ── Good frame ───────────────────────────────────────────────────
             consecutive_fails = 0
 
+            # Mark online on first good frame
+            if not is_online:
+                is_online = True
+                self._update_db_status('online')
+                _broadcast_camera_status(self.camera_id, self.camera_name, self.location, 'online')
+
+            # Push compressed JPEG into the shared frame buffer for MJPEG viewer
+            # This is the ONLY place the frame is captured — the viewer just reads this buffer
+            try:
+                _, _buf = cv2.imencode(
+                    '.jpg', frame,
+                    [cv2.IMWRITE_JPEG_QUALITY, 75]
+                )
+                set_frame(self.camera_id, _buf.tobytes())
+            except Exception:
+                pass
+
+            # ── YOLO inference (every other frame) ──────────────────────────
             try:
                 if frame_count % 2 == 0:
                     results = model.predict(source=frame, conf=0.50, verbose=False)
@@ -428,14 +501,13 @@ class CameraThread(threading.Thread):
 
                         if action != "Normal":
                             _broadcast({
-                                "type": "ALARM",
-                                "action": action,
-                                "camera": self.camera_name,
+                                "type":      "ALARM",
+                                "action":    action,
+                                "camera":    self.camera_name,
                                 "camera_id": self.camera_id
                             })
 
-                            if (time.time() - last_action_save > 5):
-                                # Save pose alarm in background thread with snapshot
+                            if time.time() - last_action_save > 5:
                                 threading.Thread(
                                     target=_save_detection,
                                     args=(self.camera_id, person_count, action),
@@ -460,13 +532,19 @@ class CameraThread(threading.Thread):
 
             frame_count += 1
 
+        # ── Cleanup on thread exit ───────────────────────────────────────────
         try:
             cap.release()
         except Exception:
             pass
 
+        # Clear the MJPEG buffer so the viewer shows the offline overlay
+        clear_frame_buffer(self.camera_id)
+
         self._deepface.stop()
+        self._update_db_status('offline')
         _broadcast_camera_status(self.camera_id, self.camera_name, self.location, 'offline')
+        print(f"[Camera {self.camera_id}] Thread stopped cleanly.")
 
     def stop(self):
         self.running = False
@@ -475,19 +553,47 @@ class CameraThread(threading.Thread):
 # -- Engine Manager --
 class EngineManager:
     def __init__(self):
-        self._threads = {}
+        self._threads: dict = {}
+        self._lock = threading.Lock()
 
     def start_camera(self, camera_obj):
-        if camera_obj.id in self._threads and self._threads[camera_obj.id].is_alive():
-            return
-        t = CameraThread(camera_obj)
-        self._threads[camera_obj.id] = t
-        t.start()
+        with self._lock:
+            existing = self._threads.get(camera_obj.id)
+            if existing and existing.is_alive():
+                print(f"[EngineManager] Camera {camera_obj.id} already running, skipping.")
+                return
+            t = CameraThread(camera_obj)
+            self._threads[camera_obj.id] = t
+            t.start()
+            print(f"[EngineManager] Started camera {camera_obj.id} ({camera_obj.name})")
 
     def stop_camera(self, camera_id):
-        t = self._threads.pop(camera_id, None)
+        with self._lock:
+            t = self._threads.pop(camera_id, None)
         if t:
             t.stop()
+            # Give the thread up to 3 seconds to stop cleanly
+            t.join(timeout=3.0)
+            print(f"[EngineManager] Stopped camera {camera_id}")
+
+    def restart_camera(self, camera_obj):
+        """Stop then start a camera without full server restart."""
+        self.stop_camera(camera_obj.id)
+        time.sleep(0.5)   # brief pause to let VideoCapture release
+        self.start_camera(camera_obj)
+
+    def running_ids(self):
+        """Return the set of camera_ids that have a live thread."""
+        with self._lock:
+            return {cid for cid, t in self._threads.items() if t.is_alive()}
+
+    def invalidate_target_cache(self):
+        """Force all running cameras to reload their face-target list."""
+        with self._lock:
+            threads = list(self._threads.values())
+        for t in threads:
+            if t.is_alive() and hasattr(t, 'refresh_targets'):
+                t.refresh_targets()
 
 
 engine_manager = EngineManager()
@@ -495,7 +601,8 @@ engine_manager = EngineManager()
 
 def probe_camera_index(idx: int, timeout: float = 3.0) -> bool:
     result = [False]
-    ev = threading.Event()
+    ev     = threading.Event()
+
     def _try():
         cap = cv2.VideoCapture(idx, cv2.CAP_DSHOW)
         if cap.isOpened():
@@ -503,7 +610,7 @@ def probe_camera_index(idx: int, timeout: float = 3.0) -> bool:
             result[0] = ok
         cap.release()
         ev.set()
+
     threading.Thread(target=_try, daemon=True).start()
     ev.wait(timeout=timeout)
     return result[0]
-

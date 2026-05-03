@@ -1,12 +1,24 @@
+import asyncio
+import cv2
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse, HttpResponse
 from django.utils import timezone
-from .models import Camera
-from .forms import CameraForm
-from surveillance.engine import engine_manager, _broadcast_camera_status, probe_camera_index
+from asgiref.sync import sync_to_async
 
+from .models import Camera
+from .forms  import CameraForm
+from surveillance.engine import (
+    engine_manager,
+    _broadcast_camera_status,
+    probe_camera_index,
+    get_frame as engine_get_frame,
+)
+
+
+# ── Role helper ───────────────────────────────────────────────────────────────
 
 def is_admin(user):
     return user.is_authenticated and (
@@ -14,6 +26,8 @@ def is_admin(user):
         (hasattr(user, 'profile') and user.profile.role == 'admin')
     )
 
+
+# ── Views ─────────────────────────────────────────────────────────────────────
 
 @login_required
 def camera_dashboard(request):
@@ -35,13 +49,11 @@ def camera_register(request):
                 engine_manager.start_camera(cam)
             messages.success(request, f"Camera '{cam.name}' registered successfully.")
             return redirect('camera_dashboard')
-        else:
-            messages.error(request, "Please fix the errors below.")
+        messages.error(request, "Please fix the errors below.")
     else:
         form = CameraForm()
     return render(request, 'camera/camera_register.html', {
-        'form':     form,
-        'is_admin': True,
+        'form': form, 'is_admin': True,
     })
 
 
@@ -53,7 +65,6 @@ def camera_edit(request, pk):
         form = CameraForm(request.POST, instance=cam)
         if form.is_valid():
             cam = form.save()
-            # Invalidate face embedding cache in case the camera changed
             engine_manager.invalidate_target_cache()
             engine_manager.stop_camera(cam.pk)
             if cam.is_active:
@@ -63,9 +74,7 @@ def camera_edit(request, pk):
     else:
         form = CameraForm(instance=cam)
     return render(request, 'camera/camera_register.html', {
-        'form':     form,
-        'is_admin': True,
-        'editing':  cam,
+        'form': form, 'is_admin': True, 'editing': cam,
     })
 
 
@@ -83,7 +92,7 @@ def camera_delete(request, pk):
 @login_required
 @user_passes_test(is_admin, login_url='home')
 def camera_toggle(request, pk):
-    cam          = get_object_or_404(Camera, pk=pk)
+    cam           = get_object_or_404(Camera, pk=pk)
     cam.is_active = not cam.is_active
 
     if cam.is_active:
@@ -106,10 +115,6 @@ def camera_toggle(request, pk):
 
 @login_required
 def camera_status_json(request):
-    """
-    Full camera status list for the dashboard. Called on page load and
-    periodically by the camera dashboard JS to sync state.
-    """
     cameras = Camera.objects.all().values(
         'id', 'name', 'location', 'index_or_url',
         'status', 'is_active', 'last_seen_at', 'went_offline_at'
@@ -128,17 +133,148 @@ def camera_status_json(request):
 @login_required
 @user_passes_test(is_admin, login_url='home')
 def discover_cameras(request):
-    """
-    Probe integer indices 0–5 and return which are accessible.
-    Useful for the admin to find which index their USB/virtual camera is on
-    after a server restart. Non-blocking — uses probe_camera_index().
-    """
     found = []
     for idx in range(6):
-        accessible = probe_camera_index(idx, timeout=3.0)
         found.append({
             'index':      idx,
-            'accessible': accessible,
+            'accessible': probe_camera_index(idx, timeout=3.0),
             'label':      f"Camera {idx}",
         })
     return JsonResponse({'discovered': found})
+
+
+# ── Placeholder builder ───────────────────────────────────────────────────────
+
+def _build_placeholder():
+    """Small black 640×360 JPEG returned when no frame is ready yet."""
+    try:
+        import numpy as np
+        blank = np.zeros((360, 640, 3), dtype='uint8')
+        cv2.putText(blank, 'CONNECTING...', (200, 190),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 180, 120), 2)
+        _, buf = cv2.imencode('.jpg', blank, [cv2.IMWRITE_JPEG_QUALITY, 60])
+        return buf.tobytes()
+    except Exception:
+        return b''
+
+
+_PLACEHOLDER = None
+
+
+# ── Single-frame JPEG endpoint (ASGI-safe, replaces MJPEG stream) ─────────────
+#
+# ROOT CAUSE of the original MJPEG failure with Daphne:
+#   StreamingHttpResponse with a persistent async generator requires Daphne to
+#   keep an HTTP/1.1 chunked connection open and flush every chunk immediately.
+#   In practice Daphne buffers the ASGI http.response.body events, so the
+#   browser never receives any frames — it just spins forever.
+#
+# THE FIX — JS frame polling:
+#   Instead of one long-lived MJPEG connection we serve one JPEG per call.
+#   The browser JS requests /cameras/<pk>/frame/ roughly 25×/second and
+#   replaces the <img> src with the new blob URL on each response.
+#   Each request is a normal, short-lived HTTP exchange — Daphne handles these
+#   perfectly. The camera thread continues to push frames into the shared buffer
+#   (set_frame / get_frame) exactly as before; only the delivery mechanism changes.
+#
+# BENEFITS:
+#   • Works with Daphne, uvicorn, gunicorn — any ASGI/WSGI server
+#   • No persistent connections — scales to many simultaneous viewers
+#   • Zero buffering issues
+#   • Camera engine code is completely unchanged
+
+@login_required
+def camera_frame(request, pk):
+    """
+    Returns a single JPEG frame for the camera.
+    Called by the JS poller ~25 times per second.
+    Plain sync view — Django/Daphne wrap it in sync_to_async automatically,
+    so the ASGI event loop is never blocked.
+    """
+    cam = get_object_or_404(Camera, pk=pk)
+
+    if not cam.is_active:
+        return HttpResponse(status=503)
+
+    frame_bytes = engine_get_frame(cam.id)
+
+    if not frame_bytes:
+        global _PLACEHOLDER
+        if _PLACEHOLDER is None:
+            _PLACEHOLDER = _build_placeholder()
+        frame_bytes = _PLACEHOLDER
+
+        # Tell the JS poller this is a placeholder so it can show the overlay
+        response = HttpResponse(frame_bytes, content_type='image/jpeg')
+        response['X-Camera-Status'] = 'connecting'
+        response['Cache-Control']   = 'no-cache, no-store, must-revalidate'
+        response['Pragma']          = 'no-cache'
+        response['Expires']         = '0'
+        return response
+
+    response = HttpResponse(frame_bytes, content_type='image/jpeg')
+    response['X-Camera-Status'] = 'live'
+    response['Cache-Control']   = 'no-cache, no-store, must-revalidate'
+    response['Pragma']          = 'no-cache'
+    response['Expires']         = '0'
+    return response
+
+
+# ── Legacy MJPEG stream (kept for backward-compat / direct URL access) ────────
+#
+# NOTE: This still exists so any bookmarked /stream/ URLs don't 404,
+#       but the dashboard and viewer no longer use it — they use /frame/ + JS.
+
+async def camera_stream(request, pk):
+    """
+    Legacy MJPEG endpoint — kept for backward compatibility only.
+    New code should use camera_frame (JS polling) instead.
+    """
+    if not request.user.is_authenticated:
+        return HttpResponse("Unauthorized — please log in.", status=401)
+
+    try:
+        cam = await sync_to_async(Camera.objects.get)(pk=pk)
+    except Camera.DoesNotExist:
+        return HttpResponse("Camera not found.", status=404)
+
+    if not cam.is_active:
+        return HttpResponse("Camera is disabled.", status=503)
+
+    async def _gen():
+        global _PLACEHOLDER
+        try:
+            while True:
+                frame_bytes = engine_get_frame(cam.id)
+                if not frame_bytes:
+                    if _PLACEHOLDER is None:
+                        _PLACEHOLDER = _build_placeholder()
+                    frame_bytes = _PLACEHOLDER
+                yield (
+                    b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n'
+                    + frame_bytes +
+                    b'\r\n'
+                )
+                await asyncio.sleep(0.04)
+        except (GeneratorExit, asyncio.CancelledError):
+            pass
+
+    response = StreamingHttpResponse(
+        _gen(),
+        content_type='multipart/x-mixed-replace; boundary=frame',
+    )
+    response['Cache-Control']     = 'no-cache, no-store, must-revalidate'
+    response['X-Accel-Buffering'] = 'no'
+    return response
+
+
+# ── Camera viewer page ────────────────────────────────────────────────────────
+
+@login_required
+def camera_viewer(request, pk):
+    cam = get_object_or_404(Camera, pk=pk)
+    return render(request, 'camera/camera_viewer.html', {
+        'cam':      cam,
+        'is_admin': is_admin(request.user),
+    })

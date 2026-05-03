@@ -5,114 +5,184 @@
       dir="{% if LANGUAGE_CODE == 'fa' or LANGUAGE_CODE == 'ps' %}rtl{% else %}ltr{% endif %}">
 <head>
     <meta charset="UTF-8">
-    <title>{% trans "Butterfly - System Access" %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Authorize" %} — Butterfly</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
     <style>
+        :root {
+            --primary: #4ecca3;
+            --secondary: #e94560;
+            --bg-deep: #1a1a2e;
+            --glass: rgba(22, 33, 62, 0.85);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body { 
-            font-family: 'Segoe UI', 'Tahoma', sans-serif; 
-            background: #1a1a2e; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: radial-gradient(circle at center, #16213e 0%, #1a1a2e 100%);
             color: white; 
+            min-height: 100vh;
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            overflow: hidden; 
-            text-align: start;
-        }
-        
-        /* Notification Styling */
-        .msg-container { position: fixed; top: 20px; z-index: 9999; }
-        
-        /* Tactical positioning for notifications */
-        [dir="ltr"] .msg-container { right: 20px; }
-        [dir="rtl"] .msg-container { left: 20px; }
-
-        .toast-msg { 
-            background: #16213e; color: white; padding: 15px 25px; border-radius: 10px; 
-            margin-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            /* Logical property flips the border side automatically */
-            border-inline-start: 5px solid #4ecca3; 
-            animation: slideIn 0.5s ease-out; min-width: 250px;
-        }
-        .toast-msg.error { border-inline-start-color: #e94560; }
-        
-        @keyframes slideIn { 
-            from { transform: translateX({% if LANGUAGE_CODE == 'fa' or LANGUAGE_CODE == 'ps' %}-100%{% else %}100%{% endif %}); opacity: 0; } 
-            to { transform: translateX(0); opacity: 1; } 
+            padding: 20px;
         }
 
         /* Login Card */
-        .login-card { background: #16213e; border-radius: 20px; padding: 40px; border: 1px solid #0f3460; width: 100%; max-width: 400px; text-align: center; }
-        
+        .login-card { 
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-radius: 24px; 
+            padding: 40px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%; 
+            max-width: 420px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
         h1 { 
-            color: #4ecca3; 
+            color: var(--primary); 
             text-transform: uppercase; 
-            /* Remove letter spacing for non-latin scripts */
-            letter-spacing: {% if LANGUAGE_CODE == 'en' %}3px{% else %}0{% endif %}; 
-            font-size: 1.5rem; 
-            margin-bottom: 30px; 
+            letter-spacing: 2px;
+            font-size: 1.75rem; 
+            margin-bottom: 25px; 
         }
 
         input { 
-            width: 100%; padding: 12px; background: #1a1a2e; 
-            border: 1px solid #0f3460; border-radius: 10px; 
-            color: white; margin-bottom: 20px; box-sizing: border-box; 
-            outline: none; text-align: inherit;
+            width: 100%; 
+            padding: 14px 18px; 
+            background: rgba(26, 26, 46, 0.8); 
+            border: 2px solid transparent; 
+            border-radius: 12px; 
+            color: white; 
+            margin-bottom: 20px;
+            transition: var(--transition);
+            outline: none;
+            text-align: inherit;
         }
-        input:focus { border-color: #4ecca3; }
+
+        input:focus { border-color: var(--primary); background: #1a1a2e; }
 
         .btn-cyber { 
-            width: 100%; padding: 12px; background: #4ecca3; 
-            border: none; border-radius: 10px; color: #1a1a2e; 
-            font-weight: bold; cursor: pointer; text-transform: uppercase; 
-            transition: 0.3s; 
+            width: 100%; 
+            padding: 15px; 
+            background: var(--primary); 
+            border: none; 
+            border-radius: 12px; 
+            color: #1a1a2e; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            transition: var(--transition);
         }
-        .btn-cyber:hover { background: #45b791; transform: translateY(-2px); }
 
-        .links { margin-top: 20px; font-size: 0.8rem; }
-        .links a { color: #e94560; text-decoration: none; margin: 0 10px; }
+        .btn-cyber:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(78, 204, 163, 0.3); }
+
+        /* ══ LANGUAGE SWITCHER STYLING ══ */
+        .lang-container {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .lang-container i { color: var(--primary); font-size: 0.9rem; }
+
+        .b-lang {
+            background: #1a1a2e;
+            color: #4ecca3;
+            border: 1px solid rgba(78, 204, 163, 0.4);
+            border-radius: 8px;
+            padding: 6px 30px 6px 12px; /* Extra right padding for custom arrow */
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            /* Custom Arrow Icon */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ecca3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 14px;
+        }
+
+        /* Fixing the "White Box" issue in dropdowns */
+        .b-lang option {
+            background-color: #1a1a2e !important; /* Force dark background */
+            color: #ffffff !important;           /* Force white text */
+            padding: 12px;
+        }
+
+        .b-lang:hover { border-color: var(--primary); }
+
+        .links { margin-top: 20px; }
+        .links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.85rem; transition: 0.3s; }
+        .links a:hover { color: var(--secondary); }
+
+        /* RTL support for the custom arrow */
+        [dir="rtl"] .b-lang {
+            padding: 6px 12px 6px 30px;
+            background-position: left 8px center;
+        }
     </style>
 </head>
 <body>
 
-    {% if messages %}
-    <div class="msg-container" id="alert-box">
-        {% for message in messages %}
-            <div class="toast-msg {{ message.tags }}">
-                <strong style="display:block; font-size: 0.7rem; margin-bottom: 5px; opacity: 0.8;">
-                    {% trans "SYSTEM STATUS" %}
-                </strong>
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <div class="login-card">
         <h1>{% trans "Authorize" %}</h1>
+        
         <form method="post">
             {% csrf_token %}
-            <input type="text" name="identifier" placeholder="{% trans 'USERNAME OR EMAIL' %}" required>
-            <input type="password" name="password" placeholder="{% trans 'PASSWORD' %}" required>
+            <input type="text" name="identifier" autocomplete="username" placeholder="{% trans 'Username or Email' %}" required>
+            <input type="password" name="password" autocomplete="current-password" placeholder="{% trans 'Password' %}" required>
             <button type="submit" class="btn-cyber">{% trans "Access System" %}</button>
         </form>
+
+        <!-- ══ LANGUAGE SELECTION ══ -->
+        <div class="lang-container">
+            <i class="fas fa-globe"></i>
+            <select class="b-lang" onchange="switchLang(this.value)" aria-label="Language">
+                {% get_available_languages as LANGUAGES %}
+                {% for lang in LANGUAGES %}
+                    <option value="{{ lang.0 }}" 
+                            style="background-color: #1a1a2e; color: white;" 
+                            {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
+                        {{ lang.1 }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
         <div class="links">
-            <a href="{% url 'home' %}" style="color: #95a5a6;">{% trans "Cancel" %}</a>
+            <a href="{% url 'home' %}">{% trans "Cancel" %}</a>
         </div>
     </div>
 
     <script>
-        setTimeout(function() {
-            var alertBox = document.getElementById('alert-box');
-            if (alertBox) {
-                alertBox.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-                alertBox.style.opacity = "0";
-                // Adjusted slide-out for RTL
-                let exitX = document.documentElement.dir === "rtl" ? "-50px" : "50px";
-                alertBox.style.transform = `translateX(${exitX})`;
-                setTimeout(() => alertBox.remove(), 500);
-            }
-        }, 4000);
+    function switchLang(code) {
+        let url = "{% url 'set_lang' lang_code='placeholder' %}".replace('placeholder', code);
+        
+        fetch(url, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/x-www-form-urlencoded', 
+                'X-CSRFToken': '{{ csrf_token }}' 
+            },
+            body: 'language=' + encodeURIComponent(code) + '&next=' + encodeURIComponent(location.pathname)
+        }).then(() => {
+            location.reload();
+        });
+    }
     </script>
+
 </body>
 </html>

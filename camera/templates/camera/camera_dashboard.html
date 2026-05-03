@@ -5,12 +5,12 @@
 <div class="page-header">
   <div class="page-header-left">
     <h1 class="page-title"><i class="fas fa-video"></i> Camera Control</h1>
-    <p class="page-subtitle">Live status of all registered cameras.</p>
+    <p class="page-subtitle">Live status of all registered cameras — click any online camera to view.</p>
   </div>
   {% if is_admin %}
   <div class="page-header-right">
     <button class="btn btn-discover" id="discoverBtn" onclick="discoverCameras()">
-      <i class="fas fa-search"></i> Discover Cameras
+      <i class="fas fa-search"></i> Discover
     </button>
     <a href="{% url 'camera_register' %}" class="btn btn-register">
       <i class="fas fa-plus"></i> Add Camera
@@ -31,67 +31,122 @@
 <!-- Camera grid -->
 <div class="cam-grid" id="camGrid">
   {% for cam in cameras %}
-  <div class="cam-card" id="cam-{{ cam.id }}">
-    <div class="cam-card-top">
+  <div class="cam-card {% if cam.status == 'online' and cam.is_active %}cam-card--online{% endif %}"
+       id="cam-{{ cam.id }}">
+
+    <!-- Clickable preview area -->
+    <div class="cam-preview-wrap" id="preview-wrap-{{ cam.id }}"
+         onclick="openCameraViewer({{ cam.id }}, '{{ cam.status }}', {{ cam.is_active|yesno:'true,false' }})">
+
+      <!-- Status dot -->
       <div class="cam-indicator {{ cam.status }}" id="indicator-{{ cam.id }}"></div>
-      <div class="cam-title-block">
-        <div class="cam-name">{{ cam.name }}</div>
-        <div class="cam-loc"><i class="fas fa-map-marker-alt"></i> {{ cam.location }}</div>
+
+      <!--
+        Thumbnail image — starts hidden; JS DashboardPoller fills it once
+        a live frame arrives.  Uses /cameras/<pk>/frame/ (JS polling) so
+        there are no MJPEG persistent connections to break on Daphne/ASGI.
+      -->
+      {% if cam.status == 'online' and cam.is_active %}
+      <img class="cam-thumb"
+           id="thumb-{{ cam.id }}"
+           alt="Live thumbnail"
+           style="display:none;">
+      <div class="cam-thumb-placeholder" id="placeholder-{{ cam.id }}">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span>Connecting</span>
       </div>
+      {% else %}
+      <div class="cam-thumb-placeholder" id="placeholder-{{ cam.id }}">
+        <i class="fas fa-{% if not cam.is_active %}ban{% else %}video-slash{% endif %}"></i>
+        <span>{% if not cam.is_active %}Disabled{% else %}Offline{% endif %}</span>
+      </div>
+      {% endif %}
+
+      <!-- Hover overlay -->
+      <div class="cam-preview-overlay">
+        <i class="fas fa-expand-alt"></i>
+        <span>Open Live View</span>
+      </div>
+    </div>
+
+    <!-- Card info -->
+    <div class="cam-info">
+      <div class="cam-card-top">
+        <div class="cam-title-block">
+          <div class="cam-name">{{ cam.name }}</div>
+          <div class="cam-loc"><i class="fas fa-map-marker-alt"></i> {{ cam.location }}</div>
+        </div>
+
+        {% if is_admin %}
+        <div class="cam-menu">
+          <a href="{% url 'camera_viewer' cam.pk %}" class="cam-action" title="Open viewer"
+             onclick="event.stopPropagation()" target="_blank">
+            <i class="fas fa-external-link-alt"></i>
+          </a>
+          <a href="{% url 'camera_edit' cam.pk %}" class="cam-action" title="Edit"
+             onclick="event.stopPropagation()">
+            <i class="fas fa-edit"></i>
+          </a>
+          <a href="{% url 'camera_delete' cam.pk %}" class="cam-action cam-del" title="Delete"
+             onclick="event.stopPropagation(); return confirm('Delete camera {{ cam.name }}?')">
+            <i class="fas fa-trash"></i>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="cam-source">
+        <i class="fas fa-plug"></i>
+        <code>{{ cam.index_or_url }}</code>
+      </div>
+
+      <div class="cam-status-row">
+        <span class="status-badge {{ cam.status }}" id="badge-{{ cam.id }}">
+          {{ cam.status|upper }}
+        </span>
+        <span class="cam-time" id="time-{{ cam.id }}">
+          {% if cam.last_seen_at %}Last seen: {{ cam.last_seen_at|date:"H:i:s" }}{% endif %}
+        </span>
+      </div>
+
+      {% if cam.went_offline_at %}
+      <div class="cam-offline-time" id="offline-{{ cam.id }}">
+        Offline since: {{ cam.went_offline_at|date:"Y-m-d H:i:s" }}
+      </div>
+      {% endif %}
+
       {% if is_admin %}
-      <div class="cam-menu">
-        <a href="{% url 'camera_edit' cam.pk %}" class="cam-action" title="Edit">
-          <i class="fas fa-edit"></i>
-        </a>
-        <a href="{% url 'camera_delete' cam.pk %}" class="cam-action cam-del" title="Delete"
-           onclick="return confirm('Delete camera {{ cam.name }}?')">
-          <i class="fas fa-trash"></i>
-        </a>
+      <div class="cam-footer">
+        <div class="cam-quick-actions">
+          <a href="{% url 'camera_viewer' cam.pk %}" class="quick-btn quick-btn--accent"
+             title="Open in viewer" target="_blank" onclick="event.stopPropagation()">
+            <i class="fas fa-tv"></i> View
+          </a>
+        </div>
+
+        <label class="toggle-switch" onclick="event.stopPropagation()">
+          <input type="checkbox" id="toggle-{{ cam.id }}"
+                 {% if cam.is_active %}checked{% endif %}
+                 onchange="toggleCamera({{ cam.id }}, this)">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label" id="toggle-label-{{ cam.id }}">
+            {% if cam.is_active %}Active{% else %}Disabled{% endif %}
+          </span>
+        </label>
       </div>
       {% endif %}
     </div>
-
-    <div class="cam-source">
-      <i class="fas fa-plug"></i>
-      <code>{{ cam.index_or_url }}</code>
-    </div>
-
-    <div class="cam-status-row">
-      <span class="status-badge {{ cam.status }}" id="badge-{{ cam.id }}">
-        {{ cam.status|upper }}
-      </span>
-      <span class="cam-time" id="time-{{ cam.id }}">
-        {% if cam.last_seen_at %}Last seen: {{ cam.last_seen_at|date:"H:i:s" }}{% endif %}
-      </span>
-    </div>
-
-    {% if cam.went_offline_at %}
-    <div class="cam-offline-time" id="offline-{{ cam.id }}">
-      Offline since: {{ cam.went_offline_at|date:"Y-m-d H:i:s" }}
-    </div>
-    {% endif %}
-
-    {% if is_admin %}
-    <div class="cam-footer">
-      <label class="toggle-switch">
-        <input type="checkbox" id="toggle-{{ cam.id }}"
-               {% if cam.is_active %}checked{% endif %}
-               onchange="toggleCamera({{ cam.id }}, this)">
-        <span class="toggle-track">
-          <span class="toggle-thumb"></span>
-        </span>
-        <span class="toggle-label" id="toggle-label-{{ cam.id }}">
-          {% if cam.is_active %}Active{% else %}Disabled{% endif %}
-        </span>
-      </label>
-    </div>
-    {% endif %}
   </div>
   {% empty %}
   <div class="empty-state">
     <i class="fas fa-video-slash"></i>
     <h2>No Cameras Registered</h2>
     <p>Add a camera to get started.</p>
+    {% if is_admin %}
+    <a href="{% url 'camera_register' %}" class="btn btn-register" style="margin-top:1rem;">
+      <i class="fas fa-plus"></i> Add First Camera
+    </a>
+    {% endif %}
   </div>
   {% endfor %}
 </div>
@@ -102,7 +157,6 @@
 .page-title        { font-size:1.8rem; display:flex; align-items:center; gap:.6rem; margin:0; }
 .page-subtitle     { color:#888; margin-top:.3rem; font-size:.9rem; }
 
-/* Discover */
 .btn { padding:.45rem 1rem; border-radius:7px; border:none; cursor:pointer;
        font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:.4rem;
        text-decoration:none; transition:opacity .15s; }
@@ -110,89 +164,85 @@
 .btn-discover { background:rgba(52,152,219,.2); color:#3498db; }
 .btn-register { background:#3498db; color:#fff; }
 
-.discover-panel {
-  background:var(--card-bg,#1a1a2e);
-  border:1px solid rgba(52,152,219,.3);
-  border-radius:10px; padding:1rem; margin-bottom:1.5rem;
-}
-.discover-header {
-  display:flex; justify-content:space-between; align-items:center;
-  font-weight:600; color:#3498db; margin-bottom:.8rem;
-}
+.discover-panel { background:var(--card-bg,#1a1a2e); border:1px solid rgba(52,152,219,.3);
+  border-radius:10px; padding:1rem; margin-bottom:1.5rem; }
+.discover-header { display:flex; justify-content:space-between; align-items:center;
+  font-weight:600; color:#3498db; margin-bottom:.8rem; }
 .discover-header button { background:none; border:none; cursor:pointer; color:#888; font-size:1rem; }
 .discover-results { display:flex; flex-wrap:wrap; gap:.6rem; }
-.disc-item {
-  padding:.4rem .9rem; border-radius:6px; font-size:.83rem; font-weight:600;
-  display:flex; align-items:center; gap:.4rem;
-}
+.disc-item { padding:.4rem .9rem; border-radius:6px; font-size:.83rem; font-weight:600;
+             display:flex; align-items:center; gap:.4rem; }
 .disc-item.found    { background:rgba(46,204,113,.15); color:#2ecc71; }
 .disc-item.notfound { background:rgba(255,255,255,.05); color:#666; }
 
-/* Camera grid */
-.cam-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.2rem; }
+.cam-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.2rem; }
 
-.cam-card {
-  background: var(--card-bg,#1a1a2e);
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 12px; padding: 1.1rem;
-  display: flex; flex-direction:column; gap:.7rem;
-  transition: box-shadow .2s;
-}
-.cam-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+.cam-card { background:var(--card-bg,#1a1a2e); border:1px solid rgba(255,255,255,.07);
+  border-radius:14px; overflow:hidden; transition:box-shadow .2s,border-color .2s,transform .2s;
+  display:flex; flex-direction:column; }
+.cam-card:hover { box-shadow:0 6px 28px rgba(0,0,0,.35); transform:translateY(-2px); }
+.cam-card--online { border-color:rgba(46,204,113,.25); }
+.cam-card--online:hover { box-shadow:0 6px 28px rgba(46,204,113,.1); }
 
-.cam-card-top { display:flex; align-items:flex-start; gap:.7rem; }
+.cam-preview-wrap { position:relative; width:100%; height:160px; background:#000; overflow:hidden; cursor:pointer; }
+.cam-thumb { width:100%; height:100%; object-fit:cover; display:block; transition:opacity .3s; }
+.cam-thumb-placeholder { width:100%; height:100%; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:.5rem; background:#0a0e1a; color:rgba(255,255,255,.2); }
+.cam-thumb-placeholder i    { font-size:2.5rem; }
+.cam-thumb-placeholder span { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; }
 
-.cam-indicator {
-  width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:5px;
-  box-shadow:0 0 8px currentColor;
-}
+.cam-preview-overlay { position:absolute; inset:0; background:rgba(78,204,163,.15);
+  backdrop-filter:blur(2px); display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:.5rem; opacity:0; transition:opacity .2s; color:#4ecca3;
+  font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; }
+.cam-preview-overlay i { font-size:1.8rem; }
+.cam-preview-wrap:hover .cam-preview-overlay { opacity:1; }
+
+.cam-indicator { position:absolute; top:10px; left:10px; width:10px; height:10px;
+  border-radius:50%; z-index:2; box-shadow:0 0 8px currentColor; }
 .cam-indicator.online  { background:#2ecc71; color:#2ecc71; animation:pulse-green 2s infinite; }
 .cam-indicator.offline { background:#e74c3c; color:#e74c3c; }
 .cam-indicator.unknown { background:#f39c12; color:#f39c12; animation:pulse-orange 2s infinite; }
+@keyframes pulse-green  { 0%,100%{box-shadow:0 0 4px #2ecc71} 50%{box-shadow:0 0 14px #2ecc71} }
+@keyframes pulse-orange { 0%,100%{box-shadow:0 0 4px #f39c12} 50%{box-shadow:0 0 14px #f39c12} }
 
-@keyframes pulse-green  { 0%,100%{box-shadow:0 0 4px #2ecc71} 50%{box-shadow:0 0 12px #2ecc71} }
-@keyframes pulse-orange { 0%,100%{box-shadow:0 0 4px #f39c12} 50%{box-shadow:0 0 12px #f39c12} }
-
+.cam-info     { padding:.9rem 1rem; display:flex; flex-direction:column; gap:.55rem; flex:1; }
+.cam-card-top { display:flex; align-items:flex-start; gap:.7rem; }
 .cam-title-block { flex:1; }
-.cam-name { font-size:1rem; font-weight:700; color:#eee; }
-.cam-loc  { font-size:.78rem; color:#888; margin-top:.1rem; display:flex; align-items:center; gap:.3rem; }
-
-.cam-menu { display:flex; gap:.4rem; }
-.cam-action { color:#666; padding:.3rem; border-radius:4px; transition:color .15s; }
-.cam-action:hover     { color:#eee; }
+.cam-name { font-size:.95rem; font-weight:700; color:#eee; }
+.cam-loc  { font-size:.75rem; color:#888; margin-top:.15rem; display:flex; align-items:center; gap:.3rem; }
+.cam-menu { display:flex; gap:.3rem; flex-shrink:0; }
+.cam-action { color:#666; padding:.3rem; border-radius:4px; transition:color .15s; font-size:.82rem; }
+.cam-action:hover { color:#eee; }
 .cam-action.cam-del:hover { color:#e74c3c; }
-
-.cam-source { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#888; }
-.cam-source code { background:rgba(255,255,255,.06); padding:.1rem .4rem; border-radius:4px; font-size:.78rem; }
-
+.cam-source { display:flex; align-items:center; gap:.5rem; font-size:.77rem; color:#777; }
+.cam-source code { background:rgba(255,255,255,.06); padding:.1rem .4rem; border-radius:4px; font-size:.75rem; }
 .cam-status-row { display:flex; align-items:center; gap:.7rem; }
-
-.status-badge {
-  padding:.2rem .7rem; border-radius:4px; font-size:.75rem; font-weight:700;
-}
+.status-badge { padding:.18rem .65rem; border-radius:4px; font-size:.72rem; font-weight:700; }
 .status-badge.online  { background:rgba(46,204,113,.15); color:#2ecc71; }
 .status-badge.offline { background:rgba(231,76,60,.15);  color:#e74c3c; }
 .status-badge.unknown { background:rgba(243,156,18,.15); color:#f39c12; }
+.cam-time { font-size:.72rem; color:#666; }
+.cam-offline-time { font-size:.72rem; color:#e74c3c; }
 
-.cam-time { font-size:.75rem; color:#666; }
-.cam-offline-time { font-size:.75rem; color:#e74c3c; }
+.cam-footer { border-top:1px solid rgba(255,255,255,.05); padding-top:.65rem; display:flex; flex-direction:column; gap:.55rem; }
+.cam-quick-actions { display:flex; gap:.5rem; }
+.quick-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:.35rem;
+  padding:.35rem .6rem; border-radius:6px; font-size:.74rem; font-weight:600;
+  text-decoration:none; border:1px solid rgba(255,255,255,.08); color:#888; transition:all .15s; }
+.quick-btn:hover { border-color:#aaa; color:#eee; }
+.quick-btn--accent { border-color:rgba(78,204,163,.3); color:#4ecca3; }
+.quick-btn--accent:hover { background:rgba(78,204,163,.1); border-color:#4ecca3; }
 
-/* Toggle switch */
-.toggle-switch { display:flex; align-items:center; gap:.6rem; cursor:pointer; user-select:none; }
+.toggle-switch { display:flex; align-items:center; gap:.55rem; cursor:pointer; user-select:none; }
 .toggle-switch input { display:none; }
-.toggle-track {
-  width:38px; height:20px; background:rgba(255,255,255,.1); border-radius:20px;
-  position:relative; transition:background .2s;
-}
-.toggle-thumb {
-  position:absolute; top:2px; left:2px; width:16px; height:16px;
-  background:#eee; border-radius:50%; transition:transform .2s;
-}
+.toggle-track { width:36px; height:18px; background:rgba(255,255,255,.1); border-radius:20px;
+  position:relative; transition:background .2s; flex-shrink:0; }
+.toggle-thumb { position:absolute; top:2px; left:2px; width:14px; height:14px;
+  background:#eee; border-radius:50%; transition:transform .2s; }
 .toggle-switch input:checked ~ .toggle-track { background:#2ecc71; }
 .toggle-switch input:checked ~ .toggle-track .toggle-thumb { transform:translateX(18px); }
-.toggle-label { font-size:.83rem; color:#aaa; }
-
-.cam-footer { border-top:1px solid rgba(255,255,255,.05); padding-top:.7rem; }
+.toggle-label { font-size:.8rem; color:#aaa; }
 
 .empty-state { grid-column:1/-1; text-align:center; padding:4rem 2rem; color:#888; }
 .empty-state i { font-size:3.5rem; margin-bottom:1rem; display:block; color:#334; }
@@ -200,7 +250,92 @@
 </style>
 
 <script>
-// ── WebSocket for real-time camera status ─────────────────────────────────
+/* ════════════════════════════════════════════════════════════════
+   DashboardThumbPoller
+   ─────────────────────────────────────────────────────────────
+   Runs a low-fps (10 fps) frame-poll for every online camera card
+   on the dashboard.  Uses the same /cameras/<pk>/frame/ endpoint
+   as the full viewer — no MJPEG, no persistent connections.
+   ════════════════════════════════════════════════════════════════ */
+
+class DashboardThumbPoller {
+  constructor(cameraId, fps = 10) {
+    this.cameraId  = cameraId;
+    this.fps       = fps;
+    this.frameUrl  = `/cameras/${cameraId}/frame/`;
+    this._active   = false;
+    this._timer    = null;
+    this._prevBlob = null;
+    this._errCount = 0;
+  }
+
+  start() { this._active = true; this._poll(); }
+  stop()  { this._active = false; clearTimeout(this._timer); }
+
+  async _poll() {
+    if (!this._active) return;
+    try {
+      const resp = await fetch(`${this.frameUrl}?_=${Date.now()}`);
+      if (resp.ok) {
+        const cameraStatus = resp.headers.get('X-Camera-Status') || 'live';
+        const blob  = await resp.blob();
+        const newUrl = URL.createObjectURL(blob);
+
+        const img = document.getElementById(`thumb-${this.cameraId}`);
+        const ph  = document.getElementById(`placeholder-${this.cameraId}`);
+
+        if (cameraStatus === 'live' && img) {
+          if (this._prevBlob) URL.revokeObjectURL(this._prevBlob);
+          this._prevBlob = newUrl;
+          img.src = newUrl;
+          img.style.display = 'block';
+          if (ph) ph.style.display = 'none';
+        } else {
+          URL.revokeObjectURL(newUrl);
+          if (img) img.style.display = 'none';
+          if (ph) ph.style.display = 'flex';
+        }
+
+        this._errCount = 0;
+      } else {
+        this._errCount++;
+      }
+    } catch (_) {
+      this._errCount++;
+    }
+
+    if (this._active) {
+      const delay = this._errCount > 3 ? 4000 : Math.round(1000 / this.fps);
+      this._timer = setTimeout(() => this._poll(), delay);
+    }
+  }
+}
+
+/* Start a thumbnail poller for each online + active camera */
+const _thumbPollers = {};
+
+function startThumbPoller(cameraId) {
+  if (_thumbPollers[cameraId]) _thumbPollers[cameraId].stop();
+  const p = new DashboardThumbPoller(cameraId, 10);
+  _thumbPollers[cameraId] = p;
+  p.start();
+}
+
+function stopThumbPoller(cameraId) {
+  if (_thumbPollers[cameraId]) {
+    _thumbPollers[cameraId].stop();
+    delete _thumbPollers[cameraId];
+  }
+}
+
+/* Boot pollers for cameras that are already online on page load */
+{% for cam in cameras %}
+{% if cam.status == 'online' and cam.is_active %}
+startThumbPoller({{ cam.id }});
+{% endif %}
+{% endfor %}
+
+/* ── WebSocket for real-time camera status ── */
 const camWs = new WebSocket(`ws://${location.host}/ws/camera/`);
 
 camWs.onmessage = (e) => {
@@ -208,42 +343,91 @@ camWs.onmessage = (e) => {
   if (d.type !== 'CAMERA_STATUS') return;
   updateCameraCard(d.camera_id, d.status, d.timestamp);
 };
+camWs.onclose = () => setTimeout(() => location.reload(), 3000);
 
 function updateCameraCard(id, status, ts) {
   const ind   = document.getElementById(`indicator-${id}`);
   const badge = document.getElementById(`badge-${id}`);
   const time  = document.getElementById(`time-${id}`);
+  const card  = document.getElementById(`cam-${id}`);
+  const thumb = document.getElementById(`thumb-${id}`);
+  const ph    = document.getElementById(`placeholder-${id}`);
   if (!ind) return;
+
   ind.className   = `cam-indicator ${status}`;
   badge.className = `status-badge ${status}`;
   badge.textContent = status.toUpperCase();
-  if (time) time.textContent = `Last seen: ${ts.split(' ')[1]}`;
+  if (time && ts) time.textContent = `Last seen: ${ts.split(' ')[1] || ts.slice(11,19)}`;
+
+  if (status === 'online') {
+    card.classList.add('cam-card--online');
+    // Ensure the img element exists and start polling
+    if (!document.getElementById(`thumb-${id}`)) {
+      // Create the img element if it doesn't exist yet
+      const wrap = document.getElementById(`preview-wrap-${id}`);
+      if (wrap && ph) {
+        const img = document.createElement('img');
+        img.className = 'cam-thumb';
+        img.id = `thumb-${id}`;
+        img.alt = 'Live thumbnail';
+        img.style.display = 'none';
+        wrap.insertBefore(img, ph);
+      }
+    }
+    startThumbPoller(id);
+  }
+
+  if (status === 'offline') {
+    card.classList.remove('cam-card--online');
+    stopThumbPoller(id);
+    if (thumb) thumb.style.display = 'none';
+    if (ph) {
+      ph.style.display = 'flex';
+      ph.innerHTML = '<i class="fas fa-video-slash"></i><span>Offline</span>';
+    }
+  }
 }
 
-// ── Toggle camera on/off ──────────────────────────────────────────────────
+/* ── Open camera viewer popup ── */
+function openCameraViewer(id, status, isActive) {
+  if (!isActive) { showToast('Camera is disabled.', 'warn'); return; }
+  if (status === 'offline') { showToast('Camera is currently offline.', 'warn'); return; }
+  const url  = `/cameras/${id}/view/`;
+  const w    = Math.min(window.screen.availWidth  - 40, 1280);
+  const h    = Math.min(window.screen.availHeight - 40, 780);
+  const left = Math.round((window.screen.availWidth  - w) / 2);
+  const top  = Math.round((window.screen.availHeight - h) / 2);
+  const win  = window.open(url, `cam_viewer_${id}`,
+    `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no,location=no,status=no,scrollbars=no,resizable=yes`);
+  if (win) win.focus();
+  else window.open(url, '_blank');
+}
+
+/* ── Toggle camera on/off ── */
 function toggleCamera(id, checkbox) {
   const label = document.getElementById(`toggle-label-${id}`);
+  checkbox.disabled = true;
   fetch(`/cameras/${id}/toggle/`, {
     method: 'POST',
     headers: { 'X-CSRFToken': getCookie('csrftoken') },
   })
   .then(r => r.json())
   .then(d => {
+    checkbox.disabled = false;
     label.textContent = d.is_active ? 'Active' : 'Disabled';
     if (!d.is_active) {
       updateCameraCard(id, 'offline', new Date().toISOString().replace('T',' ').slice(0,19));
     }
   })
-  .catch(() => { checkbox.checked = !checkbox.checked; });
+  .catch(() => { checkbox.disabled = false; checkbox.checked = !checkbox.checked; showToast('Toggle failed.', 'error'); });
 }
 
-// ── Camera discovery ──────────────────────────────────────────────────────
+/* ── Camera discovery ── */
 function discoverCameras() {
   const panel   = document.getElementById('discoverPanel');
   const results = document.getElementById('discoverResults');
   panel.style.display = 'block';
-  results.innerHTML   = '<span style="color:#888">Scanning indices 0–5...</span>';
-
+  results.innerHTML   = '<span style="color:#888">Scanning indices 0–5 (takes ~18s)...</span>';
   fetch('/cameras/discover/')
     .then(r => r.json())
     .then(d => {
@@ -251,22 +435,29 @@ function discoverCameras() {
         <div class="disc-item ${c.accessible ? 'found' : 'notfound'}">
           <i class="fas fa-${c.accessible ? 'check-circle' : 'times-circle'}"></i>
           ${c.label} — ${c.accessible ? 'ACCESSIBLE' : 'not found'}
-        </div>
-      `).join('');
+        </div>`).join('');
     })
     .catch(() => { results.innerHTML = '<span style="color:#e74c3c">Discovery failed.</span>'; });
 }
 
-// ── Periodic sync (fallback if WS drops) ─────────────────────────────────
+/* ── Periodic status sync (fallback) ── */
 setInterval(() => {
   fetch('/cameras/status/')
     .then(r => r.json())
-    .then(d => {
-      d.cameras.forEach(c => {
-        updateCameraCard(c.id, c.status, c.last_seen_at || '');
-      });
-    });
-}, 10000);
+    .then(d => { d.cameras.forEach(c => updateCameraCard(c.id, c.status, c.last_seen_at || '')); });
+}, 8000);
+
+/* ── Toast ── */
+function showToast(msg, type='info') {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;right:20px;z-index:9999;
+    background:#1a1a2e;border:1px solid ${type==='warn'?'#f39c12':type==='error'?'#e74c3c':'#4ecca3'};
+    color:#eee;padding:.75rem 1.1rem;border-radius:8px;font-size:.83rem;
+    box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toast-in .25s ease;`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
 
 function getCookie(name) {
   const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
