@@ -9,15 +9,19 @@ class Camera(models.Model):
         ('unknown', 'Unknown'),
     ]
 
-    name         = models.CharField(max_length=100)           # e.g. "Computer Webcam"
-    index_or_url = models.CharField(max_length=255)           # e.g. "0" or "2" or rtsp://...
-    location     = models.CharField(max_length=255)           # e.g. "Front Gate"
+    name         = models.CharField(max_length=100)
+    index_or_url = models.CharField(max_length=255)
+    location     = models.CharField(max_length=255)
     description  = models.TextField(blank=True, default='')
     status       = models.CharField(max_length=10, choices=STATUS_CHOICES, default='unknown')
-    is_active    = models.BooleanField(default=True)          # admin can disable a camera
+    is_active    = models.BooleanField(default=True)
     last_seen_at = models.DateTimeField(null=True, blank=True)
     went_offline_at = models.DateTimeField(null=True, blank=True)
     created_at   = models.DateTimeField(auto_now_add=True)
+
+    # ── Map coordinates (optional — null if not set) ──────────────────────────
+    latitude     = models.FloatField(null=True, blank=True)
+    longitude    = models.FloatField(null=True, blank=True)
 
     class Meta:
         ordering = ['id']

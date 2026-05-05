@@ -1,161 +1,132 @@
 {% extends 'base.html' %}
 {% block title %}Camera Control{% endblock %}
 
-{% block content %}
-<div class="page-header">
-  <div class="page-header-left">
-    <h1 class="page-title"><i class="fas fa-video"></i> Camera Control</h1>
-    <p class="page-subtitle">Live status of all registered cameras — click any online camera to view.</p>
-  </div>
-  {% if is_admin %}
-  <div class="page-header-right">
-    <button class="btn btn-discover" id="discoverBtn" onclick="discoverCameras()">
-      <i class="fas fa-search"></i> Discover
-    </button>
-    <a href="{% url 'camera_register' %}" class="btn btn-register">
-      <i class="fas fa-plus"></i> Add Camera
-    </a>
-  </div>
-  {% endif %}
-</div>
-
-<!-- Discovery result panel -->
-<div id="discoverPanel" class="discover-panel" style="display:none;">
-  <div class="discover-header">
-    <span><i class="fas fa-search"></i> Local Camera Discovery (Indices 0–5)</span>
-    <button onclick="document.getElementById('discoverPanel').style.display='none'">✕</button>
-  </div>
-  <div id="discoverResults" class="discover-results">Scanning...</div>
-</div>
-
-<!-- Camera grid -->
-<div class="cam-grid" id="camGrid">
-  {% for cam in cameras %}
-  <div class="cam-card {% if cam.status == 'online' and cam.is_active %}cam-card--online{% endif %}"
-       id="cam-{{ cam.id }}">
-
-    <!-- Clickable preview area -->
-    <div class="cam-preview-wrap" id="preview-wrap-{{ cam.id }}"
-         onclick="openCameraViewer({{ cam.id }}, '{{ cam.status }}', {{ cam.is_active|yesno:'true,false' }})">
-
-      <!-- Status dot -->
-      <div class="cam-indicator {{ cam.status }}" id="indicator-{{ cam.id }}"></div>
-
-      <!--
-        Thumbnail image — starts hidden; JS DashboardPoller fills it once
-        a live frame arrives.  Uses /cameras/<pk>/frame/ (JS polling) so
-        there are no MJPEG persistent connections to break on Daphne/ASGI.
-      -->
-      {% if cam.status == 'online' and cam.is_active %}
-      <img class="cam-thumb"
-           id="thumb-{{ cam.id }}"
-           alt="Live thumbnail"
-           style="display:none;">
-      <div class="cam-thumb-placeholder" id="placeholder-{{ cam.id }}">
-        <i class="fas fa-circle-notch fa-spin"></i>
-        <span>Connecting</span>
-      </div>
-      {% else %}
-      <div class="cam-thumb-placeholder" id="placeholder-{{ cam.id }}">
-        <i class="fas fa-{% if not cam.is_active %}ban{% else %}video-slash{% endif %}"></i>
-        <span>{% if not cam.is_active %}Disabled{% else %}Offline{% endif %}</span>
-      </div>
-      {% endif %}
-
-      <!-- Hover overlay -->
-      <div class="cam-preview-overlay">
-        <i class="fas fa-expand-alt"></i>
-        <span>Open Live View</span>
-      </div>
-    </div>
-
-    <!-- Card info -->
-    <div class="cam-info">
-      <div class="cam-card-top">
-        <div class="cam-title-block">
-          <div class="cam-name">{{ cam.name }}</div>
-          <div class="cam-loc"><i class="fas fa-map-marker-alt"></i> {{ cam.location }}</div>
-        </div>
-
-        {% if is_admin %}
-        <div class="cam-menu">
-          <a href="{% url 'camera_viewer' cam.pk %}" class="cam-action" title="Open viewer"
-             onclick="event.stopPropagation()" target="_blank">
-            <i class="fas fa-external-link-alt"></i>
-          </a>
-          <a href="{% url 'camera_edit' cam.pk %}" class="cam-action" title="Edit"
-             onclick="event.stopPropagation()">
-            <i class="fas fa-edit"></i>
-          </a>
-          <a href="{% url 'camera_delete' cam.pk %}" class="cam-action cam-del" title="Delete"
-             onclick="event.stopPropagation(); return confirm('Delete camera {{ cam.name }}?')">
-            <i class="fas fa-trash"></i>
-          </a>
-        </div>
-        {% endif %}
-      </div>
-
-      <div class="cam-source">
-        <i class="fas fa-plug"></i>
-        <code>{{ cam.index_or_url }}</code>
-      </div>
-
-      <div class="cam-status-row">
-        <span class="status-badge {{ cam.status }}" id="badge-{{ cam.id }}">
-          {{ cam.status|upper }}
-        </span>
-        <span class="cam-time" id="time-{{ cam.id }}">
-          {% if cam.last_seen_at %}Last seen: {{ cam.last_seen_at|date:"H:i:s" }}{% endif %}
-        </span>
-      </div>
-
-      {% if cam.went_offline_at %}
-      <div class="cam-offline-time" id="offline-{{ cam.id }}">
-        Offline since: {{ cam.went_offline_at|date:"Y-m-d H:i:s" }}
-      </div>
-      {% endif %}
-
-      {% if is_admin %}
-      <div class="cam-footer">
-        <div class="cam-quick-actions">
-          <a href="{% url 'camera_viewer' cam.pk %}" class="quick-btn quick-btn--accent"
-             title="Open in viewer" target="_blank" onclick="event.stopPropagation()">
-            <i class="fas fa-tv"></i> View
-          </a>
-        </div>
-
-        <label class="toggle-switch" onclick="event.stopPropagation()">
-          <input type="checkbox" id="toggle-{{ cam.id }}"
-                 {% if cam.is_active %}checked{% endif %}
-                 onchange="toggleCamera({{ cam.id }}, this)">
-          <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          <span class="toggle-label" id="toggle-label-{{ cam.id }}">
-            {% if cam.is_active %}Active{% else %}Disabled{% endif %}
-          </span>
-        </label>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-  {% empty %}
-  <div class="empty-state">
-    <i class="fas fa-video-slash"></i>
-    <h2>No Cameras Registered</h2>
-    <p>Add a camera to get started.</p>
-    {% if is_admin %}
-    <a href="{% url 'camera_register' %}" class="btn btn-register" style="margin-top:1rem;">
-      <i class="fas fa-plus"></i> Add First Camera
-    </a>
-    {% endif %}
-  </div>
-  {% endfor %}
-</div>
-
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      crossorigin="">
 <style>
-.page-header       { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
-.page-header-right { display:flex; gap:.7rem; }
-.page-title        { font-size:1.8rem; display:flex; align-items:center; gap:.6rem; margin:0; }
-.page-subtitle     { color:#888; margin-top:.3rem; font-size:.9rem; }
+/* ── View tabs ────────────────────────────────────────────────────────────── */
+.view-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.4rem;
+    background: rgba(0,0,0,.2);
+    padding: 5px;
+    border-radius: 10px;
+    width: fit-content;
+}
+.view-tab {
+    padding: 7px 18px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    font-size: .8rem;
+    font-weight: 600;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .18s;
+    background: transparent;
+    color: #666;
+    letter-spacing: .03em;
+}
+.view-tab.active {
+    background: rgba(78,204,163,.12);
+    color: #4ecca3;
+    border: 1px solid rgba(78,204,163,.25);
+}
+.view-tab:not(.active):hover { background: rgba(255,255,255,.05); color: #aaa; }
+
+/* ── Map container ────────────────────────────────────────────────────────── */
+#map-view { display: none; }
+#map-view.active { display: block; }
+#camera-map {
+    width: 100%;
+    height: 560px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: #0a0e1a;
+    z-index: 0;
+}
+
+/* Leaflet popup custom theme */
+.leaflet-popup-content-wrapper {
+    background: #16213e !important;
+    border: 1px solid rgba(78,204,163,.3) !important;
+    border-radius: 10px !important;
+    color: #eee !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,.6) !important;
+}
+.leaflet-popup-tip { background: #16213e !important; }
+.leaflet-popup-content { margin: 0 !important; padding: 0 !important; }
+.cam-popup {
+    min-width: 220px;
+    font-family: 'Segoe UI', sans-serif;
+}
+.cam-popup-header {
+    background: linear-gradient(135deg,#0f3460,#16213e);
+    padding: 10px 14px;
+    border-radius: 9px 9px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.cam-popup-header .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.cam-popup-header .dot.online  { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
+.cam-popup-header .dot.offline { background: #e74c3c; }
+.cam-popup-header .dot.unknown { background: #f39c12; }
+.cam-popup-name  { font-size: .88rem; font-weight: 700; color: #fff; }
+.cam-popup-body  { padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; }
+.cam-popup-row   { display: flex; align-items: center; gap: 6px; font-size: .76rem; color: #aaa; }
+.cam-popup-row i { color: #4ecca3; font-size: .7rem; width: 13px; }
+.cam-popup-actions { padding: 0 14px 12px; display: flex; gap: 6px; }
+.cam-popup-btn {
+    flex: 1; padding: 7px; border-radius: 6px;
+    font-size: .72rem; font-weight: 700;
+    text-decoration: none; text-align: center;
+    text-transform: uppercase; letter-spacing: .04em;
+    transition: all .15s; border: 1px solid transparent;
+}
+.cam-popup-btn--view {
+    background: rgba(78,204,163,.12);
+    color: #4ecca3;
+    border-color: rgba(78,204,163,.3);
+}
+.cam-popup-btn--view:hover { background: rgba(78,204,163,.22); }
+.cam-popup-btn--disabled {
+    background: rgba(255,255,255,.04);
+    color: #555;
+    border-color: rgba(255,255,255,.07);
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Map no-coord notice */
+.map-no-coords {
+    background: rgba(243,156,18,.08);
+    border: 1px solid rgba(243,156,18,.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: .8rem;
+    color: #f39c12;
+    margin-top: 10px;
+    display: none;
+}
+.map-no-coords.visible { display: flex; align-items: center; gap: 8px; }
+.no-coord-list { font-size: .75rem; color: #f39c12; opacity: .85; margin-top: 3px; }
+
+/* ── Grid view (existing styles preserved) ─────────────────────────────── */
+.page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+.page-header-right { display:flex; gap:.7rem; align-items:center; }
+.page-title { font-size:1.8rem; display:flex; align-items:center; gap:.6rem; margin:0; }
+.page-subtitle { color:#888; margin-top:.3rem; font-size:.9rem; }
 
 .btn { padding:.45rem 1rem; border-radius:7px; border:none; cursor:pointer;
        font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:.4rem;
@@ -248,16 +219,410 @@
 .empty-state i { font-size:3.5rem; margin-bottom:1rem; display:block; color:#334; }
 .empty-state h2 { font-size:1.4rem; color:#aaa; margin-bottom:.4rem; }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title"><i class="fas fa-video"></i> Camera Control</h1>
+    <p class="page-subtitle">Live status of all registered cameras — click any online camera to view.</p>
+  </div>
+  {% if is_admin %}
+  <div class="page-header-right">
+    <button class="btn btn-discover" id="discoverBtn" onclick="discoverCameras()">
+      <i class="fas fa-search"></i> Discover
+    </button>
+    <a href="{% url 'camera_register' %}" class="btn btn-register">
+      <i class="fas fa-plus"></i> Add Camera
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── View tabs ────────────────────────────────────────────────────────────── -->
+<div class="view-tabs" id="viewTabs">
+  <button class="view-tab active" id="tab-grid" onclick="switchView('grid')">
+    <i class="fas fa-th-large"></i> Grid View
+  </button>
+  <button class="view-tab" id="tab-map" onclick="switchView('map')">
+    <i class="fas fa-map-marked-alt"></i> Map View
+  </button>
+</div>
+
+<!-- Discovery result panel -->
+<div id="discoverPanel" class="discover-panel" style="display:none;">
+  <div class="discover-header">
+    <span><i class="fas fa-search"></i> Local Camera Discovery (Indices 0–5)</span>
+    <button onclick="document.getElementById('discoverPanel').style.display='none'">✕</button>
+  </div>
+  <div id="discoverResults" class="discover-results">Scanning...</div>
+</div>
+
+<!-- ══ GRID VIEW ════════════════════════════════════════════════════════════ -->
+<div id="grid-view">
+  <div class="cam-grid" id="camGrid">
+    {% for cam in cameras %}
+    <div class="cam-card {% if cam.status == 'online' and cam.is_active %}cam-card--online{% endif %}"
+         id="cam-{{ cam.id }}">
+
+      <div class="cam-preview-wrap" id="preview-wrap-{{ cam.id }}"
+           onclick="openCameraViewer({{ cam.id }}, '{{ cam.status }}', {{ cam.is_active|yesno:'true,false' }})">
+
+        <div class="cam-indicator {{ cam.status }}" id="indicator-{{ cam.id }}"></div>
+
+        {% if cam.status == 'online' and cam.is_active %}
+        <img class="cam-thumb" id="thumb-{{ cam.id }}" alt="Live thumbnail" style="display:none;">
+        <div class="cam-thumb-placeholder" id="placeholder-{{ cam.id }}">
+          <i class="fas fa-circle-notch fa-spin"></i>
+          <span>Connecting</span>
+        </div>
+        {% else %}
+        <div class="cam-thumb-placeholder" id="placeholder-{{ cam.id }}">
+          <i class="fas fa-{% if not cam.is_active %}ban{% else %}video-slash{% endif %}"></i>
+          <span>{% if not cam.is_active %}Disabled{% else %}Offline{% endif %}</span>
+        </div>
+        {% endif %}
+
+        <div class="cam-preview-overlay">
+          <i class="fas fa-expand-alt"></i>
+          <span>Open Live View</span>
+        </div>
+      </div>
+
+      <div class="cam-info">
+        <div class="cam-card-top">
+          <div class="cam-title-block">
+            <div class="cam-name">{{ cam.name }}</div>
+            <div class="cam-loc">
+              <i class="fas fa-map-marker-alt"></i> {{ cam.location }}
+              {% if cam.latitude and cam.longitude %}
+                <span style="color:#4ecca3;font-size:.65rem;margin-left:4px;" title="Location pinned on map">
+                  <i class="fas fa-map-pin"></i>
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if is_admin %}
+          <div class="cam-menu">
+            <a href="{% url 'camera_viewer' cam.pk %}" class="cam-action" title="Open viewer"
+               onclick="event.stopPropagation()" target="_blank">
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+            <a href="{% url 'camera_edit' cam.pk %}" class="cam-action" title="Edit"
+               onclick="event.stopPropagation()">
+              <i class="fas fa-edit"></i>
+            </a>
+            <a href="{% url 'camera_delete' cam.pk %}" class="cam-action cam-del" title="Delete"
+               onclick="event.stopPropagation(); return confirm('Delete camera {{ cam.name }}?')">
+              <i class="fas fa-trash"></i>
+            </a>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="cam-source">
+          <i class="fas fa-plug"></i>
+          <code>{{ cam.index_or_url }}</code>
+        </div>
+
+        <div class="cam-status-row">
+          <span class="status-badge {{ cam.status }}" id="badge-{{ cam.id }}">
+            {{ cam.status|upper }}
+          </span>
+          <span class="cam-time" id="time-{{ cam.id }}">
+            {% if cam.last_seen_at %}Last seen: {{ cam.last_seen_at|date:"H:i:s" }}{% endif %}
+          </span>
+        </div>
+
+        {% if cam.went_offline_at %}
+        <div class="cam-offline-time" id="offline-{{ cam.id }}">
+          Offline since: {{ cam.went_offline_at|date:"Y-m-d H:i:s" }}
+        </div>
+        {% endif %}
+
+        {% if is_admin %}
+        <div class="cam-footer">
+          <div class="cam-quick-actions">
+            <a href="{% url 'camera_viewer' cam.pk %}" class="quick-btn quick-btn--accent"
+               title="Open in viewer" target="_blank" onclick="event.stopPropagation()">
+              <i class="fas fa-tv"></i> View
+            </a>
+            {% if cam.latitude and cam.longitude %}
+            <button class="quick-btn" title="Show on map"
+                    onclick="event.stopPropagation(); switchView('map'); focusMapCamera({{ cam.id }});">
+              <i class="fas fa-map-marker-alt"></i> Map
+            </button>
+            {% endif %}
+          </div>
+
+          <label class="toggle-switch" onclick="event.stopPropagation()">
+            <input type="checkbox" id="toggle-{{ cam.id }}"
+                   {% if cam.is_active %}checked{% endif %}
+                   onchange="toggleCamera({{ cam.id }}, this)">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-label" id="toggle-label-{{ cam.id }}">
+              {% if cam.is_active %}Active{% else %}Disabled{% endif %}
+            </span>
+          </label>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+      <i class="fas fa-video-slash"></i>
+      <h2>No Cameras Registered</h2>
+      <p>Add a camera to get started.</p>
+      {% if is_admin %}
+      <a href="{% url 'camera_register' %}" class="btn btn-register" style="margin-top:1rem;">
+        <i class="fas fa-plus"></i> Add First Camera
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ══ MAP VIEW ═════════════════════════════════════════════════════════════ -->
+<div id="map-view">
+
+  <!-- Map canvas -->
+  <div id="camera-map"></div>
+
+  <!-- Warning: cameras without coordinates -->
+  <div class="map-no-coords" id="noCoordsNotice">
+    <i class="fas fa-exclamation-triangle"></i>
+    <div>
+      <strong>Some cameras have no map location set:</strong>
+      <div class="no-coord-list" id="noCoordsNames"></div>
+      <div style="margin-top:4px;font-size:.72rem;opacity:.8;">
+        Edit each camera and use the map picker to pin its location.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Leaflet JS ──────────────────────────────────────────────────────────── -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
 <script>
-/* ════════════════════════════════════════════════════════════════
-   DashboardThumbPoller
-   ─────────────────────────────────────────────────────────────
-   Runs a low-fps (10 fps) frame-poll for every online camera card
-   on the dashboard.  Uses the same /cameras/<pk>/frame/ endpoint
-   as the full viewer — no MJPEG, no persistent connections.
-   ════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   Camera data injected from Django template
+   ════════════════════════════════════════════════════════════════════════════ */
+const CAMERAS = [
+  {% for cam in cameras %}
+  {
+    id:       {{ cam.id }},
+    name:     "{{ cam.name|escapejs }}",
+    location: "{{ cam.location|escapejs }}",
+    source:   "{{ cam.index_or_url|escapejs }}",
+    status:   "{{ cam.status }}",
+    isActive: {{ cam.is_active|yesno:'true,false' }},
+    lat:      {{ cam.latitude|default:'null' }},
+    lng:      {{ cam.longitude|default:'null' }},
+    lastSeen: "{{ cam.last_seen_at|date:'H:i:s'|default:'' }}",
+    viewUrl:  "{% url 'camera_viewer' cam.pk %}",
+    editUrl:  "{% url 'camera_edit' cam.pk %}",
+  },
+  {% endfor %}
+];
 
+/* ════════════════════════════════════════════════════════════════════════════
+   View switching
+   ════════════════════════════════════════════════════════════════════════════ */
+let mapInited = false;
+
+function switchView(view) {
+  const gridEl = document.getElementById('grid-view');
+  const mapEl  = document.getElementById('map-view');
+  const tabGrid = document.getElementById('tab-grid');
+  const tabMap  = document.getElementById('tab-map');
+
+  if (view === 'map') {
+    gridEl.style.display = 'none';
+    mapEl.style.display  = 'block';
+    tabGrid.classList.remove('active');
+    tabMap.classList.add('active');
+    if (!mapInited) initCameraMap();
+  } else {
+    gridEl.style.display = 'block';
+    mapEl.style.display  = 'none';
+    tabGrid.classList.add('active');
+    tabMap.classList.remove('active');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Leaflet camera map
+   ════════════════════════════════════════════════════════════════════════════ */
+let cameraMap     = null;
+let cameraMarkers = {};   // camera_id → L.Marker
+
+function initCameraMap() {
+  mapInited = true;
+
+  // Find centre from cameras that have coordinates
+  const withCoords = CAMERAS.filter(c => c.lat !== null && c.lng !== null);
+  const noCoords   = CAMERAS.filter(c => c.lat === null || c.lng === null);
+
+  // Show warning for cameras without coords
+  if (noCoords.length > 0) {
+    const notice = document.getElementById('noCoordsNotice');
+    const names  = document.getElementById('noCoordsNames');
+    notice.classList.add('visible');
+    names.textContent = noCoords.map(c => c.name).join(', ');
+  }
+
+  // Default centre: average of pinned cameras, or Kabul fallback
+  let centerLat = 34.5553, centerLng = 69.2075, defaultZoom = 5;
+  if (withCoords.length > 0) {
+    centerLat   = withCoords.reduce((s, c) => s + c.lat, 0) / withCoords.length;
+    centerLng   = withCoords.reduce((s, c) => s + c.lng, 0) / withCoords.length;
+    defaultZoom = withCoords.length === 1 ? 14 : 9;
+  }
+
+  cameraMap = L.map('camera-map', {
+    center: [centerLat, centerLng],
+    zoom:   defaultZoom,
+  });
+
+  // OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  }).addTo(cameraMap);
+
+  // Place a marker for each camera that has coordinates
+  withCoords.forEach(cam => addCameraMarker(cam));
+
+  // Fit bounds if multiple cameras
+  if (withCoords.length > 1) {
+    const bounds = L.latLngBounds(withCoords.map(c => [c.lat, c.lng]));
+    cameraMap.fitBounds(bounds, { padding: [50, 50] });
+  }
+}
+
+/* ── Build marker icon by status ── */
+function markerIcon(status, isActive) {
+  const colors = {
+    online:  '#2ecc71',
+    offline: '#e74c3c',
+    unknown: '#f39c12',
+  };
+  const color = isActive ? (colors[status] || '#888') : '#555';
+
+  return L.divIcon({
+    className: '',
+    html: `
+      <div style="
+        position:relative;
+        width:32px;height:32px;
+      ">
+        <div style="
+          width:32px;height:32px;border-radius:50% 50% 50% 0;
+          background:${color};border:3px solid #fff;
+          transform:rotate(-45deg);
+          box-shadow:0 2px 12px ${color}88;
+          transition:transform .2s;
+        "></div>
+        <div style="
+          position:absolute;top:50%;left:50%;
+          transform:translate(-50%,-60%);
+          color:#fff;font-size:10px;
+        "><i class="fas fa-video"></i></div>
+      </div>`,
+    iconSize:   [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor:[0,  -34],
+  });
+}
+
+/* ── Build popup HTML ── */
+function popupHTML(cam) {
+  const statusLabel = cam.isActive ? cam.status : 'disabled';
+  const dotClass    = cam.isActive ? cam.status : 'offline';
+  const canView     = cam.status === 'online' && cam.isActive;
+
+  return `
+    <div class="cam-popup">
+      <div class="cam-popup-header">
+        <span class="dot ${dotClass}"></span>
+        <span class="cam-popup-name">${cam.name}</span>
+      </div>
+      <div class="cam-popup-body">
+        <div class="cam-popup-row">
+          <i class="fas fa-map-marker-alt"></i>
+          ${cam.location}
+        </div>
+        <div class="cam-popup-row">
+          <i class="fas fa-plug"></i>
+          <code style="font-size:.7rem;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">${cam.source}</code>
+        </div>
+        <div class="cam-popup-row">
+          <i class="fas fa-circle" style="font-size:.55rem;color:${cam.status === 'online' ? '#2ecc71' : cam.status === 'offline' ? '#e74c3c' : '#f39c12'};"></i>
+          ${statusLabel.toUpperCase()}
+          ${cam.lastSeen ? `<span style="margin-left:6px;color:#666;">· ${cam.lastSeen}</span>` : ''}
+        </div>
+      </div>
+      <div class="cam-popup-actions">
+        ${canView
+          ? `<a href="${cam.viewUrl}" target="_blank" class="cam-popup-btn cam-popup-btn--view">
+               <i class="fas fa-tv"></i> Live View
+             </a>`
+          : `<span class="cam-popup-btn cam-popup-btn--disabled">
+               <i class="fas fa-${cam.isActive ? 'video-slash' : 'ban'}"></i>
+               ${cam.isActive ? 'Offline' : 'Disabled'}
+             </span>`
+        }
+        <a href="${cam.editUrl}" class="cam-popup-btn"
+           style="flex:none;padding:7px 10px;border:1px solid rgba(255,255,255,.1);color:#888;border-radius:6px;font-size:.72rem;text-align:center;text-decoration:none;">
+          <i class="fas fa-edit"></i>
+        </a>
+      </div>
+    </div>`;
+}
+
+/* ── Add one camera marker ── */
+function addCameraMarker(cam) {
+  const m = L.marker([cam.lat, cam.lng], {
+    icon:      markerIcon(cam.status, cam.isActive),
+    title:     cam.name,
+    riseOnHover: true,
+  }).addTo(cameraMap);
+
+  m.bindPopup(popupHTML(cam), {
+    minWidth:  240,
+    maxWidth:  280,
+    className: 'cam-popup-wrapper',
+  });
+
+  cameraMarkers[cam.id] = m;
+}
+
+/* ── Focus on a specific camera from grid "Map" button ── */
+function focusMapCamera(camId) {
+  const m = cameraMarkers[camId];
+  if (!m) return;
+  cameraMap.setView(m.getLatLng(), 16);
+  m.openPopup();
+}
+
+/* ── Update marker when status changes via WS ── */
+function updateMapMarker(camId, status) {
+  const cam = CAMERAS.find(c => c.id === camId);
+  if (!cam) return;
+  cam.status = status;
+  const m = cameraMarkers[camId];
+  if (!m) return;
+  m.setIcon(markerIcon(status, cam.isActive));
+  // Refresh popup if open
+  if (m.isPopupOpen()) m.setPopupContent(popupHTML(cam));
+}
+
+/* ════════════════════════════════════════════════════════════════
+   DashboardThumbPoller  (existing — unchanged)
+   ════════════════════════════════════════════════════════════════ */
 class DashboardThumbPoller {
   constructor(cameraId, fps = 10) {
     this.cameraId  = cameraId;
@@ -268,10 +633,8 @@ class DashboardThumbPoller {
     this._prevBlob = null;
     this._errCount = 0;
   }
-
   start() { this._active = true; this._poll(); }
   stop()  { this._active = false; clearTimeout(this._timer); }
-
   async _poll() {
     if (!this._active) return;
     try {
@@ -280,10 +643,8 @@ class DashboardThumbPoller {
         const cameraStatus = resp.headers.get('X-Camera-Status') || 'live';
         const blob  = await resp.blob();
         const newUrl = URL.createObjectURL(blob);
-
         const img = document.getElementById(`thumb-${this.cameraId}`);
         const ph  = document.getElementById(`placeholder-${this.cameraId}`);
-
         if (cameraStatus === 'live' && img) {
           if (this._prevBlob) URL.revokeObjectURL(this._prevBlob);
           this._prevBlob = newUrl;
@@ -295,15 +656,9 @@ class DashboardThumbPoller {
           if (img) img.style.display = 'none';
           if (ph) ph.style.display = 'flex';
         }
-
         this._errCount = 0;
-      } else {
-        this._errCount++;
-      }
-    } catch (_) {
-      this._errCount++;
-    }
-
+      } else { this._errCount++; }
+    } catch (_) { this._errCount++; }
     if (this._active) {
       const delay = this._errCount > 3 ? 4000 : Math.round(1000 / this.fps);
       this._timer = setTimeout(() => this._poll(), delay);
@@ -311,37 +666,26 @@ class DashboardThumbPoller {
   }
 }
 
-/* Start a thumbnail poller for each online + active camera */
 const _thumbPollers = {};
-
 function startThumbPoller(cameraId) {
   if (_thumbPollers[cameraId]) _thumbPollers[cameraId].stop();
   const p = new DashboardThumbPoller(cameraId, 10);
   _thumbPollers[cameraId] = p;
   p.start();
 }
-
 function stopThumbPoller(cameraId) {
-  if (_thumbPollers[cameraId]) {
-    _thumbPollers[cameraId].stop();
-    delete _thumbPollers[cameraId];
-  }
+  if (_thumbPollers[cameraId]) { _thumbPollers[cameraId].stop(); delete _thumbPollers[cameraId]; }
 }
 
-/* Boot pollers for cameras that are already online on page load */
-{% for cam in cameras %}
-{% if cam.status == 'online' and cam.is_active %}
-startThumbPoller({{ cam.id }});
-{% endif %}
-{% endfor %}
+{% for cam in cameras %}{% if cam.status == 'online' and cam.is_active %}startThumbPoller({{ cam.id }});{% endif %}{% endfor %}
 
-/* ── WebSocket for real-time camera status ── */
+/* ── WebSocket for real-time status ── */
 const camWs = new WebSocket(`ws://${location.host}/ws/camera/`);
-
 camWs.onmessage = (e) => {
   const d = JSON.parse(e.data);
   if (d.type !== 'CAMERA_STATUS') return;
   updateCameraCard(d.camera_id, d.status, d.timestamp);
+  updateMapMarker(d.camera_id, d.status);   // ← also refresh map marker
 };
 camWs.onclose = () => setTimeout(() => location.reload(), 3000);
 
@@ -353,38 +697,28 @@ function updateCameraCard(id, status, ts) {
   const thumb = document.getElementById(`thumb-${id}`);
   const ph    = document.getElementById(`placeholder-${id}`);
   if (!ind) return;
-
   ind.className   = `cam-indicator ${status}`;
   badge.className = `status-badge ${status}`;
   badge.textContent = status.toUpperCase();
   if (time && ts) time.textContent = `Last seen: ${ts.split(' ')[1] || ts.slice(11,19)}`;
-
   if (status === 'online') {
     card.classList.add('cam-card--online');
-    // Ensure the img element exists and start polling
     if (!document.getElementById(`thumb-${id}`)) {
-      // Create the img element if it doesn't exist yet
       const wrap = document.getElementById(`preview-wrap-${id}`);
       if (wrap && ph) {
         const img = document.createElement('img');
-        img.className = 'cam-thumb';
-        img.id = `thumb-${id}`;
-        img.alt = 'Live thumbnail';
-        img.style.display = 'none';
+        img.className = 'cam-thumb'; img.id = `thumb-${id}`;
+        img.alt = 'Live thumbnail'; img.style.display = 'none';
         wrap.insertBefore(img, ph);
       }
     }
     startThumbPoller(id);
   }
-
   if (status === 'offline') {
     card.classList.remove('cam-card--online');
     stopThumbPoller(id);
     if (thumb) thumb.style.display = 'none';
-    if (ph) {
-      ph.style.display = 'flex';
-      ph.innerHTML = '<i class="fas fa-video-slash"></i><span>Offline</span>';
-    }
+    if (ph) { ph.style.display = 'flex'; ph.innerHTML = '<i class="fas fa-video-slash"></i><span>Offline</span>'; }
   }
 }
 
@@ -399,8 +733,7 @@ function openCameraViewer(id, status, isActive) {
   const top  = Math.round((window.screen.availHeight - h) / 2);
   const win  = window.open(url, `cam_viewer_${id}`,
     `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no,location=no,status=no,scrollbars=no,resizable=yes`);
-  if (win) win.focus();
-  else window.open(url, '_blank');
+  if (win) win.focus(); else window.open(url, '_blank');
 }
 
 /* ── Toggle camera on/off ── */
@@ -415,9 +748,7 @@ function toggleCamera(id, checkbox) {
   .then(d => {
     checkbox.disabled = false;
     label.textContent = d.is_active ? 'Active' : 'Disabled';
-    if (!d.is_active) {
-      updateCameraCard(id, 'offline', new Date().toISOString().replace('T',' ').slice(0,19));
-    }
+    if (!d.is_active) updateCameraCard(id, 'offline', new Date().toISOString().replace('T',' ').slice(0,19));
   })
   .catch(() => { checkbox.disabled = false; checkbox.checked = !checkbox.checked; showToast('Toggle failed.', 'error'); });
 }
@@ -444,7 +775,7 @@ function discoverCameras() {
 setInterval(() => {
   fetch('/cameras/status/')
     .then(r => r.json())
-    .then(d => { d.cameras.forEach(c => updateCameraCard(c.id, c.status, c.last_seen_at || '')); });
+    .then(d => { d.cameras.forEach(c => { updateCameraCard(c.id, c.status, c.last_seen_at || ''); updateMapMarker(c.id, c.status); }); });
 }, 8000);
 
 /* ── Toast ── */

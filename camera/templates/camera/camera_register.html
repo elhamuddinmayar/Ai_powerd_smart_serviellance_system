@@ -4,9 +4,13 @@
 {% block title %}{% if editing %}Edit Camera{% else %}Register Camera{% endif %}{% endblock %}
 
 {% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      crossorigin="">
 <style>
     .form-container {
-        max-width: 620px;
+        max-width: 680px;
         margin: 40px auto;
         padding: 0 20px;
     }
@@ -25,9 +29,7 @@
         padding-bottom: 14px;
         border-bottom: 1px solid #0f3460;
     }
-    .field-group {
-        margin-bottom: 20px;
-    }
+    .field-group { margin-bottom: 20px; }
     .field-label {
         display: block;
         color: #95a5a6;
@@ -49,93 +51,162 @@
         transition: border-color 0.2s;
         font-family: inherit;
     }
-    .field-input:focus {
-        border-color: #4ecca3;
-    }
-    .field-input::placeholder {
-        color: #4a5568;
-    }
-    textarea.field-input {
-        resize: vertical;
-        min-height: 80px;
-    }
-    .field-hint {
-        font-size: 0.7rem;
-        color: #4a5568;
-        margin-top: 5px;
-    }
+    .field-input:focus { border-color: #4ecca3; }
+    .field-input::placeholder { color: #4a5568; }
+    textarea.field-input { resize: vertical; min-height: 80px; }
+    .field-hint { font-size: 0.7rem; color: #4a5568; margin-top: 5px; }
     .checkbox-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: #ccc;
-        font-size: 0.85rem;
-        margin-top: 4px;
+        display: flex; align-items: center; gap: 10px;
+        color: #ccc; font-size: 0.85rem; margin-top: 4px;
     }
     .checkbox-row input[type="checkbox"] {
-        width: 16px;
-        height: 16px;
-        accent-color: #4ecca3;
-        cursor: pointer;
+        width: 16px; height: 16px;
+        accent-color: #4ecca3; cursor: pointer;
     }
-    .form-actions {
-        display: flex;
-        gap: 12px;
-        margin-top: 28px;
-    }
+    .form-actions { display: flex; gap: 12px; margin-top: 28px; }
     .btn-submit {
-        flex: 1;
-        background: #4ecca3;
-        color: #1a1a2e;
-        border: none;
-        padding: 13px 28px;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 0.85rem;
-        cursor: pointer;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: 0.2s;
+        flex: 1; background: #4ecca3; color: #1a1a2e;
+        border: none; padding: 13px 28px; border-radius: 8px;
+        font-weight: bold; font-size: 0.85rem; cursor: pointer;
+        text-transform: uppercase; letter-spacing: 0.5px; transition: 0.2s;
     }
-    .btn-submit:hover {
-        background: #45b791;
-        transform: translateY(-1px);
-    }
+    .btn-submit:hover { background: #45b791; transform: translateY(-1px); }
     .btn-cancel {
-        background: transparent;
-        color: #95a5a6;
-        border: 1px solid #0f3460;
-        padding: 13px 20px;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        transition: 0.2s;
+        background: transparent; color: #95a5a6;
+        border: 1px solid #0f3460; padding: 13px 20px;
+        border-radius: 8px; font-size: 0.85rem;
+        text-decoration: none; display: flex; align-items: center; transition: 0.2s;
     }
-    .btn-cancel:hover {
-        border-color: #95a5a6;
-        color: #eee;
-    }
-    .error-msg {
-        color: #e94560;
-        font-size: 0.72rem;
-        margin-top: 4px;
-    }
+    .btn-cancel:hover { border-color: #95a5a6; color: #eee; }
+    .error-msg { color: #e94560; font-size: 0.72rem; margin-top: 4px; }
     .back-link {
-        display: inline-block;
-        color: #4ecca3;
-        text-decoration: none;
-        font-size: 0.85rem;
-        margin-bottom: 20px;
+        display: inline-block; color: #4ecca3;
+        text-decoration: none; font-size: 0.85rem; margin-bottom: 20px;
     }
     .back-link:hover { text-decoration: underline; }
+
+    /* ── Map picker ── */
+    .map-section {
+        margin-bottom: 20px;
+    }
+    .map-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .map-section-title {
+        color: #4ecca3;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .map-toggle-btn {
+        background: rgba(78,204,163,.12);
+        border: 1px solid rgba(78,204,163,.3);
+        color: #4ecca3;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        cursor: pointer;
+        transition: 0.2s;
+        letter-spacing: 0.3px;
+    }
+    .map-toggle-btn:hover { background: rgba(78,204,163,.22); }
+
+    #map-picker-wrap {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+    }
+    #map-picker-wrap.open { display: flex; }
+
+    #location-map {
+        width: 100%;
+        height: 320px;
+        border-radius: 10px;
+        border: 1px solid #1a3a60;
+        background: #0a0e1a;
+        z-index: 0;
+    }
+
+    .map-search-row {
+        display: flex;
+        gap: 8px;
+    }
+    .map-search-input {
+        flex: 1;
+        background: #0f2040;
+        border: 1px solid #1a3a60;
+        color: #eee;
+        padding: 9px 12px;
+        border-radius: 7px;
+        font-size: 0.82rem;
+        outline: none;
+        font-family: inherit;
+        transition: border-color 0.2s;
+    }
+    .map-search-input:focus { border-color: #4ecca3; }
+    .map-search-btn {
+        background: rgba(78,204,163,.12);
+        border: 1px solid rgba(78,204,163,.3);
+        color: #4ecca3;
+        padding: 9px 14px;
+        border-radius: 7px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+    }
+    .map-search-btn:hover { background: rgba(78,204,163,.22); }
+
+    .map-coords-row {
+        display: flex;
+        gap: 10px;
+    }
+    .map-coord-box {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(0,0,0,.3);
+        border: 1px solid #1a3a60;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        color: #aaa;
+        font-family: monospace;
+    }
+    .map-coord-box span { color: #4ecca3; font-weight: 600; min-width: 80px; }
+    .map-hint {
+        font-size: 0.68rem;
+        color: #4a5568;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .map-hint i { color: #4ecca3; }
+
+    .coord-set-indicator {
+        display: none;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.7rem;
+        color: #2ecc71;
+        padding: 4px 8px;
+        background: rgba(46,204,113,.1);
+        border: 1px solid rgba(46,204,113,.25);
+        border-radius: 5px;
+    }
+    .coord-set-indicator.visible { display: flex; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="form-container">
-
     <a href="{% url 'camera_dashboard' %}" class="back-link">
         ← Back to Camera Status
     </a>
@@ -143,126 +214,336 @@
     <div class="form-card">
         <div class="form-title">
             <i class="fas fa-video" style="margin-right: 8px;"></i>
-            {% if editing %}
-                Edit Camera — {{ editing.name }}
-            {% else %}
-                Register New Camera
-            {% endif %}
+            {% if editing %}Edit Camera — {{ editing.name }}{% else %}Register New Camera{% endif %}
         </div>
 
         <form method="post" novalidate>
             {% csrf_token %}
 
             {% if form.non_field_errors %}
-                <div class="error-msg" style="margin-bottom: 16px;">
-                    {{ form.non_field_errors }}
-                </div>
+                <div class="error-msg" style="margin-bottom: 16px;">{{ form.non_field_errors }}</div>
             {% endif %}
+
+            <!-- Hidden coordinate inputs -->
+            {{ form.latitude }}
+            {{ form.longitude }}
 
             <!-- Camera Name -->
             <div class="field-group">
                 <label class="field-label" for="id_name">Camera Name *</label>
-                <input
-                    type="text"
-                    id="id_name"
-                    name="name"
-                    class="field-input"
-                    placeholder="e.g. Computer Webcam, Mobile Camera, Front Gate"
-                    value="{{ form.name.value|default:'' }}"
-                    required
-                >
-                {% if form.name.errors %}
-                    <div class="error-msg">{{ form.name.errors.0 }}</div>
-                {% endif %}
+                <input type="text" id="id_name" name="name" class="field-input"
+                       placeholder="e.g. Computer Webcam, Mobile Camera, Front Gate"
+                       value="{{ form.name.value|default:'' }}" required>
+                {% if form.name.errors %}<div class="error-msg">{{ form.name.errors.0 }}</div>{% endif %}
             </div>
 
             <!-- Index or URL -->
             <div class="field-group">
                 <label class="field-label" for="id_index_or_url">Camera Index or Stream URL *</label>
-                <input
-                    type="text"
-                    id="id_index_or_url"
-                    name="index_or_url"
-                    class="field-input"
-                    placeholder="0  /  1  /  2  /  rtsp://192.168.1.5/stream"
-                    value="{{ form.index_or_url.value|default:'' }}"
-                    required
-                >
+                <input type="text" id="id_index_or_url" name="index_or_url" class="field-input"
+                       placeholder="0  /  1  /  2  /  rtsp://192.168.1.5/stream"
+                       value="{{ form.index_or_url.value|default:'' }}" required>
                 <div class="field-hint">
                     <strong style="color:#ccc;">0</strong> = built-in webcam &nbsp;·&nbsp;
-                    <strong style="color:#ccc;">1</strong> or <strong style="color:#ccc;">2</strong> = USB / mobile camera &nbsp;·&nbsp;
+                    <strong style="color:#ccc;">1</strong> or <strong style="color:#ccc;">2</strong> = USB / mobile &nbsp;·&nbsp;
                     Full RTSP URL for IP cameras
                 </div>
-                {% if form.index_or_url.errors %}
-                    <div class="error-msg">{{ form.index_or_url.errors.0 }}</div>
-                {% endif %}
+                {% if form.index_or_url.errors %}<div class="error-msg">{{ form.index_or_url.errors.0 }}</div>{% endif %}
             </div>
 
-            <!-- Location -->
+            <!-- Location (text) -->
             <div class="field-group">
                 <label class="field-label" for="id_location">Physical Location *</label>
-                <input
-                    type="text"
-                    id="id_location"
-                    name="location"
-                    class="field-input"
-                    placeholder="e.g. Front Gate, Room 101, Parking Lot"
-                    value="{{ form.location.value|default:'' }}"
-                    required
-                >
+                <input type="text" id="id_location" name="location" class="field-input"
+                       placeholder="e.g. Front Gate, Room 101, Parking Lot"
+                       value="{{ form.location.value|default:'' }}" required>
                 <div class="field-hint">
-                    This location name will appear on all detection alerts from this camera.
+                    This label appears on all detection alerts from this camera.
                 </div>
-                {% if form.location.errors %}
-                    <div class="error-msg">{{ form.location.errors.0 }}</div>
-                {% endif %}
+                {% if form.location.errors %}<div class="error-msg">{{ form.location.errors.0 }}</div>{% endif %}
             </div>
+
+            <!-- ══ Map location picker ══════════════════════════════════════ -->
+            <div class="map-section">
+                <div class="map-section-header">
+                    <span class="map-section-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Map Location (optional)
+                    </span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="coord-set-indicator" id="coordIndicator">
+                            <i class="fas fa-check-circle"></i> Location pinned
+                        </div>
+                        <button type="button" class="map-toggle-btn" id="mapToggleBtn"
+                                onclick="toggleMap()">
+                            <i class="fas fa-map"></i> Open Map
+                        </button>
+                    </div>
+                </div>
+
+                <div id="map-picker-wrap">
+                    <!-- Search bar -->
+                    <div class="map-search-row">
+                        <input type="text" id="mapSearchInput" class="map-search-input"
+                               placeholder="Search for a place or address...">
+                        <button type="button" class="map-search-btn" onclick="searchLocation()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <button type="button" class="map-search-btn" onclick="geolocate()" title="Use my location">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Map canvas -->
+                    <div id="location-map"></div>
+
+                    <!-- Coordinate readout -->
+                    <div class="map-coords-row">
+                        <div class="map-coord-box">
+                            <i class="fas fa-location-arrow" style="color:#4ecca3;font-size:.7rem;"></i>
+                            Lat: <span id="latDisplay">—</span>
+                        </div>
+                        <div class="map-coord-box">
+                            <i class="fas fa-location-arrow" style="color:#4ecca3;font-size:.7rem;transform:rotate(90deg);"></i>
+                            Lng: <span id="lngDisplay">—</span>
+                        </div>
+                        <button type="button" class="map-search-btn" id="clearPinBtn"
+                                onclick="clearPin()" style="display:none;">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+
+                    <div class="map-hint">
+                        <i class="fas fa-info-circle"></i>
+                        Click anywhere on the map to drop a pin. Drag the pin to adjust.
+                    </div>
+                </div>
+            </div>
+            <!-- ════════════════════════════════════════════════════════════ -->
 
             <!-- Description -->
             <div class="field-group">
                 <label class="field-label" for="id_description">Description (optional)</label>
-                <textarea
-                    id="id_description"
-                    name="description"
-                    class="field-input"
-                    placeholder="Optional notes about this camera..."
-                >{{ form.description.value|default:'' }}</textarea>
-                {% if form.description.errors %}
-                    <div class="error-msg">{{ form.description.errors.0 }}</div>
-                {% endif %}
+                <textarea id="id_description" name="description" class="field-input"
+                          placeholder="Optional notes about this camera..."
+>{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}<div class="error-msg">{{ form.description.errors.0 }}</div>{% endif %}
             </div>
 
             <!-- Active toggle -->
             <div class="field-group">
                 <label class="field-label">Camera Active</label>
                 <div class="checkbox-row">
-                    <input
-                        type="checkbox"
-                        id="id_is_active"
-                        name="is_active"
-                        {% if form.is_active.value %}checked{% endif %}
-                    >
+                    <input type="checkbox" id="id_is_active" name="is_active"
+                           {% if form.is_active.value %}checked{% endif %}>
                     <label for="id_is_active" style="cursor:pointer;">
                         Enable this camera and start it immediately after saving
                     </label>
                 </div>
-                {% if form.is_active.errors %}
-                    <div class="error-msg">{{ form.is_active.errors.0 }}</div>
-                {% endif %}
             </div>
 
-            <!-- Actions -->
             <div class="form-actions">
                 <button type="submit" class="btn-submit">
                     <i class="fas fa-save" style="margin-right: 6px;"></i>
                     {% if editing %}Save Changes{% else %}Register Camera{% endif %}
                 </button>
-                <a href="{% url 'camera_dashboard' %}" class="btn-cancel">
-                    Cancel
-                </a>
+                <a href="{% url 'camera_dashboard' %}" class="btn-cancel">Cancel</a>
             </div>
-
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   Map Location Picker
+   Uses Leaflet + OpenStreetMap (free, no API key required).
+   ════════════════════════════════════════════════════════════════ */
+
+let map        = null;
+let marker     = null;
+let mapInited  = false;
+let mapOpen    = false;
+
+// Pre-existing coords from the editing form
+const EXISTING_LAT = {{ form.latitude.value|default:'null' }};
+const EXISTING_LNG = {{ form.longitude.value|default:'null' }};
+
+function toggleMap() {
+    const wrap = document.getElementById('map-picker-wrap');
+    const btn  = document.getElementById('mapToggleBtn');
+    mapOpen = !mapOpen;
+
+    if (mapOpen) {
+        wrap.classList.add('open');
+        btn.innerHTML = '<i class="fas fa-times"></i> Close Map';
+        if (!mapInited) initMap();
+    } else {
+        wrap.classList.remove('open');
+        btn.innerHTML = '<i class="fas fa-map"></i> Open Map';
+    }
+}
+
+function initMap() {
+    mapInited = true;
+
+    // Default centre: Kabul, Afghanistan  (change to your region if needed)
+    const defaultLat = EXISTING_LAT || 34.5553;
+    const defaultLng = EXISTING_LNG || 69.2075;
+    const defaultZoom = EXISTING_LAT ? 14 : 5;
+
+    map = L.map('location-map', {
+        center: [defaultLat, defaultLng],
+        zoom:   defaultZoom,
+    });
+
+    // OpenStreetMap tiles — free, no key
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+    }).addTo(map);
+
+    // Custom green marker icon
+    const greenIcon = L.divIcon({
+        className: '',
+        html: `<div style="
+            width:28px;height:28px;border-radius:50% 50% 50% 0;
+            background:#4ecca3;border:3px solid #fff;
+            transform:rotate(-45deg);
+            box-shadow:0 2px 10px rgba(78,204,163,.6);
+        "></div>`,
+        iconSize:   [28, 28],
+        iconAnchor: [14, 28],
+        popupAnchor:[0, -28],
+    });
+
+    // If editing and coords already saved, show the pin immediately
+    if (EXISTING_LAT && EXISTING_LNG) {
+        placeMarker(EXISTING_LAT, EXISTING_LNG, greenIcon);
+        showCoords(EXISTING_LAT, EXISTING_LNG);
+    }
+
+    // Click on map → place / move pin
+    map.on('click', function(e) {
+        placeMarker(e.latlng.lat, e.latlng.lng, greenIcon);
+        showCoords(e.latlng.lat, e.latlng.lng);
+    });
+}
+
+function placeMarker(lat, lng, icon) {
+    if (marker) {
+        marker.setLatLng([lat, lng]);
+    } else {
+        icon = icon || L.divIcon({
+            className: '',
+            html: `<div style="
+                width:28px;height:28px;border-radius:50% 50% 50% 0;
+                background:#4ecca3;border:3px solid #fff;
+                transform:rotate(-45deg);
+                box-shadow:0 2px 10px rgba(78,204,163,.6);
+            "></div>`,
+            iconSize:   [28, 28],
+            iconAnchor: [14, 28],
+        });
+        marker = L.marker([lat, lng], { icon, draggable: true }).addTo(map);
+        marker.on('dragend', function(e) {
+            const pos = e.target.getLatLng();
+            showCoords(pos.lat, pos.lng);
+        });
+    }
+    document.getElementById('clearPinBtn').style.display = 'inline-flex';
+}
+
+function showCoords(lat, lng) {
+    const roundedLat = Math.round(lat * 1e6) / 1e6;
+    const roundedLng = Math.round(lng * 1e6) / 1e6;
+
+    document.getElementById('latDisplay').textContent = roundedLat;
+    document.getElementById('lngDisplay').textContent = roundedLng;
+    document.getElementById('id_latitude').value  = roundedLat;
+    document.getElementById('id_longitude').value = roundedLng;
+    document.getElementById('coordIndicator').classList.add('visible');
+}
+
+function clearPin() {
+    if (marker) { map.removeLayer(marker); marker = null; }
+    document.getElementById('latDisplay').textContent = '—';
+    document.getElementById('lngDisplay').textContent = '—';
+    document.getElementById('id_latitude').value  = '';
+    document.getElementById('id_longitude').value = '';
+    document.getElementById('coordIndicator').classList.remove('visible');
+    document.getElementById('clearPinBtn').style.display = 'none';
+}
+
+/* ── Nominatim geocoding (free, OpenStreetMap) ── */
+async function searchLocation() {
+    const query = document.getElementById('mapSearchInput').value.trim();
+    if (!query) return;
+
+    const btn = document.querySelector('.map-search-btn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+        const resp = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+        const data = await resp.json();
+
+        if (data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            map.setView([lat, lng], 14);
+            placeMarker(lat, lng);
+            showCoords(lat, lng);
+
+            // Auto-fill location name if field is empty
+            const locField = document.getElementById('id_location');
+            if (!locField.value) {
+                locField.value = data[0].display_name.split(',').slice(0, 2).join(',').trim();
+            }
+        } else {
+            alert('Location not found. Try a different search term.');
+        }
+    } catch (e) {
+        alert('Search failed. Check your internet connection.');
+    }
+
+    document.querySelector('.map-search-btn').innerHTML = '<i class="fas fa-search"></i> Search';
+}
+
+/* ── Geolocation ── */
+function geolocate() {
+    if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        if (!mapInited) initMap();
+        if (!mapOpen)   toggleMap();
+        map.setView([lat, lng], 15);
+        placeMarker(lat, lng);
+        showCoords(lat, lng);
+    }, function() {
+        alert('Could not get your location.');
+    });
+}
+
+/* Enter key triggers search */
+document.addEventListener('DOMContentLoaded', function() {
+    const inp = document.getElementById('mapSearchInput');
+    if (inp) {
+        inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); searchLocation(); }
+        });
+    }
+
+    // If editing and coords exist, show indicator without opening the map
+    if (EXISTING_LAT && EXISTING_LNG) {
+        document.getElementById('coordIndicator').classList.add('visible');
+        document.getElementById('latDisplay').textContent = EXISTING_LAT;
+        document.getElementById('lngDisplay').textContent = EXISTING_LNG;
+    }
+});
+</script>
 {% endblock %}

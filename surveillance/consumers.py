@@ -9,17 +9,14 @@ class PoseConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope.get("user")
         
-        # 1. Join Global Surveillance (Detections, Status)
         await self.channel_layer.group_add("surveillance_group", self.channel_name)
 
-        # 2. Join Personal Notifications
         if self.user and self.user.is_authenticated:
             self.personal_group = f"user_{self.user.id}"
             await self.channel_layer.group_add(self.personal_group, self.channel_name)
             
             await self.accept()
 
-            # 3. Push initial state (Unread Notifications)
             unread = await self._get_unread_notifications()
             if unread:
                 await self.send(text_data=json.dumps({
@@ -27,7 +24,6 @@ class PoseConsumer(AsyncWebsocketConsumer):
                     "notifications": unread
                 }))
         else:
-            # We allow anonymous dashboard viewing but no personal notifications
             self.personal_group = None
             await self.accept()
 
@@ -37,7 +33,6 @@ class PoseConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(self.personal_group, self.channel_name)
 
     async def receive(self, text_data):
-        """Handle incoming messages from the frontend UI."""
         try:
             data = json.loads(text_data)
             action_type = data.get("type")
@@ -47,7 +42,6 @@ class PoseConsumer(AsyncWebsocketConsumer):
                 if notif_id:
                     await self._mark_notification_read(notif_id)
             
-            # Keep-alive ping from client
             elif action_type == "PING":
                 await self.send(text_data=json.dumps({"type": "PONG"}))
 
@@ -55,33 +49,36 @@ class PoseConsumer(AsyncWebsocketConsumer):
             logger.error(f"WebSocket Receive Error: {e}")
 
     # ------------------------------------------------------------------
-    # Channel Layer Handlers (Engine -> WebSocket)
+    # Channel Layer Handlers
     # ------------------------------------------------------------------
 
     async def forward_to_websocket(self, event):
-        """
-        Receives STAT_UPDATE, TARGET_MATCH, and CAMERA_STATUS from engine.
-        Optimized to handle the high-frequency stream.
-        """
         await self.send(text_data=json.dumps(event["payload"]))
 
     async def send_notification(self, event):
         """
-        Receives personal notifications (e.g., Target found specifically for this user).
+        Receives personal notifications pushed by engine.py or views.py.
+
+        ── Root cause of the KeyError ────────────────────────────────────
+        engine.py sends supervisor notifications WITHOUT 'notification_id'
+        (it creates the Notification object but forgets to include its pk
+        in the channel-layer message).  Using .get() with a None default
+        makes the handler safe regardless of which caller sent the event.
+        ─────────────────────────────────────────────────────────────────
         """
-        # Ensure timestamp is stringified for JSON
         created_at = event.get("created_at")
         if not isinstance(created_at, str) and created_at:
             created_at = created_at.strftime("%Y-%m-%d %H:%M:%S")
 
         await self.send(text_data=json.dumps({
-            "type": "NOTIFICATION",
-            "notification_id": event["notification_id"],
+            "type":              "NOTIFICATION",
+            # ↓ was event["notification_id"] — crashes when key is absent
+            "notification_id":   event.get("notification_id"),
             "notification_type": event.get("notification_type", "info"),
-            "title": event["title"],
-            "message": event["message"],
-            "event_id": event.get("event_id"),
-            "created_at": created_at,
+            "title":             event.get("title", ""),
+            "message":           event.get("message", ""),
+            "event_id":          event.get("event_id"),
+            "created_at":        created_at,
         }))
 
     # ------------------------------------------------------------------
@@ -96,7 +93,6 @@ class PoseConsumer(AsyncWebsocketConsumer):
                 recipient=self.user, is_read=False
             ).order_by('-created_at')[:15]
             
-            # Values conversion to handle DateTimeField serialization
             notifications = []
             for n in qs:
                 notifications.append({
