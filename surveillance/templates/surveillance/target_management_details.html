@@ -109,9 +109,9 @@
         {% trans "Personal Information" %}
       </div>
 
-      {% with rows=target %}
+      {% comment %} {% with rows=target %}
       {% for label, value in  forloop.counter|add:0|divisibleby:1 %}{% endfor %}
-      {% endwith %}
+      {% endwith %} {% endcomment %}
 
       <!-- Info rows inline -->
       {% for pair in info_pairs %}

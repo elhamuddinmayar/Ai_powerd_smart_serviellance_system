@@ -20,13 +20,10 @@
         border-radius: 16px;
         padding: 30px;
     }
-
-    /* ── Smaller padding on mobile ── */
     @media (max-width: 480px) {
         .form-container { padding: 0 12px; margin: 20px auto; }
         .form-card { padding: 20px 16px; border-radius: 12px; }
     }
-
     .form-title {
         color: #4ecca3;
         font-size: 0.9rem;
@@ -58,7 +55,9 @@
         transition: border-color 0.2s;
         font-family: inherit;
     }
-    .field-input:focus { border-color: #4ecca3; }
+    .field-input:focus  { border-color: #4ecca3; }
+    .field-input:not(:placeholder-shown):invalid { border-color: #e94560; }
+    .field-input:not(:placeholder-shown):valid   { border-color: rgba(78,204,163,.5); }
     .field-input::placeholder { color: #4a5568; }
     textarea.field-input { resize: vertical; min-height: 80px; }
     .field-hint { font-size: 0.7rem; color: #4a5568; margin-top: 5px; }
@@ -99,140 +98,87 @@
     }
     .back-link:hover { text-decoration: underline; }
 
+    /* ── Source type toggle ── */
+    .source-toggle {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    .src-btn {
+        flex: 1;
+        padding: 7px 12px;
+        border-radius: 6px;
+        border: 1px solid #1a3a60;
+        background: transparent;
+        color: #888;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: 0.2s;
+        font-family: inherit;
+    }
+    .src-btn.active {
+        background: rgba(78,204,163,.12);
+        border-color: rgba(78,204,163,.4);
+        color: #4ecca3;
+    }
+    .src-btn:hover:not(.active) { border-color: #555; color: #ccc; }
+
     /* ── Map picker ── */
     .map-section { margin-bottom: 20px; }
     .map-section-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-        gap: 8px;
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
     }
     .map-section-title {
-        color: #4ecca3;
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        color: #4ecca3; font-size: 0.72rem;
+        text-transform: uppercase; letter-spacing: 0.5px;
+        display: flex; align-items: center; gap: 6px;
     }
     .map-toggle-btn {
-        background: rgba(78,204,163,.12);
-        border: 1px solid rgba(78,204,163,.3);
-        color: #4ecca3;
-        padding: 5px 12px;
-        border-radius: 6px;
-        font-size: 0.72rem;
-        cursor: pointer;
-        transition: 0.2s;
-        letter-spacing: 0.3px;
+        background: rgba(78,204,163,.12); border: 1px solid rgba(78,204,163,.3);
+        color: #4ecca3; padding: 5px 12px; border-radius: 6px;
+        font-size: 0.72rem; cursor: pointer; transition: 0.2s; letter-spacing: 0.3px;
     }
     .map-toggle-btn:hover { background: rgba(78,204,163,.22); }
-
-    #map-picker-wrap {
-        display: none;
-        flex-direction: column;
-        gap: 8px;
-    }
+    #map-picker-wrap { display: none; flex-direction: column; gap: 8px; }
     #map-picker-wrap.open { display: flex; }
-
     #location-map {
-        width: 100%;
-        height: 300px;
-        border-radius: 10px;
-        border: 1px solid #1a3a60;
-        background: #0a0e1a;
-        z-index: 0;
+        width: 100%; height: 300px; border-radius: 10px;
+        border: 1px solid #1a3a60; background: #0a0e1a; z-index: 0;
     }
-    @media (max-width: 480px) {
-        #location-map { height: 240px; }
-    }
-
-    /* ── Map search row – wraps on mobile ── */
-    .map-search-row {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
+    @media (max-width: 480px) { #location-map { height: 240px; } }
+    .map-search-row { display: flex; gap: 8px; flex-wrap: wrap; }
     .map-search-input {
-        flex: 1;
-        min-width: 0;
-        background: #0f2040;
-        border: 1px solid #1a3a60;
-        color: #eee;
-        padding: 9px 12px;
-        border-radius: 7px;
-        font-size: 0.82rem;
-        outline: none;
-        font-family: inherit;
-        transition: border-color 0.2s;
+        flex: 1; min-width: 0; background: #0f2040; border: 1px solid #1a3a60;
+        color: #eee; padding: 9px 12px; border-radius: 7px; font-size: 0.82rem;
+        outline: none; font-family: inherit; transition: border-color 0.2s;
     }
     .map-search-input:focus { border-color: #4ecca3; }
     .map-search-btn {
-        flex-shrink: 0;
-        background: rgba(78,204,163,.12);
-        border: 1px solid rgba(78,204,163,.3);
-        color: #4ecca3;
-        padding: 9px 14px;
-        border-radius: 7px;
-        font-size: 0.8rem;
-        cursor: pointer;
-        transition: 0.2s;
-        white-space: nowrap;
+        flex-shrink: 0; background: rgba(78,204,163,.12);
+        border: 1px solid rgba(78,204,163,.3); color: #4ecca3;
+        padding: 9px 14px; border-radius: 7px; font-size: 0.8rem;
+        cursor: pointer; transition: 0.2s; white-space: nowrap;
     }
     .map-search-btn:hover { background: rgba(78,204,163,.22); }
-
-    /* ── Coord row – stacks on very small screens ── */
-    .map-coords-row {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-    }
+    .map-coords-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .map-coord-box {
-        flex: 1;
-        min-width: 110px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(0,0,0,.3);
-        border: 1px solid #1a3a60;
-        border-radius: 6px;
-        padding: 6px 10px;
-        font-size: 0.75rem;
-        color: #aaa;
-        font-family: monospace;
+        flex: 1; min-width: 110px; display: flex; align-items: center; gap: 6px;
+        background: rgba(0,0,0,.3); border: 1px solid #1a3a60; border-radius: 6px;
+        padding: 6px 10px; font-size: 0.75rem; color: #aaa; font-family: monospace;
     }
     .map-coord-box span { color: #4ecca3; font-weight: 600; min-width: 60px; }
-    .map-hint {
-        font-size: 0.68rem;
-        color: #4a5568;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
+    .map-hint { font-size: 0.68rem; color: #4a5568; display: flex; align-items: center; gap: 5px; }
     .map-hint i { color: #4ecca3; }
-
     .coord-set-indicator {
-        display: none;
-        align-items: center;
-        gap: 5px;
-        font-size: 0.7rem;
-        color: #2ecc71;
-        padding: 4px 8px;
-        background: rgba(46,204,113,.1);
-        border: 1px solid rgba(46,204,113,.25);
-        border-radius: 5px;
+        display: none; align-items: center; gap: 5px; font-size: 0.7rem; color: #2ecc71;
+        padding: 4px 8px; background: rgba(46,204,113,.1);
+        border: 1px solid rgba(46,204,113,.25); border-radius: 5px;
     }
     .coord-set-indicator.visible { display: flex; }
-
-    /* Clear pin button – full row on mobile if needed */
-    @media (max-width: 380px) {
-        .map-search-btn { flex: 1; text-align: center; justify-content: center; display: flex; }
-        .map-coord-box { min-width: calc(50% - 5px); }
-    }
 </style>
 {% endblock %}
 
@@ -255,39 +201,76 @@
                 <div class="error-msg" style="margin-bottom: 16px;">{{ form.non_field_errors }}</div>
             {% endif %}
 
-            <!-- Hidden coordinate inputs -->
+            <!-- Hidden coordinate inputs (populated by JS map picker) -->
             {{ form.latitude }}
             {{ form.longitude }}
 
             <!-- Camera Name -->
             <div class="field-group">
                 <label class="field-label" for="id_name">Camera Name *</label>
-                <input type="text" id="id_name" name="name" class="field-input"
-                       placeholder="e.g. Computer Webcam, Mobile Camera, Front Gate"
-                       value="{{ form.name.value|default:'' }}" required>
+                <input
+                    type="text"
+                    id="id_name"
+                    name="name"
+                    class="field-input"
+                    placeholder="e.g. Computer Webcam, Mobile Camera, Front Gate"
+                    value="{{ form.name.value|default:'' }}"
+                    required
+                    maxlength="100">
                 {% if form.name.errors %}<div class="error-msg">{{ form.name.errors.0 }}</div>{% endif %}
             </div>
 
-            <!-- Index or URL -->
+            <!-- Camera Index or Stream URL
+                 This field is intentionally a text input because it accepts EITHER
+                 a small integer (local device index: 0, 1, 2…) OR a full RTSP URL.
+                 The toggle buttons below swap the placeholder/pattern dynamically.
+            -->
             <div class="field-group">
-                <label class="field-label" for="id_index_or_url">Camera Index or Stream URL *</label>
-                <input type="text" id="id_index_or_url" name="index_or_url" class="field-input"
-                       placeholder="0  /  1  /  2  /  rtsp://192.168.1.5/stream"
-                       value="{{ form.index_or_url.value|default:'' }}" required>
-                <div class="field-hint">
+                <label class="field-label" for="id_index_or_url">Camera Source *</label>
+
+                <!-- Toggle: Local device vs Network stream -->
+                <div class="source-toggle" id="sourceToggle">
+                    <button type="button" class="src-btn active" id="btnLocal"
+                            onclick="setSourceMode('local')">
+                        <i class="fas fa-desktop"></i> Local Device
+                    </button>
+                    <button type="button" class="src-btn" id="btnNetwork"
+                            onclick="setSourceMode('network')">
+                        <i class="fas fa-network-wired"></i> Network / RTSP
+                    </button>
+                </div>
+
+                <input
+                    type="text"
+                    id="id_index_or_url"
+                    name="index_or_url"
+                    class="field-input"
+                    placeholder="0"
+                    value="{{ form.index_or_url.value|default:'' }}"
+                    required
+                    maxlength="255"
+                    inputmode="numeric"
+                    pattern="[0-9]+"
+                    title="Enter a device index (0, 1, 2…) or switch to Network/RTSP mode">
+                <div class="field-hint" id="sourceHint">
                     <strong style="color:#ccc;">0</strong> = built-in webcam &nbsp;·&nbsp;
-                    <strong style="color:#ccc;">1</strong> or <strong style="color:#ccc;">2</strong> = USB / mobile &nbsp;·&nbsp;
-                    Full RTSP URL for IP cameras
+                    <strong style="color:#ccc;">1</strong> or <strong style="color:#ccc;">2</strong> = USB / external camera
                 </div>
                 {% if form.index_or_url.errors %}<div class="error-msg">{{ form.index_or_url.errors.0 }}</div>{% endif %}
             </div>
 
-            <!-- Location (text) -->
+            <!-- Physical Location -->
             <div class="field-group">
                 <label class="field-label" for="id_location">Physical Location *</label>
-                <input type="text" id="id_location" name="location" class="field-input"
-                       placeholder="e.g. Front Gate, Room 101, Parking Lot"
-                       value="{{ form.location.value|default:'' }}" required>
+                <input
+                    type="text"
+                    id="id_location"
+                    name="location"
+                    class="field-input"
+                    placeholder="e.g. Front Gate, Room 101, Parking Lot"
+                    value="{{ form.location.value|default:'' }}"
+                    required
+                    maxlength="255">
                 <div class="field-hint">
                     This label appears on all detection alerts from this camera.
                 </div>
@@ -313,10 +296,9 @@
                 </div>
 
                 <div id="map-picker-wrap">
-                    <!-- Search bar -->
                     <div class="map-search-row">
                         <input type="text" id="mapSearchInput" class="map-search-input"
-                               placeholder="Search for a place or address...">
+                               placeholder="Search for a place or address…">
                         <button type="button" class="map-search-btn" onclick="searchLocation()">
                             <i class="fas fa-search"></i> Search
                         </button>
@@ -325,10 +307,9 @@
                         </button>
                     </div>
 
-                    <!-- Map canvas -->
                     <div id="location-map"></div>
 
-                    <!-- Coordinate readout -->
+                    <!-- Coordinate readout — display only, values stored in hidden inputs -->
                     <div class="map-coords-row">
                         <div class="map-coord-box">
                             <i class="fas fa-location-arrow" style="color:#4ecca3;font-size:.7rem;flex-shrink:0;"></i>
@@ -355,8 +336,12 @@
             <!-- Description -->
             <div class="field-group">
                 <label class="field-label" for="id_description">Description (optional)</label>
-                <textarea id="id_description" name="description" class="field-input"
-                          placeholder="Optional notes about this camera..."
+                <textarea
+                    id="id_description"
+                    name="description"
+                    class="field-input"
+                    placeholder="Optional notes about this camera…"
+                    maxlength="2000"
 >{{ form.description.value|default:'' }}</textarea>
                 {% if form.description.errors %}<div class="error-msg">{{ form.description.errors.0 }}</div>{% endif %}
             </div>
@@ -389,6 +374,56 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
+/* ── Source mode toggle ─────────────────────────────────────── */
+const SOURCE_MODES = {
+    local: {
+        inputmode: 'numeric',
+        pattern:   '[0-9]+',
+        placeholder: '0',
+        title: 'Enter device index: 0 = built-in webcam, 1 = first USB camera, etc.',
+        hint: '<strong style="color:#ccc;">0</strong> = built-in webcam &nbsp;·&nbsp; '
+            + '<strong style="color:#ccc;">1</strong> or <strong style="color:#ccc;">2</strong> = USB / external camera',
+    },
+    network: {
+        inputmode: 'url',
+        pattern:   '(rtsp|rtmp|http|https)://.+',
+        placeholder: 'rtsp://192.168.1.5:554/stream',
+        title: 'Enter a full RTSP/RTMP/HTTP stream URL',
+        hint: 'Full URL for IP cameras, e.g. <strong style="color:#ccc;">rtsp://192.168.1.5/stream</strong>',
+    },
+};
+
+let currentMode = 'local';
+
+function setSourceMode(mode) {
+    currentMode = mode;
+    const input    = document.getElementById('id_index_or_url');
+    const hintEl   = document.getElementById('sourceHint');
+    const m        = SOURCE_MODES[mode];
+
+    input.inputMode   = m.inputmode;
+    input.pattern     = m.pattern;
+    input.placeholder = m.placeholder;
+    input.title       = m.title;
+    hintEl.innerHTML  = m.hint;
+
+    // Clear value when switching modes
+    input.value = '';
+    input.focus();
+
+    document.getElementById('btnLocal').classList.toggle('active', mode === 'local');
+    document.getElementById('btnNetwork').classList.toggle('active', mode === 'network');
+}
+
+/* ── Detect initial mode from existing value ─────────────────── */
+(function detectInitialMode() {
+    const val = document.getElementById('id_index_or_url').value.trim();
+    if (val && !/^\d+$/.test(val)) {
+        setSourceMode('network');
+    }
+})();
+
+/* ── Map picker ─────────────────────────────────────────────── */
 let map        = null;
 let marker     = null;
 let mapInited  = false;
@@ -413,8 +448,8 @@ function toggleMap() {
 
 function initMap() {
     mapInited = true;
-    const defaultLat = EXISTING_LAT || 34.5553;
-    const defaultLng = EXISTING_LNG || 69.2075;
+    const defaultLat  = EXISTING_LAT || 34.5553;
+    const defaultLng  = EXISTING_LNG || 69.2075;
     const defaultZoom = EXISTING_LAT ? 14 : 5;
 
     map = L.map('location-map', { center: [defaultLat, defaultLng], zoom: defaultZoom });
@@ -424,13 +459,7 @@ function initMap() {
         maxZoom: 19,
     }).addTo(map);
 
-    const greenIcon = L.divIcon({
-        className: '',
-        html: `<div style="width:28px;height:28px;border-radius:50% 50% 50% 0;
-            background:#4ecca3;border:3px solid #fff;transform:rotate(-45deg);
-            box-shadow:0 2px 10px rgba(78,204,163,.6);"></div>`,
-        iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -28],
-    });
+    const greenIcon = makeIcon();
 
     if (EXISTING_LAT && EXISTING_LNG) {
         placeMarker(EXISTING_LAT, EXISTING_LNG, greenIcon);
@@ -443,17 +472,21 @@ function initMap() {
     });
 }
 
+function makeIcon() {
+    return L.divIcon({
+        className: '',
+        html: `<div style="width:28px;height:28px;border-radius:50% 50% 50% 0;
+            background:#4ecca3;border:3px solid #fff;transform:rotate(-45deg);
+            box-shadow:0 2px 10px rgba(78,204,163,.6);"></div>`,
+        iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -28],
+    });
+}
+
 function placeMarker(lat, lng, icon) {
     if (marker) {
         marker.setLatLng([lat, lng]);
     } else {
-        icon = icon || L.divIcon({
-            className: '',
-            html: `<div style="width:28px;height:28px;border-radius:50% 50% 50% 0;
-                background:#4ecca3;border:3px solid #fff;transform:rotate(-45deg);
-                box-shadow:0 2px 10px rgba(78,204,163,.6);"></div>`,
-            iconSize: [28, 28], iconAnchor: [14, 28],
-        });
+        icon = icon || makeIcon();
         marker = L.marker([lat, lng], { icon, draggable: true }).addTo(map);
         marker.on('dragend', function(e) {
             const pos = e.target.getLatLng();
@@ -464,12 +497,13 @@ function placeMarker(lat, lng, icon) {
 }
 
 function showCoords(lat, lng) {
-    const roundedLat = Math.round(lat * 1e6) / 1e6;
-    const roundedLng = Math.round(lng * 1e6) / 1e6;
-    document.getElementById('latDisplay').textContent = roundedLat;
-    document.getElementById('lngDisplay').textContent = roundedLng;
-    document.getElementById('id_latitude').value  = roundedLat;
-    document.getElementById('id_longitude').value = roundedLng;
+    const rLat = Math.round(lat * 1e6) / 1e6;
+    const rLng = Math.round(lng * 1e6) / 1e6;
+    document.getElementById('latDisplay').textContent = rLat;
+    document.getElementById('lngDisplay').textContent = rLng;
+    // Write into the hidden Django form fields
+    document.getElementById('id_latitude').value  = rLat;
+    document.getElementById('id_longitude').value = rLng;
     document.getElementById('coordIndicator').classList.add('visible');
 }
 
@@ -489,7 +523,7 @@ async function searchLocation() {
     const btn = document.querySelector('.map-search-btn');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+        const url  = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
         const resp = await fetch(url, { headers: { 'Accept-Language': 'en' } });
         const data = await resp.json();
         if (data.length > 0) {
@@ -526,11 +560,8 @@ function geolocate() {
 
 document.addEventListener('DOMContentLoaded', function() {
     const inp = document.getElementById('mapSearchInput');
-    if (inp) {
-        inp.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') { e.preventDefault(); searchLocation(); }
-        });
-    }
+    if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); searchLocation(); } });
+
     if (EXISTING_LAT && EXISTING_LNG) {
         document.getElementById('coordIndicator').classList.add('visible');
         document.getElementById('latDisplay').textContent = EXISTING_LAT;

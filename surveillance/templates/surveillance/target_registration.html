@@ -15,7 +15,7 @@
 </div>
 
 <div style="max-width:800px;margin:0 auto;">
-  <form method="post" enctype="multipart/form-data" id="target-form">
+  <form method="post" enctype="multipart/form-data" id="target-form" novalidate>
     {% csrf_token %}
 
     <!-- Photo upload with webcam -->
@@ -48,7 +48,6 @@
         </div>
       </div>
 
-      <!-- Django image field (hidden visually, JS controls it) -->
       <div style="display:none;">{{ form.image }}</div>
     </div>
 
@@ -71,9 +70,13 @@
           <label class="b-label">{% trans "Father's Name" %}</label>
           {{ form.father_name }}
         </div>
+        <!-- Age — renders as type="number" min="0" max="120" via forms.py widget -->
         <div class="b-form-group">
           <label class="b-label">{% trans "Age" %}</label>
           {{ form.age }}
+          {% if form.age.errors %}
+            <p style="color:var(--danger);font-size:.72rem;margin-top:.25rem;">{{ form.age.errors.0 }}</p>
+          {% endif %}
         </div>
         <div class="b-form-group">
           <label class="b-label">{% trans "Gender" %}</label>
@@ -95,9 +98,16 @@
           <label class="b-label">{% trans "Tazkira Number" %}</label>
           {{ form.tazkira_number }}
         </div>
+        <!-- Phone — renders as type="tel" via forms.py widget -->
         <div class="b-form-group">
           <label class="b-label">{% trans "Phone Number" %}</label>
           {{ form.phone_number }}
+          {% if form.phone_number.errors %}
+            <p style="color:var(--danger);font-size:.72rem;margin-top:.25rem;">{{ form.phone_number.errors.0 }}</p>
+          {% endif %}
+          <p style="font-size:.68rem;color:var(--text-muted);margin-top:.25rem;">
+            {% trans "Format" %}: +93 7XX XXX XXXX &nbsp;/&nbsp; 07XX XXX XXX
+          </p>
         </div>
       </div>
       <div class="b-form-group">
@@ -141,6 +151,7 @@
       </div>
       <div class="b-form-group" id="custom-date-wrap" style="display:none;">
         <label class="b-label">{% trans "Custom Expiry Date & Time" %}</label>
+        <!-- type="datetime-local" — correct for date+time pickers -->
         <input type="datetime-local" name="custom_date" class="b-input">
       </div>
     </div>
@@ -156,7 +167,7 @@
   </form>
 </div>
 
-<!-- Webcam Modal for image field -->
+<!-- Webcam Modal -->
 <div id="cam_modal_image" class="b-cam-modal">
   <div class="b-cam-box">
     <h3><i class="fas fa-camera"></i> {% trans "Capture Subject Photo" %}</h3>
@@ -189,12 +200,21 @@ function toggleCustomDate(val) {
   document.getElementById('custom-date-wrap').style.display = val === 'custom' ? 'block' : 'none';
 }
 
-// Style Django form fields to use our CSS classes
-document.querySelectorAll('#target-form input[type="text"],#target-form input[type="number"],#target-form input[type="email"]')
-  .forEach(el => { el.classList.add('b-input'); });
+/* ── Apply Butterfly CSS classes to Django-rendered form fields ──
+   Include type="tel" so phone number inputs also get the b-input style.
+   Include type="number" so age/numeric fields get styled correctly.
+── */
+document.querySelectorAll(
+  '#target-form input[type="text"],'   +
+  '#target-form input[type="number"],' +
+  '#target-form input[type="tel"],'    +
+  '#target-form input[type="email"]'
+).forEach(el => el.classList.add('b-input'));
+
 document.querySelectorAll('#target-form textarea')
-  .forEach(el => { el.classList.add('b-textarea'); });
+  .forEach(el => el.classList.add('b-textarea'));
+
 document.querySelectorAll('#target-form select:not(#duration-select)')
-  .forEach(el => { el.classList.add('b-select'); });
+  .forEach(el => el.classList.add('b-select'));
 </script>
 {% endblock %}

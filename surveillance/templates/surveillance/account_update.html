@@ -15,10 +15,10 @@
 </div>
 
 <div style="max-width:600px;margin:0 auto;">
-  <form method="post" enctype="multipart/form-data" id="update-form">
+  <form method="post" enctype="multipart/form-data" id="update-form" novalidate>
     {% csrf_token %}
 
-    <!-- Profile picture upload with webcam -->
+    <!-- Profile picture -->
     <div class="b-card mb-3">
       <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
                   color:var(--text-muted);margin-bottom:1rem;">
@@ -64,6 +64,7 @@
       </div>
       <div class="b-form-group">
         <label class="b-label">{% trans "Email" %}</label>
+        <!-- type="email" is set by EmailInput widget in forms.py -->
         {{ form.email }}
       </div>
     </div>
@@ -86,7 +87,14 @@
       </div>
       <div class="b-form-group">
         <label class="b-label">{% trans "Emergency Contact" %}</label>
+        <!-- type="tel" is set by widget in forms.py -->
         {{ form.emergency_contact }}
+        {% if form.emergency_contact.errors %}
+          <p style="color:var(--danger);font-size:.72rem;margin-top:.25rem;">{{ form.emergency_contact.errors.0 }}</p>
+        {% endif %}
+        <p style="font-size:.68rem;color:var(--text-muted);margin-top:.25rem;">
+          {% trans "Format" %}: +93 7XX XXX XXXX &nbsp;/&nbsp; 07XX XXX XXX
+        </p>
       </div>
     </div>
 
@@ -101,7 +109,7 @@
   </form>
 </div>
 
-<!-- Webcam Modal for profile picture -->
+<!-- Webcam Modal -->
 <div id="cam_modal_profile" class="b-cam-modal">
   <div class="b-cam-box">
     <h3><i class="fas fa-camera"></i> {% trans "Capture Profile Photo" %}</h3>
@@ -130,8 +138,15 @@
 
 {% block extra_js %}
 <script>
-document.querySelectorAll('#update-form input[type="text"],#update-form input[type="email"]')
-  .forEach(el => el.classList.add('b-input'));
+/* ── Apply Butterfly CSS classes to all Django-rendered form fields ──
+   Include type="tel" (emergency_contact) and type="email" (email).
+── */
+document.querySelectorAll(
+  '#update-form input[type="text"],'   +
+  '#update-form input[type="email"],'  +
+  '#update-form input[type="tel"]'
+).forEach(el => el.classList.add('b-input'));
+
 document.querySelectorAll('#update-form select')
   .forEach(el => el.classList.add('b-select'));
 </script>

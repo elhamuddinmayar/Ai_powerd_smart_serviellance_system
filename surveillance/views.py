@@ -170,17 +170,11 @@ def dashboard(request):
     # ── Recent assignments ────────────────────────────────────────────────
     from .models import TargetAssignment
     if is_admin(user):
-        recent_assignments = TargetAssignment.objects.select_related(
-            'target', 'assigned_to', 'assigned_by'
-        ).order_by('-created_at')[:5]
+        recent_assignments = TargetAssignment.objects.select_related('target', 'assigned_to', 'assigned_by').order_by('-created_at')[:5]
     elif hasattr(user, 'profile') and user.profile.role == 'supervisor':
-        recent_assignments = TargetAssignment.objects.filter(
-            assigned_by=user
-        ).select_related('target', 'assigned_to').order_by('-created_at')[:5]
+        recent_assignments = TargetAssignment.objects.filter(assigned_by=user).select_related('target', 'assigned_to').order_by('-created_at')[:5]
     else:
-        recent_assignments = TargetAssignment.objects.filter(
-            assigned_to=user
-        ).select_related('target', 'assigned_by').order_by('-created_at')[:5]
+        recent_assignments = TargetAssignment.objects.filter(assigned_to=user).select_related('target', 'assigned_by').order_by('-created_at')[:5]
 
     # ── Recent notifications ──────────────────────────────────────────────
     recent_notifications = Notification.objects.filter(
