@@ -102,40 +102,139 @@ def _push_notification(recipient, notification_type, title, message, assignment=
 
 # ── Core pages ────────────────────────────────────────────────────────────────
 
+## REPLACE your existing dashboard() view in surveillance/views.py with this:
+
 @login_required
 def dashboard(request):
-    now = timezone.now()
-    user = request.user
+    from django.utils import timezone
+    from django.db.models import Count, Q
 
+    now  = timezone.now()
+    user = request.user
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # ── Targets (non-expired) ─────────────────────────────────────────────
     targets = TargetPerson.objects.filter(
-        models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=now)
+        Q(expires_at__isnull=True) | Q(expires_at__gt=now)
     )
 
-    # Scope recent events by role
+    # ── Detection events scoped by role ──────────────────────────────────
     events_qs = DetectionEvent.objects.select_related(
         'matched_target', 'camera'
     ).order_by('-timestamp')
 
     if is_admin(user):
-        recent_events = events_qs[:20]
+        scoped_events = events_qs
     elif hasattr(user, 'profile') and user.profile.role == 'supervisor':
-        recent_events = events_qs.filter(
+        scoped_events = events_qs.filter(
             matched_target__isnull=False,
             matched_target__uploaded_by=user
-        )[:20]
+        )
     elif hasattr(user, 'profile') and user.profile.role == 'operator':
-        recent_events = events_qs.filter(
+        scoped_events = events_qs.filter(
             related_assignment__assigned_to=user
-        )[:20]
+        )
     else:
-        recent_events = events_qs.none()
+        scoped_events = events_qs.none()
+
+    recent_events = scoped_events[:20]
+
+    # ── Detection breakdown counts ────────────────────────────────────────
+    total_events       = scoped_events.count()
+    normal_count       = scoped_events.filter(action='Normal').count()
+    fall_count         = scoped_events.filter(action='FALL DETECTED').count()
+    wave_count         = scoped_events.filter(action='HAND WAVING').count()
+    target_match_count = scoped_events.filter(matched_target__isnull=False).count()
+
+    # ── Verification status counts ────────────────────────────────────────
+    approved_count   = scoped_events.filter(verification_status='approved').count()
+    pending_count    = scoped_events.filter(verification_status='pending').count()
+    rejected_count   = scoped_events.filter(verification_status='rejected').count()
+    unreviewed_count = scoped_events.filter(verification_status='unreviewed').count()
+    total_verif      = max(1, total_events)
+
+    def pct(n): return round((n / total_verif) * 100)
+
+    # ── Today's events count ─────────────────────────────────────────────
+    today_detections = scoped_events.filter(timestamp__gte=today_start).count()
+
+    # ── Pending verifications (for the queue panel) ───────────────────────
+    pv_qs = DetectionEvent.objects.filter(
+        verification_status='pending'
+    ).select_related('matched_target', 'camera')
+    if not is_admin(user):
+        pv_qs = pv_qs.filter(matched_target__uploaded_by=user)
+    pending_events    = pv_qs.order_by('-timestamp')[:6]
+    pending_verif_count = pv_qs.count()
+
+    # ── Recent assignments ────────────────────────────────────────────────
+    from .models import TargetAssignment
+    if is_admin(user):
+        recent_assignments = TargetAssignment.objects.select_related(
+            'target', 'assigned_to', 'assigned_by'
+        ).order_by('-created_at')[:5]
+    elif hasattr(user, 'profile') and user.profile.role == 'supervisor':
+        recent_assignments = TargetAssignment.objects.filter(
+            assigned_by=user
+        ).select_related('target', 'assigned_to').order_by('-created_at')[:5]
+    else:
+        recent_assignments = TargetAssignment.objects.filter(
+            assigned_to=user
+        ).select_related('target', 'assigned_by').order_by('-created_at')[:5]
+
+    # ── Recent notifications ──────────────────────────────────────────────
+    recent_notifications = Notification.objects.filter(
+        recipient=user
+    ).order_by('-created_at')[:6]
+
+    unread_count = Notification.objects.filter(
+        recipient=user, is_read=False
+    ).count()
+
+    # ── Sparkline data (last 20 hours of event counts) ────────────────────
+    from django.utils.timezone import timedelta
+    spark_data = []
+    for h in range(19, -1, -1):
+        h_start = now - timedelta(hours=h+1)
+        h_end   = now - timedelta(hours=h)
+        c = scoped_events.filter(timestamp__gte=h_start, timestamp__lt=h_end).count()
+        spark_data.append(c)
 
     return render(request, 'surveillance/dashboard.html', {
-        'targets':       targets,
-        'is_admin':      is_admin(user),
-        'recent_events': recent_events,
-    })
+        # Core
+        'targets':            targets,
+        'is_admin':           is_admin(user),
+        'recent_events':      recent_events,
 
+        # Breakdown counts
+        'normal_count':       normal_count,
+        'fall_count':         fall_count,
+        'wave_count':         wave_count,
+        'target_match_count': target_match_count,
+
+        # Verification breakdown
+        'approved_count':   approved_count,
+        'pending_count':    pending_count,
+        'rejected_count':   rejected_count,
+        'unreviewed_count': unreviewed_count,
+        'approved_pct':   pct(approved_count),
+        'pending_pct':    pct(pending_count),
+        'rejected_pct':   pct(rejected_count),
+        'unreviewed_pct': pct(unreviewed_count),
+
+        # Panels
+        'pending_events':       pending_events,
+        'pending_verif_count':  pending_verif_count,
+        'recent_assignments':   recent_assignments,
+        'recent_notifications': recent_notifications,
+        'today_detections':     today_detections,
+        'unread_count':         unread_count,
+
+        # Sparkline (comma-separated for JS template literal)
+        'spark_data': ','.join(map(str, spark_data)),
+    })
+    
+    
 @login_required
 def home(request):
     unread_count = Notification.objects.filter(
@@ -870,30 +969,119 @@ def detection_history(request):
         'matched_target', 'camera'
     ).order_by('-timestamp')
 
+    # ── Role scoping (unchanged) ──────────────────────────────────────────────
     if is_admin(user):
-        pass  # sees everything
-
+        pass
     elif hasattr(user, 'profile') and user.profile.role == 'operator':
         qs = qs.filter(related_assignment__assigned_to=user)
-
     elif hasattr(user, 'profile') and user.profile.role == 'supervisor':
-        # Supervisor sees ALL detections of targets they uploaded
-        # regardless of whether an assignment exists
         from django.db.models import Q
         qs = qs.filter(
             matched_target__isnull=False,
             matched_target__uploaded_by=user
         )
-
     else:
         qs = qs.none()
 
-    paginator = Paginator(qs, 30)
+    # ── Filters from GET params ───────────────────────────────────────────────
+    action_filter  = request.GET.get('action', '')
+    target_filter  = request.GET.get('target', '')   # 'yes' | 'no' | ''
+    verif_filter   = request.GET.get('verif', '')
+    camera_filter  = request.GET.get('camera', '')
+    date_from      = request.GET.get('date_from', '')
+    date_to        = request.GET.get('date_to', '')
+    sort_by        = request.GET.get('sort', '-timestamp')
+    search_query   = request.GET.get('q', '')
+
+    if action_filter:
+        qs = qs.filter(action=action_filter)
+
+    if target_filter == 'yes':
+        qs = qs.filter(matched_target__isnull=False)
+    elif target_filter == 'no':
+        qs = qs.filter(matched_target__isnull=True)
+
+    if verif_filter:
+        qs = qs.filter(verification_status=verif_filter)
+
+    if camera_filter:
+        qs = qs.filter(camera_id=camera_filter)
+
+    if date_from:
+        try:
+            from django.utils.dateparse import parse_date
+            d = parse_date(date_from)
+            if d:
+                qs = qs.filter(timestamp__date__gte=d)
+        except Exception:
+            pass
+
+    if date_to:
+        try:
+            from django.utils.dateparse import parse_date
+            d = parse_date(date_to)
+            if d:
+                qs = qs.filter(timestamp__date__lte=d)
+        except Exception:
+            pass
+
+    if search_query:
+        from django.db.models import Q
+        qs = qs.filter(
+            Q(matched_target_name__icontains=search_query) |
+            Q(camera__name__icontains=search_query) |
+            Q(camera__location__icontains=search_query)
+        )
+
+    # ── Sorting ───────────────────────────────────────────────────────────────
+    SORT_OPTIONS = {
+        '-timestamp':         '-timestamp',
+        'timestamp':          'timestamp',
+        'action':             'action',
+        '-action':            '-action',
+        '-person_count':      '-person_count',
+        'person_count':       'person_count',
+        'verification_status':'verification_status',
+    }
+    qs = qs.order_by(SORT_OPTIONS.get(sort_by, '-timestamp'))
+
+    # ── Camera list for filter dropdown ──────────────────────────────────────
+    from camera.models import Camera
+    all_cameras = Camera.objects.all().order_by('name')
+
+    # ── Stats for the active filter set ──────────────────────────────────────
+    total_count  = qs.count()
+    fall_count   = qs.filter(action='FALL DETECTED').count()
+    wave_count   = qs.filter(action='HAND WAVING').count()
+    target_count = qs.filter(matched_target__isnull=False).count()
+
+    paginator = Paginator(qs, 25)
     page      = paginator.get_page(request.GET.get('page'))
 
+    # Preserve all GET params except 'page' for pagination links
+    get_params = request.GET.copy()
+    get_params.pop('page', None)
+
     return render(request, 'surveillance/detection_history.html', {
-        'page_obj': page,
-        'is_admin': is_admin(user),
+        'page_obj':      page,
+        'is_admin':      is_admin(user),
+        'all_cameras':   all_cameras,
+        # active filter values (to re-populate form)
+        'f_action':      action_filter,
+        'f_target':      target_filter,
+        'f_verif':       verif_filter,
+        'f_camera':      camera_filter,
+        'f_date_from':   date_from,
+        'f_date_to':     date_to,
+        'f_sort':        sort_by,
+        'f_q':           search_query,
+        # stats
+        'total_count':   total_count,
+        'fall_count':    fall_count,
+        'wave_count':    wave_count,
+        'target_count':  target_count,
+        # for pagination links
+        'get_params':    get_params.urlencode(),
     })
 # ── User / account management
 

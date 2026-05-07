@@ -3,124 +3,744 @@
 
 {% block title %}Pending Verifications{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════════════════════
+   PAGE LAYOUT
+   ═══════════════════════════════════════════════════════ */
+.verif-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CONTROLS BAR  (sort + search + count)
+   ═══════════════════════════════════════════════════════ */
+.verif-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .7rem;
+  padding: .75rem 1rem;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 10px;
+}
+
+.verif-count {
+  font-size: .78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.verif-count strong { color: var(--accent); }
+
+.ctrl-sep {
+  flex: 1;               /* push sort + search to the right */
+}
+
+.ctrl-search-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.ctrl-search-wrap i {
+  position: absolute;
+  left: .7rem; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: .72rem;
+  pointer-events: none;
+}
+.ctrl-search {
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 7px;
+  color: #ddd;
+  padding: .42rem .75rem .42rem 2rem;
+  font-size: .8rem;
+  font-family: inherit;
+  outline: none;
+  width: 200px;
+  transition: border-color .18s, width .25s;
+}
+.ctrl-search:focus {
+  border-color: var(--accent);
+  width: 260px;
+}
+.ctrl-search::placeholder { color: #3a4a5a; }
+
+.sort-group {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-shrink: 0;
+}
+.sort-label {
+  font-size: .7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+.sort-select {
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 7px;
+  color: #ccc;
+  padding: .42rem .65rem;
+  font-size: .78rem;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color .18s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.sort-select:focus { border-color: var(--accent); }
+.sort-select option { background: #121929; }
+
+/* Mobile: stack controls */
+@media (max-width: 640px) {
+  .verif-controls { flex-direction: column; align-items: stretch; }
+  .ctrl-sep { display: none; }
+  .ctrl-search { width: 100%; }
+  .ctrl-search:focus { width: 100%; }
+  .sort-group { justify-content: space-between; }
+  .sort-select { flex: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   EVENT CARDS
+   ═══════════════════════════════════════════════════════ */
+.verif-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(660px, 100%), 1fr));
+  gap: 1.3rem;
+}
+@media (max-width: 720px) {
+  .verif-grid { grid-template-columns: 1fr; }
+}
+
+.verif-card {
+  background: var(--card, #121929);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+  display: flex;
+  flex-direction: column;
+}
+.verif-card:hover {
+  border-color: rgba(78,204,163,.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  transform: translateY(-2px);
+}
+
+/* ── Card header ── */
+.vc-header {
+  background: linear-gradient(135deg, rgba(15,52,96,.7) 0%, rgba(10,14,26,.5) 100%);
+  padding: .7rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  flex-wrap: wrap;
+}
+.vc-header-left {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-width: 0;
+}
+.vc-event-id {
+  font-family: var(--font-mono, monospace);
+  font-size: .68rem;
+  color: var(--accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.vc-target-name {
+  font-weight: 700;
+  font-size: .95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.vc-ts {
+  font-size: .7rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Card body ── */
+.vc-body {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  flex: 1;
+}
+@media (max-width: 480px) {
+  .vc-body { flex-direction: column; gap: .8rem; }
+}
+
+/* Photos column */
+.vc-photos {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  flex-shrink: 0;
+  align-items: center;
+}
+.vc-photo {
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.09);
+  object-fit: cover;
+  cursor: zoom-in;
+  transition: border-color .15s;
+}
+.vc-photo:hover { border-color: var(--accent); }
+.vc-photo-snap { width: 130px; height: 120px; }
+.vc-photo-ref  { width: 56px;  height: 56px;  border-radius: 50%; }
+.vc-no-snap {
+  width: 130px; height: 120px;
+  background: rgba(0,0,0,.35);
+  border: 1px dashed rgba(255,255,255,.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  color: var(--text-muted);
+  font-size: .68rem;
+}
+.vc-no-snap i { font-size: 1.6rem; opacity: .3; }
+.vc-ref-row { display: flex; align-items: center; gap: .4rem; }
+.vc-ref-lbl { font-size: .65rem; color: var(--text-muted); }
+
+@media (max-width: 480px) {
+  .vc-photos { flex-direction: row; align-items: flex-start; }
+  .vc-photo-snap { width: 90px; height: 80px; }
+}
+
+/* Info + actions column */
+.vc-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  min-width: 0;
+}
+
+.vc-meta {
+  display: flex;
+  flex-direction: column;
+  gap: .28rem;
+}
+.vc-meta-row {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .8rem;
+  color: var(--text-muted);
+}
+.vc-meta-row i {
+  color: var(--accent);
+  font-size: .7rem;
+  width: 14px;
+  flex-shrink: 0;
+}
+.vc-meta-row strong { color: var(--text-dim); }
+
+/* Verify form */
+.vc-form {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-top: auto;
+}
+.vc-note {
+  width: 100%;
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 7px;
+  color: #ddd;
+  padding: .5rem .7rem;
+  font-size: .78rem;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  min-height: 52px;
+  transition: border-color .18s;
+  box-sizing: border-box;
+}
+.vc-note:focus { border-color: var(--accent); }
+.vc-note::placeholder { color: #3a4a5a; }
+
+.vc-actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+/* Export strip at bottom of card */
+.vc-exports {
+  padding: .6rem 1rem;
+  border-top: 1px solid rgba(255,255,255,.06);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  background: rgba(0,0,0,.15);
+}
+.vc-exports-lbl {
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-right: .2rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PAGINATION
+   ═══════════════════════════════════════════════════════ */
+.verif-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  padding: .5rem 0 1rem;
+}
+
+.pg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 .7rem;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(0,0,0,.2);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: .8rem;
+  font-family: var(--font-mono, monospace);
+  transition: all .15s;
+  cursor: pointer;
+}
+.pg-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(78,204,163,.07); }
+.pg-btn.active { background: rgba(78,204,163,.12); border-color: rgba(78,204,163,.4); color: var(--accent); font-weight: 700; cursor: default; }
+.pg-btn.disabled { opacity: .35; pointer-events: none; cursor: default; }
+
+.pg-info {
+  font-size: .75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  padding: 0 .3rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════ */
+.verif-empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: var(--text-muted);
+  grid-column: 1 / -1;
+}
+.verif-empty i { font-size: 3.5rem; opacity: .18; margin-bottom: 1rem; display: block; color: var(--accent); }
+.verif-empty h2 { font-size: 1.15rem; color: var(--text-dim); margin-bottom: .5rem; }
+
+/* ═══════════════════════════════════════════════════════
+   NO-RESULTS BANNER (JS filter)
+   ═══════════════════════════════════════════════════════ */
+.no-results-banner {
+  display: none;
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-size: .85rem;
+}
+.no-results-banner i { font-size: 2rem; display: block; margin-bottom: .5rem; opacity: .25; }
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE TWEAKS
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 400px) {
+  .vc-header { padding: .55rem .75rem; }
+  .vc-body   { padding: .75rem; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="b-page-header">
-  <div>
-    <h1 class="b-page-title"><i class="fas fa-shield-alt"></i> {% trans "Pending Verifications" %}</h1>
-    <p class="b-page-sub">
-      {% trans "Review detection events reported by operators. Approve or reject with notes." %}
-    </p>
+<div class="verif-page">
+
+  <!-- ── Page header ── -->
+  <div class="b-page-header">
+    <div>
+      <h1 class="b-page-title">
+        <i class="fas fa-shield-alt"></i> {% trans "Pending Verifications" %}
+      </h1>
+      <p class="b-page-sub">
+        {% trans "Review detection events reported by operators. Approve or reject with notes." %}
+      </p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <button class="b-btn b-btn--ghost" onclick="printPage()">
+        <i class="fas fa-print"></i> {% trans "Print" %}
+      </button>
+    </div>
   </div>
-</div>
 
-{% if events %}
-<div class="verif-grid">
-  {% for event in events %}
-  <div class="b-card" style="display:flex;gap:1.2rem;flex-wrap:wrap;">
+  {% if events %}
 
-    <!-- Snapshot column -->
-    <div style="flex-shrink:0;width:170px;">
-      {% if event.frame_snapshot %}
-        <img src="/media/{{ event.frame_snapshot }}" alt="Capture"
-             onclick="openSnap(this.src)"
-             style="width:170px;height:160px;object-fit:cover;border-radius:8px;
-                    cursor:zoom-in;border:1px solid var(--border);">
-      {% else %}
-        <div style="width:170px;height:160px;border-radius:8px;background:var(--panel-2);
-                    border:1px solid var(--border);display:flex;flex-direction:column;
-                    align-items:center;justify-content:center;color:var(--text-muted);gap:.4rem;">
-          <i class="fas fa-camera" style="font-size:2rem;opacity:.3;"></i>
-          <span style="font-size:.75rem;">{% trans "No Snapshot" %}</span>
-        </div>
-      {% endif %}
+  <!-- ── Controls: search + sort ── -->
+  <div class="verif-controls" id="verifControls">
 
-      <!-- Reference photo -->
-      {% if event.matched_target and event.matched_target.image %}
-      <div style="margin-top:.6rem;display:flex;align-items:center;gap:.5rem;">
-        <img src="{{ event.matched_target.image.url }}" alt="Ref"
-             style="width:40px;height:40px;border-radius:50%;object-fit:cover;
-                    border:2px solid var(--border-accent);">
-        <span style="font-size:.7rem;color:var(--text-muted);">{% trans "Reference" %}</span>
-      </div>
-      {% endif %}
+    <span class="verif-count">
+      <strong id="visibleCount">{{ events|length }}</strong>
+      / {{ events|length }} {% trans "events" %}
+    </span>
+
+    <span class="ctrl-sep"></span>
+
+    <!-- Sort -->
+    <div class="sort-group">
+      <span class="sort-label">{% trans "Sort" %}:</span>
+      <select class="sort-select" id="sortSelect" onchange="applySort()">
+        <option value="newest">{% trans "Newest First" %}</option>
+        <option value="oldest">{% trans "Oldest First" %}</option>
+        <option value="name_asc">{% trans "Target Name A→Z" %}</option>
+        <option value="name_desc">{% trans "Target Name Z→A" %}</option>
+        <option value="camera_asc">{% trans "Camera A→Z" %}</option>
+        <option value="event_asc">{% trans "Event Type A→Z" %}</option>
+      </select>
     </div>
 
-    <!-- Info column -->
-    <div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:.7rem;">
+    <!-- Search -->
+    <div class="ctrl-search-wrap">
+      <i class="fas fa-search"></i>
+      <input type="text" class="ctrl-search" id="verifSearch"
+             placeholder="{% trans 'Search target, camera…' %}"
+             oninput="applyFilters()">
+    </div>
+  </div>
 
-      <!-- Target name + status -->
-      <div>
-        <div style="font-size:1.15rem;font-weight:700;color:var(--text);">
-          {{ event.matched_target_name }}
+  <!-- ── Cards grid ── -->
+  <div class="verif-grid" id="verifGrid">
+
+    {% for event in events %}
+    <div class="verif-card"
+         data-ts="{{ event.timestamp|date:'U' }}"
+         data-name="{{ event.matched_target_name|lower }}"
+         data-camera="{{ event.camera.name|lower|default:'' }}"
+         data-action="{{ event.action|lower }}"
+         data-page="1">
+
+      <!-- Card header -->
+      <div class="vc-header">
+        <div class="vc-header-left">
+          <span class="vc-event-id">#{{ event.pk }}</span>
+          <span class="vc-target-name">{{ event.matched_target_name }}</span>
         </div>
-        <div class="flex flex-wrap gap-2 mt-1" style="font-size:.78rem;color:var(--text-muted);">
-          <span><i class="fas fa-video"></i> {{ event.camera.name|default:"Unknown" }}</span>
-          <span><i class="fas fa-map-marker-alt"></i> {{ event.camera.location|default:"—" }}</span>
-          <span><i class="fas fa-clock"></i> {{ event.timestamp|date:"Y-m-d H:i:s" }}</span>
-        </div>
-        <div class="mt-1" style="font-size:.78rem;color:var(--text-muted);">
-          <i class="fas fa-user-shield"></i>
-          {% if event.related_assignment and event.related_assignment.assigned_to %}
-            {% trans "Reported by" %}: <strong>{{ event.related_assignment.assigned_to.username }}</strong>
+        <span class="vc-ts">{{ event.timestamp|date:"Y-m-d H:i" }}</span>
+      </div>
+
+      <!-- Card body -->
+      <div class="vc-body">
+
+        <!-- Photos -->
+        <div class="vc-photos">
+          {% if event.frame_snapshot %}
+            <img class="vc-photo vc-photo-snap"
+                 src="/media/{{ event.frame_snapshot }}"
+                 alt="{% trans 'Capture' %}"
+                 onclick="openSnap(this.src)"
+                 loading="lazy">
           {% else %}
-            {% trans "Detected by engine" %}
+            <div class="vc-no-snap">
+              <i class="fas fa-camera"></i>
+              <span>{% trans "No Snapshot" %}</span>
+            </div>
+          {% endif %}
+
+          {% if event.matched_target and event.matched_target.image %}
+          <div class="vc-ref-row">
+            <img class="vc-photo vc-photo-ref"
+                 src="{{ event.matched_target.image.url }}"
+                 alt="{% trans 'Ref' %}"
+                 onclick="openSnap(this.src)"
+                 loading="lazy">
+            <span class="vc-ref-lbl">{% trans "Reference" %}</span>
+          </div>
           {% endif %}
         </div>
+
+        <!-- Info + actions -->
+        <div class="vc-info">
+
+          <div class="vc-meta">
+            <div class="vc-meta-row">
+              <i class="fas fa-video"></i>
+              <span>{{ event.camera.name|default:"—" }}</span>
+            </div>
+            <div class="vc-meta-row">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>{{ event.camera.location|default:"—" }}</span>
+            </div>
+            <div class="vc-meta-row">
+              <i class="fas fa-bolt"></i>
+              <span class="b-badge
+                {% if event.action == 'Normal' %}b-badge--gray
+                {% elif 'FALL' in event.action %}b-badge--red
+                {% else %}b-badge--yellow{% endif %}"
+                style="font-size:.65rem;">
+                {{ event.action }}
+              </span>
+            </div>
+            <div class="vc-meta-row">
+              <i class="fas fa-users"></i>
+              <span>{{ event.person_count }} {% trans "in frame" %}</span>
+            </div>
+            <div class="vc-meta-row">
+              <i class="fas fa-user-shield"></i>
+              {% if event.related_assignment and event.related_assignment.assigned_to %}
+                <span>{% trans "By" %}: <strong>{{ event.related_assignment.assigned_to.username }}</strong></span>
+              {% else %}
+                <span style="color:#555;">{% trans "Engine detected" %}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Verify form -->
+          <form class="vc-form" method="post" action="{% url 'verify_detection' event.pk %}">
+            {% csrf_token %}
+            <textarea name="note" class="vc-note"
+                      placeholder="{% trans 'Verification note (optional)…' %}"
+                      rows="2"></textarea>
+            <div class="vc-actions">
+              <button type="submit" name="action" value="approve"
+                      class="b-btn b-btn--primary b-btn--sm">
+                <i class="fas fa-check-circle"></i> {% trans "Approve" %}
+              </button>
+              <button type="submit" name="action" value="reject"
+                      class="b-btn b-btn--danger b-btn--sm">
+                <i class="fas fa-times-circle"></i> {% trans "Reject" %}
+              </button>
+            </div>
+          </form>
+
+        </div><!-- /vc-info -->
+      </div><!-- /vc-body -->
+
+      <!-- Export strip -->
+      <div class="vc-exports">
+        <span class="vc-exports-lbl"><i class="fas fa-file-pdf"></i> {% trans "Export" %}:</span>
+        <a href="{% url 'export_detection_pdf' event.pk %}"
+           class="b-btn b-btn--pdf b-btn--sm" target="_blank">
+          <i class="fas fa-camera"></i> {% trans "Detection PDF" %}
+        </a>
+        {% if event.matched_target %}
+        <a href="{% url 'export_target_pdf' event.matched_target.pk %}"
+           class="b-btn b-btn--ghost b-btn--sm" target="_blank">
+          <i class="fas fa-id-card"></i> {% trans "Full Dossier" %}
+        </a>
+        {% endif %}
       </div>
 
-      <hr class="b-divider">
+    </div><!-- /verif-card -->
+    {% endfor %}
 
-      <!-- Approve / Reject form -->
-      <form method="post" action="{% url 'verify_detection' event.pk %}">
-        {% csrf_token %}
-        <textarea name="note" class="b-textarea"
-                  placeholder="{% trans 'Add a verification note (optional)...' %}"
-                  rows="2" style="margin-bottom:.6rem;"></textarea>
-
-        <div class="flex gap-2 flex-wrap">
-          <button type="submit" name="action" value="approve" class="b-btn b-btn--primary">
-            <i class="fas fa-check-circle"></i> {% trans "Approve" %}
-          </button>
-          <button type="submit" name="action" value="reject" class="b-btn b-btn--danger">
-            <i class="fas fa-times-circle"></i> {% trans "Reject" %}
-          </button>
-        </div>
-      </form>
-
-      <hr class="b-divider">
-
-      <!-- Print / PDF actions — always available to admin/supervisor -->
-      <div>
-        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
-                    color:var(--text-muted);margin-bottom:.5rem;">
-          <i class="fas fa-print"></i> {% trans "Export Options" %}
-        </div>
-        <div class="flex gap-2 flex-wrap">
-          <a href="{% url 'export_detection_pdf' event.pk %}" class="b-btn b-btn--pdf b-btn--sm" target="_blank">
-            <i class="fas fa-file-pdf"></i> {% trans "Detection PDF" %}
-          </a>
-          {% if event.matched_target %}
-          <a href="{% url 'export_target_pdf' event.matched_target.pk %}"
-             class="b-btn b-btn--ghost b-btn--sm" target="_blank">
-            <i class="fas fa-id-card"></i> {% trans "Full Dossier" %}
-          </a>
-          {% endif %}
-          <button class="b-btn b-btn--ghost" onclick="printPage()">
-            <i class="fas fa-print"></i> {% trans "Print" %}
-          </button>
-        </div>
-      </div>
-
+    <!-- No results (JS-only) -->
+    <div class="no-results-banner" id="noResultsBanner">
+      <i class="fas fa-search"></i>
+      {% trans "No events match your search." %}
     </div>
-  </div>
-  {% endfor %}
-</div>
 
-{% else %}
-<div class="b-empty">
-  <i class="fas fa-check-double"></i>
-  <h2>{% trans "All Clear" %}</h2>
-  <p>{% trans "No detection events are pending verification." %}</p>
-</div>
-{% endif %}
+  </div><!-- /verif-grid -->
+
+  <!-- ── Pagination ── -->
+  <div class="verif-pagination" id="verifPagination" aria-label="{% trans 'Pagination' %}">
+    <!-- rendered by JS -->
+  </div>
+
+  {% else %}
+
+  <div class="b-empty">
+    <i class="fas fa-check-double"></i>
+    <h2>{% trans "All Clear" %}</h2>
+    <p>{% trans "No detection events are pending verification." %}</p>
+  </div>
+
+  {% endif %}
+
+</div><!-- /verif-page -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ═══════════════════════════════════════════════════════
+   Client-side sort + search + pagination for the
+   pending_verifications.html template.
+
+   All processing happens on the already-rendered cards so
+   there are no extra server round-trips for basic UX.
+═══════════════════════════════════════════════════════ */
+
+const PER_PAGE   = 9;     // cards per page — tweak as needed
+let   currentPage = 1;
+
+// Collect all cards once
+const allCards = () =>
+  Array.from(document.querySelectorAll('#verifGrid .verif-card'));
+
+/* ── Helper: text content of a card for searching ── */
+function cardText(card) {
+  return (
+    (card.dataset.name    || '') + ' ' +
+    (card.dataset.camera  || '') + ' ' +
+    (card.dataset.action  || '')
+  );
+}
+
+/* ── Apply search filter → returns visible cards ── */
+function applyFilters() {
+  currentPage = 1;
+  const q = document.getElementById('verifSearch').value.trim().toLowerCase();
+  let visible = 0;
+
+  allCards().forEach(card => {
+    const match = !q || cardText(card).includes(q);
+    card.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+
+  document.getElementById('noResultsBanner').style.display =
+    visible === 0 ? 'block' : 'none';
+
+  updateCount();
+  applySort();          // sort re-renders pagination too
+}
+
+/* ── Sort visible cards in place ── */
+function applySort() {
+  const grid  = document.getElementById('verifGrid');
+  const order = document.getElementById('sortSelect').value;
+
+  const visible = allCards().filter(c => c.style.display !== 'none');
+
+  visible.sort((a, b) => {
+    switch (order) {
+      case 'oldest':    return +a.dataset.ts   - +b.dataset.ts;
+      case 'name_asc':  return a.dataset.name.localeCompare(b.dataset.name);
+      case 'name_desc': return b.dataset.name.localeCompare(a.dataset.name);
+      case 'camera_asc':return (a.dataset.camera||'').localeCompare(b.dataset.camera||'');
+      case 'event_asc': return a.dataset.action.localeCompare(b.dataset.action);
+      default:          return +b.dataset.ts   - +a.dataset.ts; // newest
+    }
+  });
+
+  // Re-insert sorted (only visible — hidden stay hidden)
+  visible.forEach(card => grid.appendChild(card));
+
+  renderPagination(visible);
+}
+
+/* ── Pagination renderer ── */
+function renderPagination(visible) {
+  const total = visible.length;
+  const pages = Math.ceil(total / PER_PAGE) || 1;
+  if (currentPage > pages) currentPage = pages;
+
+  // Show / hide cards for current page
+  visible.forEach((card, i) => {
+    const pageOfCard = Math.floor(i / PER_PAGE) + 1;
+    card.style.display = (pageOfCard === currentPage) ? '' : 'none';
+  });
+
+  // Build pagination HTML
+  const wrap = document.getElementById('verifPagination');
+  if (pages <= 1) { wrap.innerHTML = ''; return; }
+
+  let html = '';
+
+  // Prev
+  html += `<button class="pg-btn${currentPage===1?' disabled':''}"
+                   onclick="goPage(${currentPage-1})" aria-label="Previous">‹</button>`;
+
+  // Page numbers (show up to 7 buttons with ellipsis)
+  const buttons = buildPageNumbers(currentPage, pages);
+  buttons.forEach(p => {
+    if (p === '…') {
+      html += `<span class="pg-info">…</span>`;
+    } else {
+      html += `<button class="pg-btn${p===currentPage?' active':''}"
+                       onclick="goPage(${p})">${p}</button>`;
+    }
+  });
+
+  // Next
+  html += `<button class="pg-btn${currentPage===pages?' disabled':''}"
+                   onclick="goPage(${currentPage+1})" aria-label="Next">›</button>`;
+
+  // Info
+  const start = (currentPage-1)*PER_PAGE + 1;
+  const end   = Math.min(currentPage*PER_PAGE, total);
+  html += `<span class="pg-info">${start}–${end} / ${total}</span>`;
+
+  wrap.innerHTML = html;
+}
+
+function buildPageNumbers(cur, total) {
+  if (total <= 7) return Array.from({length:total},(_,i)=>i+1);
+  const pages = [];
+  if (cur <= 4) {
+    pages.push(1,2,3,4,5,'…',total);
+  } else if (cur >= total-3) {
+    pages.push(1,'…',total-4,total-3,total-2,total-1,total);
+  } else {
+    pages.push(1,'…',cur-1,cur,cur+1,'…',total);
+  }
+  return pages;
+}
+
+function goPage(p) {
+  const visible = allCards().filter(c => {
+    // Check if card matches search (not hidden by filter)
+    const q = document.getElementById('verifSearch').value.trim().toLowerCase();
+    if (!q) return true;
+    return cardText(c).includes(q);
+  });
+  const pages = Math.ceil(visible.length / PER_PAGE) || 1;
+  if (p < 1 || p > pages) return;
+  currentPage = p;
+  renderPagination(visible);
+  // Smooth scroll back to grid top
+  document.getElementById('verifGrid')
+    .scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ── Update "N / total events" counter ── */
+function updateCount() {
+  const visible = allCards().filter(c => c.style.display !== 'none').length;
+  const el = document.getElementById('visibleCount');
+  if (el) el.textContent = visible;
+}
+
+/* ── Init on load ── */
+document.addEventListener('DOMContentLoaded', () => {
+  applySort();  // sets initial pagination without any filter
+});
+</script>
 {% endblock %}

@@ -1,580 +1,1132 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Butterfly - Tactical Dashboard" %}{% endblock %}
+{% block title %}{% trans "Tactical Dashboard" %}{% endblock %}
 
 {% block extra_css %}
 <style>
-  /* ── Dashboard panels ── */
-  .panel {
-    background: var(--card);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-    transition: border-color .2s;
-  }
-  .panel:hover { border-color: rgba(78,204,163,.15); }
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
-  .panel-header {
-    padding: 10px 15px;
-    background: rgba(0,0,0,.25);
-    font-size: .72rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-  }
+:root {
+  --dash-font-mono: 'JetBrains Mono', monospace;
+  --dash-font-ui:   'Space Grotesk', sans-serif;
+  --c-bg:      #060910;
+  --c-panel:   #0b0f1a;
+  --c-border:  rgba(255,255,255,.06);
+  --c-border2: rgba(78,204,163,.18);
+  --c-accent:  #4ecca3;
+  --c-red:     #e94560;
+  --c-yellow:  #f5c842;
+  --c-blue:    #3b82f6;
+  --c-purple:  #a78bfa;
+  --c-muted:   #4a5568;
+  --c-text:    #e2e8f0;
+  --c-dim:     #94a3b8;
+}
 
-  .log-container { padding: 10px; overflow-y: auto; flex-grow: 1; max-height: 260px; }
+/* ── Reset scoped to dashboard ─────────────────── */
+.db-wrap * { box-sizing: border-box; }
+.db-wrap    { font-family: var(--dash-font-ui); color: var(--c-text); min-height: 100vh; }
 
-  .alert-item {
-    padding: 9px 11px;
-    border-radius: 7px;
-    margin-bottom: 7px;
-    font-size: .79rem;
-    border-left: 4px solid rgba(255,255,255,.2);
-    animation: slideIn .3s ease;
-    line-height: 1.4;
-  }
+/* ── Top KPI strip ─────────────────────────────── */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.2rem;
+}
+@media(max-width:1200px){ .kpi-strip { grid-template-columns: repeat(3,1fr); } }
+@media(max-width:640px) { .kpi-strip { grid-template-columns: repeat(2,1fr); } }
 
-  .match-bg  { background: rgba(15,52,96,.6);  border-left-color: var(--accent); }
-  .fall-bg   { background: rgba(123,17,19,.5); border-left-color: var(--danger); }
-  .wave-bg   { background: rgba(61,61,0,.5);   border-left-color: var(--warn); }
-  .normal-bg { background: rgba(26,37,64,.5);  border-left-color: rgba(255,255,255,.1); }
+.kpi {
+  background: var(--c-panel);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s, transform .2s;
+}
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: var(--kc, var(--c-accent));
+  opacity: .7;
+}
+.kpi:hover { border-color: rgba(255,255,255,.12); transform: translateY(-1px); }
 
-  .counter-view { justify-content: center; text-align: center; align-items: center; }
-  #counter {
-    font-size: clamp(3.5rem, 8vw, 7rem);
-    font-weight: bold;
-    color: var(--accent);
-    line-height: 1;
-    font-family: var(--font-mono);
-    transition: color .3s;
-  }
-  #label { font-size: .75rem; color: var(--text-muted); margin-top: 10px; letter-spacing: .1em; }
+.kpi__icon {
+  font-size: .8rem; color: var(--kc, var(--c-accent));
+  opacity: .6; margin-bottom: .45rem;
+}
+.kpi__val {
+  font-family: var(--dash-font-mono);
+  font-size: 1.8rem; font-weight: 700; line-height: 1;
+  color: var(--kc, var(--c-accent));
+  display: flex; align-items: baseline; gap: .3rem;
+}
+.kpi__val small { font-size: .75rem; font-weight: 400; opacity: .6; }
+.kpi__lbl { font-size: .65rem; text-transform: uppercase; letter-spacing: .1em; color: var(--c-muted); margin-top: .3rem; }
+.kpi__delta { position: absolute; top: .8rem; right: .9rem; font-size: .67rem; font-family: var(--dash-font-mono); }
+.kpi__delta.up   { color: #2ecc71; }
+.kpi__delta.down { color: var(--c-red); }
 
-  .btn-action {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    width: 90%; margin: 8px auto;
-    background: var(--accent); color: #0a0e1a;
-    border: none; padding: 13px 16px;
-    border-radius: 8px; font-weight: 700;
-    cursor: pointer; text-transform: uppercase;
-    text-decoration: none; transition: all .25s;
-    font-size: .8rem;
-  }
-  .btn-action:hover { background: #5de8b8; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78,204,163,.25); }
+/* ── Main grid ─────────────────────────────────── */
+.db-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 320px;
+  grid-template-rows: auto auto auto;
+  gap: .75rem;
+}
+@media(max-width:1100px){
+  .db-grid { grid-template-columns: 1fr 1fr; }
+  .db-sidebar { grid-column: 1 / -1; }
+}
+@media(max-width:700px){
+  .db-grid { grid-template-columns: 1fr; }
+}
 
-  /* Live dot */
-  .dot { height: 7px; width: 7px; background: var(--accent); border-radius: 50%;
-         display: inline-block; margin-right: 5px; animation: blink 1.2s infinite; }
-  @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:.25} }
-  @keyframes slideIn{ from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+/* ── Panel base ────────────────────────────────── */
+.panel {
+  background: var(--c-panel);
+  border: 1px solid var(--c-border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
-  /* Toast container */
-  #toast-container {
-    position: fixed; top: 70px;
-    {% if LANGUAGE_BIDI %}left: 16px;{% else %}right: 16px;{% endif %}
-    z-index: 9997;
-    display: flex; flex-direction: column; gap: 8px;
-    max-width: 320px;
-    width: calc(100vw - 32px);
-  }
-  .toast {
-    background: var(--card); border: 1px solid var(--border-accent);
-    border-radius: 10px; padding: 12px 16px;
-    font-size: .79rem; color: var(--text);
-    box-shadow: var(--shadow);
-    animation: slideIn .3s ease;
-    cursor: pointer;
-  }
-  .toast .toast-title { font-weight: 700; color: var(--accent); margin-bottom: 3px; }
-  .toast.pass-back           { border-color: var(--warn); }
-  .toast.pass-back .toast-title  { color: var(--warn); }
-  .toast.detection           { border-color: var(--danger); }
-  .toast.detection .toast-title  { color: var(--danger); }
+.panel-hd {
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: rgba(0,0,0,.25);
+}
+.panel-title {
+  font-size: .67rem; text-transform: uppercase;
+  letter-spacing: .14em; color: var(--c-dim);
+  display: flex; align-items: center; gap: .5rem;
+}
+.panel-title i { color: var(--c-accent); font-size: .65rem; }
+.panel-badge {
+  font-size: .62rem; font-family: var(--dash-font-mono);
+  padding: .15rem .5rem; border-radius: 4px;
+  background: rgba(78,204,163,.1); color: var(--c-accent);
+  border: 1px solid rgba(78,204,163,.2);
+}
+.panel-body { padding: 1rem; flex: 1; overflow: hidden; }
+.panel-body--pad0 { padding: 0; }
+.panel-body--scroll { overflow-y: auto; max-height: 280px; }
 
-  /* Integrity stats */
-  .integrity-stat { text-align: center; }
-  .integrity-stat .val { color: var(--accent); font-size: 1.1rem; font-weight: 700; font-family: var(--font-mono); }
-  .integrity-stat .lbl { font-size: .6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
+/* ── Live dot ──────────────────────────────────── */
+.live-dot {
+  display: inline-block; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--c-accent);
+  animation: blink-dot 1.4s infinite;
+  flex-shrink: 0;
+}
+@keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:.2} }
 
-  /* ── Camera strip ── */
-  .cam-strip-wrap { margin-bottom: 1.2rem; }
+/* ── Sparkline bars (CSS-only) ─────────────────── */
+.sparkbar-wrap {
+  display: flex; align-items: flex-end; gap: 3px; height: 40px;
+}
+.sparkbar {
+  flex: 1; border-radius: 3px 3px 0 0;
+  background: rgba(78,204,163,.25);
+  transition: background .15s;
+  min-height: 4px;
+  position: relative;
+}
+.sparkbar:hover { background: rgba(78,204,163,.6); }
+.sparkbar.hot   { background: rgba(233,69,96,.4); }
 
-  .cam-strip-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: .7rem;
-    flex-wrap: wrap;
-    gap: .5rem;
-  }
+/* ── Detection activity feed ───────────────────── */
+.feed-item {
+  display: flex; align-items: flex-start; gap: .65rem;
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--c-border);
+  font-size: .78rem;
+  animation: slideDown .3s ease;
+}
+.feed-item:last-child { border-bottom: none; }
+@keyframes slideDown { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
 
-  .cam-strip-label {
-    font-family: var(--font-mono);
-    font-size: .72rem;
-    text-transform: uppercase;
-    letter-spacing: .12em;
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-  }
+.feed-icon {
+  width: 28px; height: 28px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; flex-shrink: 0; margin-top: 1px;
+}
+.feed-icon--match  { background: rgba(78,204,163,.12);  color: var(--c-accent); }
+.feed-icon--fall   { background: rgba(233,69,96,.12);   color: var(--c-red); }
+.feed-icon--wave   { background: rgba(245,200,66,.12);  color: var(--c-yellow); }
+.feed-icon--normal { background: rgba(255,255,255,.05); color: var(--c-muted); }
 
-  .cam-strip-label .live-dot {
-    display: inline-block;
-    width: 7px; height: 7px;
-    background: var(--accent);
-    border-radius: 50%;
-    animation: blink 1.2s infinite;
-  }
+.feed-body { flex: 1; min-width: 0; }
+.feed-title { font-weight: 600; color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feed-sub   { font-size: .7rem; color: var(--c-muted); margin-top: 1px; display: flex; gap: .4rem; flex-wrap: wrap; }
+.feed-ts    { font-family: var(--dash-font-mono); font-size: .65rem; color: var(--c-muted); flex-shrink: 0; margin-top: 2px; }
 
-  #running-count {
-    font-size: .68rem;
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-  }
+/* ── Camera grid in panel ──────────────────────── */
+.cam-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+}
+@media(max-width:400px){ .cam-grid { grid-template-columns: 1fr; } }
 
-  .cam-strip-link {
-    font-size: .72rem;
-    color: var(--text-muted);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: .3rem;
-    transition: color .15s;
-  }
-  .cam-strip-link:hover { color: var(--accent); }
+.cam-tile {
+  background: rgba(0,0,0,.3);
+  border: 1px solid var(--c-border);
+  border-radius: 9px;
+  padding: .65rem .75rem;
+  display: flex; align-items: center; gap: .55rem;
+  text-decoration: none; color: var(--c-text);
+  transition: border-color .18s, transform .15s;
+  position: relative; overflow: hidden;
+}
+.cam-tile:hover { border-color: rgba(78,204,163,.3); transform: translateY(-1px); }
+.cam-tile.offline { opacity: .45; pointer-events: none; }
 
-  #cam-tiles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .7rem;
-    min-height: 56px;
-  }
+.cam-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.cam-dot.online  { background: #2ecc71; box-shadow: 0 0 6px #2ecc71; animation: pulse-g 2s infinite; }
+.cam-dot.offline { background: var(--c-red); }
+.cam-dot.unknown { background: var(--c-yellow); animation: pulse-y 2s infinite; }
+@keyframes pulse-g { 0%,100%{box-shadow:0 0 4px #2ecc71}50%{box-shadow:0 0 10px #2ecc71} }
+@keyframes pulse-y { 0%,100%{box-shadow:0 0 4px #f5c842}50%{box-shadow:0 0 10px #f5c842} }
 
-  .cam-tile {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: .55rem .8rem .55rem .65rem;
-    display: flex;
-    align-items: center;
-    gap: .55rem;
-    cursor: pointer;
-    text-decoration: none;
-    color: var(--text);
-    transition: border-color .18s, box-shadow .18s, transform .15s;
-    min-width: 170px;
-    position: relative;
-    overflow: hidden;
-  }
-  .cam-tile::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--accent);
-    opacity: 0;
-    transition: opacity .18s;
-  }
-  .cam-tile:hover { border-color: rgba(78,204,163,.4); box-shadow: 0 4px 18px rgba(0,0,0,.35); transform: translateY(-2px); }
-  .cam-tile:hover::before { opacity: .04; }
+.cam-info { flex: 1; min-width: 0; }
+.cam-name { font-size: .78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cam-loc  { font-size: .65rem; color: var(--c-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  .cam-tile__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
-  .cam-tile__dot.online  { background: #2ecc71; color: #2ecc71; animation: pulse-green  2s infinite; }
-  .cam-tile__dot.offline { background: #e74c3c; color: #e74c3c; }
-  .cam-tile__dot.unknown { background: #f39c12; color: #f39c12; animation: pulse-orange 2s infinite; }
+/* ── Donut chart ───────────────────────────────── */
+.donut-wrap { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+.donut-svg  { flex-shrink: 0; }
+.donut-legend { display: flex; flex-direction: column; gap: .5rem; font-size: .75rem; }
+.legend-row { display: flex; align-items: center; gap: .5rem; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-lbl { color: var(--c-dim); }
+.legend-val { margin-left: auto; font-family: var(--dash-font-mono); font-weight: 700; min-width: 28px; text-align: right; }
 
-  @keyframes pulse-green  { 0%,100%{box-shadow:0 0 4px #2ecc71}50%{box-shadow:0 0 10px #2ecc71} }
-  @keyframes pulse-orange { 0%,100%{box-shadow:0 0 4px #f39c12}50%{box-shadow:0 0 10px #f39c12} }
+/* ── Bar chart ─────────────────────────────────── */
+.bar-chart { display: flex; flex-direction: column; gap: .6rem; }
+.bc-row { display: flex; align-items: center; gap: .7rem; font-size: .75rem; }
+.bc-label { width: 100px; flex-shrink: 0; color: var(--c-dim); font-size: .7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bc-track { flex: 1; height: 6px; background: rgba(255,255,255,.06); border-radius: 10px; overflow: hidden; }
+.bc-fill  { height: 100%; border-radius: 10px; background: var(--bc, var(--c-accent)); transition: width .8s cubic-bezier(.4,0,.2,1); }
+.bc-val   { font-family: var(--dash-font-mono); font-size: .68rem; color: var(--c-dim); min-width: 24px; text-align: right; }
 
-  .cam-tile__body    { flex: 1; min-width: 0; }
-  .cam-tile__name    { font-size: .82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
-  .cam-tile__meta    { font-size: .67rem; color: var(--text-muted); display: flex; gap: .4rem; margin-top: 1px; }
-  .cam-tile__arrow   { font-size: .7rem; color: var(--accent); opacity: 0; transition: opacity .18s, transform .18s; transform: translateX(-4px); flex-shrink: 0; }
-  .cam-tile:hover .cam-tile__arrow { opacity: 1; transform: translateX(0); }
+/* ── Verification queue ────────────────────────── */
+.vq-item {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .5rem .75rem;
+  border-bottom: 1px solid var(--c-border);
+  font-size: .78rem; transition: background .15s;
+}
+.vq-item:hover { background: rgba(255,255,255,.02); }
+.vq-item:last-child { border-bottom: none; }
+.vq-thumb {
+  width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+  border: 1px solid var(--c-border2); flex-shrink: 0;
+  background: rgba(255,255,255,.05);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--c-muted); font-size: .75rem;
+}
+.vq-name { font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vq-cam  { font-size: .68rem; color: var(--c-muted); }
+.vq-status { font-size: .62rem; font-weight: 700; padding: .15rem .45rem; border-radius: 4px; flex-shrink: 0; }
+.vq-status.pending  { background: rgba(245,200,66,.12); color: var(--c-yellow); }
+.vq-status.approved { background: rgba(46,204,113,.12); color: #2ecc71; }
+.vq-status.rejected { background: rgba(233,69,96,.12);  color: var(--c-red); }
 
-  .cam-tile.offline  { opacity: .55; cursor: default; pointer-events: none; }
-  .cam-tile.offline:hover { transform: none; box-shadow: none; }
+/* ── Person counter widget ─────────────────────── */
+.counter-widget {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 1.5rem; text-align: center; gap: .5rem;
+  min-height: 140px; position: relative;
+}
+.counter-ring {
+  position: relative; width: 100px; height: 100px;
+  flex-shrink: 0;
+}
+.counter-ring svg { transform: rotate(-90deg); }
+.counter-ring .ring-bg   { fill: none; stroke: rgba(255,255,255,.06); stroke-width: 5; }
+.counter-ring .ring-fill { fill: none; stroke: var(--c-accent); stroke-width: 5; stroke-linecap: round;
+  stroke-dasharray: 283; stroke-dashoffset: 283;
+  transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1);
+}
+.counter-num {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--dash-font-mono); font-size: 1.8rem; font-weight: 700;
+  color: var(--c-accent);
+}
+.counter-lbl { font-size: .65rem; text-transform: uppercase; letter-spacing: .12em; color: var(--c-muted); }
 
-  .cam-tile__badge {
-    position: absolute; top: 5px; right: 7px;
-    font-size: .58rem; font-weight: 700; text-transform: uppercase;
-    padding: 1px 5px; border-radius: 3px;
-  }
+/* ── Notification mini-feed ────────────────────── */
+.notif-mini {
+  display: flex; align-items: flex-start; gap: .55rem;
+  padding: .5rem .75rem; border-bottom: 1px solid var(--c-border);
+  font-size: .77rem; cursor: pointer; transition: background .15s;
+}
+.notif-mini:hover { background: rgba(255,255,255,.02); }
+.notif-mini:last-child { border-bottom: none; }
+.notif-pip { width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.notif-mini .nm-title { font-weight: 600; color: var(--c-text); }
+.notif-mini .nm-msg   { font-size: .68rem; color: var(--c-muted); margin-top: 1px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.notif-mini .nm-ts    { font-family: var(--dash-font-mono); font-size: .62rem; color: var(--c-muted); white-space: nowrap; margin-top: 2px; }
 
-  .cam-loading {
-    font-size: .75rem; color: var(--text-muted);
-    display: flex; align-items: center; gap: .5rem; padding: .6rem 0;
-  }
+/* ── Assignments mini ──────────────────────────── */
+.assign-mini {
+  display: flex; align-items: center; gap: .65rem;
+  padding: .5rem .75rem; border-bottom: 1px solid var(--c-border);
+  font-size: .78rem; transition: background .15s;
+}
+.assign-mini:hover { background: rgba(255,255,255,.02); }
+.assign-mini:last-child { border-bottom: none; }
+.assign-mini img {
+  width: 30px; height: 30px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0; border: 1px solid var(--c-border2);
+  background: rgba(255,255,255,.05);
+}
+.assign-mini .am-name { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.assign-mini .am-to   { font-size: .68rem; color: var(--c-muted); }
+.status-pip { font-size: .6rem; font-weight: 700; padding: .12rem .4rem; border-radius: 3px; flex-shrink: 0; }
+.pip-pending      { background: rgba(245,200,66,.12); color: var(--c-yellow); }
+.pip-acknowledged { background: rgba(78,204,163,.12); color: var(--c-accent); }
+.pip-passed_back  { background: rgba(59,130,246,.12); color: var(--c-blue); }
+.pip-closed       { background: rgba(255,255,255,.06); color: var(--c-muted); }
 
-  .cam-empty {
-    font-size: .78rem; color: var(--text-muted);
-    padding: .6rem .2rem;
-    display: flex; align-items: center; gap: .5rem;
-  }
+/* ── Action quick-links ────────────────────────── */
+.quick-links { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.ql-btn {
+  display: flex; align-items: center; gap: .55rem;
+  padding: .65rem .8rem; border-radius: 8px;
+  text-decoration: none; color: var(--c-dim);
+  border: 1px solid var(--c-border); font-size: .77rem; font-weight: 600;
+  transition: all .18s; background: rgba(0,0,0,.2);
+}
+.ql-btn i { font-size: .75rem; color: var(--c-accent); flex-shrink: 0; }
+.ql-btn:hover { border-color: rgba(78,204,163,.3); color: var(--c-text); background: rgba(78,204,163,.05); }
 
-  /* ── Dashboard responsive ── */
-  @media (max-width: 1100px) {
-    #dash-sys       { order: 3; }
-    #dash-counter   { order: 1; grid-column: 1 / -1; min-height: 200px; }
-    #dash-id        { order: 2; }
-    #dash-action    { order: 4; }
-    #dash-integrity { order: 5; grid-column: 1 / -1; }
-  }
-  @media (max-width: 600px) {
-    #toast-container { top: 68px; right: 10px; left: 10px; max-width: none; width: auto; }
-    .panel-header    { font-size: .66rem; }
-    .btn-action      { font-size: .75rem; padding: 11px; }
-  }
+/* ── System health bars ────────────────────────── */
+.health-row { display: flex; align-items: center; gap: .7rem; font-size: .73rem; margin-bottom: .55rem; }
+.health-lbl { width: 70px; color: var(--c-muted); flex-shrink: 0; }
+.health-bar { flex: 1; height: 4px; background: rgba(255,255,255,.06); border-radius: 10px; overflow: hidden; }
+.health-fill { height: 100%; border-radius: 10px; }
+.health-val { font-family: var(--dash-font-mono); font-size: .68rem; color: var(--c-dim); min-width: 32px; text-align: right; }
+
+/* ── Gauge (half-donut) ────────────────────────── */
+.gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+.gauge-svg  { overflow: visible; }
+.gauge-arc-bg   { fill: none; stroke: rgba(255,255,255,.06); stroke-width: 8; stroke-linecap: round; }
+.gauge-arc-fill { fill: none; stroke: var(--c-accent); stroke-width: 8; stroke-linecap: round;
+  transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+.gauge-val { font-family: var(--dash-font-mono); font-size: 1.3rem; font-weight: 700; color: var(--c-accent); }
+.gauge-lbl { font-size: .62rem; text-transform: uppercase; letter-spacing: .1em; color: var(--c-muted); }
+
+/* ── Mini sparkline graph ──────────────────────── */
+.mini-graph { display: flex; align-items: flex-end; gap: 2px; height: 32px; }
+.mg-bar { flex: 1; border-radius: 2px 2px 0 0; background: rgba(78,204,163,.25); min-height: 2px; }
+
+/* ── Toast container ───────────────────────────── */
+#db-toasts {
+  position: fixed; bottom: 24px;
+  right: 20px; z-index: 9998;
+  display: flex; flex-direction: column; gap: 8px;
+  max-width: 320px; width: calc(100vw - 40px);
+}
+.db-toast {
+  background: #111827; border: 1px solid var(--c-border2);
+  border-radius: 10px; padding: .8rem 1rem;
+  font-size: .77rem; color: var(--c-text);
+  display: flex; align-items: flex-start; gap: .6rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  animation: toastIn .3s ease;
+  cursor: pointer;
+}
+.db-toast i { font-size: .85rem; flex-shrink: 0; margin-top: 1px; }
+@keyframes toastIn { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+
+/* ── Section divider ───────────────────────────── */
+.sec-hd {
+  font-size: .62rem; text-transform: uppercase; letter-spacing: .14em;
+  color: var(--c-muted); margin-bottom: .65rem; margin-top: .2rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.sec-hd::after { content: ''; flex: 1; height: 1px; background: var(--c-border); }
+
+/* ── Scrollbar in panels ───────────────────────── */
+.panel-body--scroll::-webkit-scrollbar { width: 4px; }
+.panel-body--scroll::-webkit-scrollbar-track { background: transparent; }
+.panel-body--scroll::-webkit-scrollbar-thumb { background: rgba(78,204,163,.2); border-radius: 2px; }
+
+/* ── Sidebar ───────────────────────────────────── */
+.db-sidebar { display: flex; flex-direction: column; gap: .75rem; }
+
+/* ── Animation: staggered panel entrance ────────── */
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.kpi        { animation: panelIn .45s ease both; }
+.kpi:nth-child(1)  { animation-delay: .05s; }
+.kpi:nth-child(2)  { animation-delay: .10s; }
+.kpi:nth-child(3)  { animation-delay: .15s; }
+.kpi:nth-child(4)  { animation-delay: .20s; }
+.kpi:nth-child(5)  { animation-delay: .25s; }
+.kpi:nth-child(6)  { animation-delay: .30s; }
+.panel      { animation: panelIn .5s ease both; animation-delay: .35s; }
+
+/* no-data placeholder */
+.no-data {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 1.8rem; color: var(--c-muted); font-size: .78rem; gap: .5rem; text-align: center;
+}
+.no-data i { font-size: 1.8rem; opacity: .2; }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="db-wrap">
 
-<div id="toast-container"></div>
-
-<!-- ══ Live Camera Strip ════════════════════════════════════════════════════ -->
-<div class="cam-strip-wrap">
-
-  <div class="cam-strip-header">
-    <div style="display:flex;align-items:center;gap:.6rem;">
-      <span class="cam-strip-label">
-        <span class="live-dot"></span>
-        {% trans "Live Cameras" %}
-      </span>
-      <span id="running-count">0 online</span>
-    </div>
-    <a href="{% url 'camera_dashboard' %}" class="cam-strip-link">
-      <i class="fas fa-external-link-alt" style="font-size:.65rem;"></i>
-      {% trans "Manage cameras" %}
+<!-- ── Page header ─────────────────────────────────────────────────── -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;flex-wrap:wrap;gap:.6rem;">
+  <div>
+    <h1 style="font-family:var(--dash-font-mono);font-size:1.05rem;letter-spacing:.12em;color:var(--c-accent);margin:0;">
+      <span class="live-dot" style="margin-right:.5rem;"></span>
+      BUTTERFLY / TACTICAL DASHBOARD
+    </h1>
+    <p style="font-size:.72rem;color:var(--c-muted);margin-top:.2rem;" id="db-clock">
+      Loading…
+    </p>
+  </div>
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+    <a href="{% url 'camera_dashboard' %}" class="ql-btn" style="border-color:rgba(78,204,163,.2);">
+      <i class="fas fa-camera"></i> Cameras
     </a>
+    <a href="{% url 'detection_history' %}" class="ql-btn" style="border-color:rgba(78,204,163,.2);">
+      <i class="fas fa-history"></i> History
+    </a>
+    {% if is_admin or user.profile.role == 'supervisor' %}
+    <a href="{% url 'target_management' %}" class="ql-btn" style="border-color:rgba(78,204,163,.2);">
+      <i class="fas fa-crosshairs"></i> Targets
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── KPI strip ───────────────────────────────────────────────────── -->
+<div class="kpi-strip">
+
+  <!-- Cameras online -->
+  <div class="kpi" style="--kc:#2ecc71;">
+    <div class="kpi__icon"><i class="fas fa-video"></i></div>
+    <div class="kpi__val" id="kpi-cams-online">—<small>online</small></div>
+    <div class="kpi__lbl">Cameras Active</div>
+    <div class="kpi__delta up" id="kpi-cams-total" style="color:var(--c-muted);">of — total</div>
   </div>
 
-  <div id="cam-tiles">
-    <div class="cam-loading" id="cam-tiles-loading">
-      <i class="fas fa-spinner fa-spin" style="color:var(--accent);font-size:.8rem;"></i>
-      {% trans "Loading cameras..." %}
-    </div>
+  <!-- Persons in frame -->
+  <div class="kpi" style="--kc:#4ecca3;">
+    <div class="kpi__icon"><i class="fas fa-users"></i></div>
+    <div class="kpi__val" id="kpi-persons">0</div>
+    <div class="kpi__lbl">Persons Detected</div>
+    <div class="kpi__delta" id="kpi-persons-delta">live</div>
+  </div>
+
+  <!-- Total targets -->
+  <div class="kpi" style="--kc:#e94560;">
+    <div class="kpi__icon"><i class="fas fa-crosshairs"></i></div>
+    <div class="kpi__val">{{ targets|length }}</div>
+    <div class="kpi__lbl">Watchlist Targets</div>
+  </div>
+
+  <!-- Pending verifications -->
+  <div class="kpi" style="--kc:#f5c842;">
+    <div class="kpi__icon"><i class="fas fa-shield-alt"></i></div>
+    <div class="kpi__val" id="kpi-pending-verif">{{ pending_verif_count|default:"—" }}</div>
+    <div class="kpi__lbl">Pending Verify</div>
+    {% if pending_verif_count %}
+    <div class="kpi__delta down">needs review</div>
+    {% endif %}
+  </div>
+
+  <!-- Today detections -->
+  <div class="kpi" style="--kc:#3b82f6;">
+    <div class="kpi__icon"><i class="fas fa-history"></i></div>
+    <div class="kpi__val">{{ today_detections|default:"0" }}</div>
+    <div class="kpi__lbl">Today's Events</div>
+  </div>
+
+  <!-- Unread notifications -->
+  <div class="kpi" style="--kc:#a78bfa;">
+    <div class="kpi__icon"><i class="fas fa-bell"></i></div>
+    <div class="kpi__val">{{ unread_count|default:"0" }}</div>
+    <div class="kpi__lbl">Unread Alerts</div>
+    {% if unread_count %}
+    <div class="kpi__delta down">unread</div>
+    {% endif %}
   </div>
 
 </div>
 
-<!-- ══ Main Dashboard Grid ════════════════════════════════════════════════ -->
-<div class="dashboard-grid">
+<!-- ── Main grid ────────────────────────────────────────────────────── -->
+<div class="db-grid">
 
-  <!-- System Control -->
-  <div class="panel" id="dash-sys" style="padding:20px;text-align:center;justify-content:center;">
-    <div class="panel-header" style="position:absolute;top:0;left:0;right:0;">
-      <span><span class="dot"></span> {% trans "SYSTEM CONTROL" %}</span>
-    </div>
-    <div style="margin-top:44px;">
-      <h2 style="font-size:.8rem;color:var(--accent);margin-bottom:6px;">{% trans "Surveillance Hub" %}</h2>
-      <p style="font-size:.72rem;color:var(--text-muted);line-height:1.5;margin-bottom:16px;">
-        {% trans "Database and Subject enrollment has been moved to the Management Portal." %}
-      </p>
-      {% if is_admin or user.profile.role == 'supervisor' %}
-      <a href="{% url 'target_management' %}" class="btn-action">
-        <i class="fas fa-list-ul"></i> {% trans "Manage Watchlist" %}
-      </a>
-      {% endif %}
-      <a href="{% url 'detection_history' %}" class="btn-action"
-         style="background:rgba(15,52,96,.8);color:var(--accent);border:1px solid var(--border-accent);">
-        <i class="fas fa-history"></i> {% trans "Detection History" %}
-      </a>
-      <a href="{% url 'notifications_list' %}" class="btn-action"
-         style="background:rgba(26,37,64,.8);color:var(--warn);border:1px solid rgba(243,156,18,.3);">
-        <i class="fas fa-bell"></i> {% trans "Notifications" %}
-        {% if unread_count %}
-          <span style="background:var(--danger);color:#fff;border-radius:50%;padding:2px 6px;font-size:.68rem;">{{ unread_count }}</span>
-        {% endif %}
-      </a>
-    </div>
-  </div>
+  <!-- ══ COL 1: Activity feed + cameras ══ -->
+  <div style="display:flex;flex-direction:column;gap:.75rem;">
 
-  <!-- Live counter -->
-  <div class="panel counter-view" id="dash-counter">
-    <div class="panel-header" style="position:absolute;top:0;left:0;right:0;">
-      <span>{% trans "Optical Sensor Feed" %}</span>
-      <span id="sys-status" style="color:var(--accent);font-size:.68rem;">{% trans "ACTIVE" %}</span>
-    </div>
-    <div style="margin-top:20px;">
-      <div id="counter">00</div>
-      <div id="label">{% trans "Scanning Environment..." %}</div>
-    </div>
-  </div>
-
-  <!-- Identity confirmation -->
-  <div class="panel" id="dash-id">
-    <div class="panel-header" style="color:var(--accent);">
-      <span>{% trans "Identity Confirmation" %}</span>
-    </div>
-    <div class="log-container" id="id-log"></div>
-  </div>
-
-  <!-- Activity alerts -->
-  <div class="panel" id="dash-action">
-    <div class="panel-header" style="color:var(--warn);">
-      <span>{% trans "Activity Alerts" %}</span>
-    </div>
-    <div class="log-container" id="action-log">
-      {% for event in recent_events %}
-        {% if event.action == 'FALL DETECTED' %}
-          <div class="alert-item fall-bg">
-            <strong>{% trans "CRITICAL" %}:</strong> {% trans "FALL DETECTED" %}{% if event.matched_target_name %} — {{ event.matched_target_name }}{% endif %}
-            <br><small style="color:var(--text-muted);">{{ event.timestamp|date:"H:i:s" }}</small>
-          </div>
-        {% elif event.action == 'HAND WAVING' %}
-          <div class="alert-item wave-bg">
-            <strong>{% trans "GREETING" %}:</strong> {% trans "Wave Detected" %}
-            <br><small style="color:var(--text-muted);">{{ event.timestamp|date:"H:i:s" }}</small>
-          </div>
-        {% elif event.matched_target_name %}
-          <div class="alert-item match-bg">
-            <strong>{% trans "CONFIRMED" %}:</strong> {{ event.matched_target_name }}
-            <br><small style="color:var(--text-muted);">{{ event.timestamp|date:"H:i:s" }}</small>
-          </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-  </div>
-
-  <!-- System Integrity + recent detections -->
-  <div class="panel" id="dash-integrity"
-       style="grid-column:2 / span 2;grid-row:2;padding:0;justify-content:flex-start;">
-    <div class="panel-header">
-      <span>{% trans "System Integrity & Recent Detections" %}</span>
-    </div>
-    <div style="display:flex;gap:0;flex-grow:1;overflow:hidden;flex-wrap:wrap;">
-
-      <!-- Integrity stats -->
-      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;
-                  gap:16px;padding:20px;min-width:160px;border-right:1px solid var(--border);">
-        <div class="integrity-stat"><div class="val">98%</div><div class="lbl">{% trans "UPTIME" %}</div></div>
-        <div class="integrity-stat"><div class="val">0.4ms</div><div class="lbl">{% trans "LATENCY" %}</div></div>
-        <div class="integrity-stat"><div class="val">SSL</div><div class="lbl">{% trans "ENCRYPTION" %}</div></div>
-      </div>
-
-      <!-- Recent persons -->
-      <div style="flex-grow:1;overflow-y:auto;padding:10px;min-width:200px;">
-        <div style="font-size:.63rem;color:var(--text-muted);margin-bottom:6px;
-                    text-transform:uppercase;letter-spacing:1px;">
-          {% trans "Recently Detected Persons" %}
+    <!-- Live activity feed -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">
+          <span class="live-dot"></span>
+          <i class="fas fa-bolt"></i>
+          Live Activity Feed
         </div>
+        <span class="panel-badge" id="feed-count">0 events</span>
+      </div>
+      <div class="panel-body--pad0 panel-body--scroll" id="activity-feed" style="max-height:260px;">
+        <!-- Seeded from recent_events -->
         {% for event in recent_events %}
-          {% if event.matched_target_name %}
-            <div class="alert-item match-bg" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-              <span>
-                <strong>{{ event.matched_target_name }}</strong><br>
-                <small style="color:var(--text-muted);">{{ event.action }} · {{ event.person_count }} in frame</small>
-              </span>
-              <small style="color:var(--accent);white-space:nowrap;">{{ event.timestamp|date:"d M H:i" }}</small>
+        <div class="feed-item" style="padding:.55rem .75rem;">
+          <div class="feed-icon
+            {% if event.matched_target_name %}feed-icon--match
+            {% elif 'FALL' in event.action %}feed-icon--fall
+            {% elif 'WAVING' in event.action %}feed-icon--wave
+            {% else %}feed-icon--normal{% endif %}">
+            <i class="fas fa-{% if event.matched_target_name %}user-check{% elif 'FALL' in event.action %}exclamation-triangle{% elif 'WAVING' in event.action %}hand-paper{% else %}circle{% endif %}"></i>
+          </div>
+          <div class="feed-body">
+            <div class="feed-title">
+              {% if event.matched_target_name %}{{ event.matched_target_name }}
+              {% else %}{{ event.action }}{% endif %}
             </div>
-          {% endif %}
+            <div class="feed-sub">
+              {% if event.camera %}<span><i class="fas fa-video" style="font-size:.6rem;"></i> {{ event.camera.name }}</span>{% endif %}
+              <span>{{ event.person_count }}p in frame</span>
+            </div>
+          </div>
+          <div class="feed-ts">{{ event.timestamp|date:"H:i" }}</div>
+        </div>
         {% empty %}
-          <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:20px;">
-            {% trans "No confirmed identities yet." %}
-          </p>
+        <div class="no-data"><i class="fas fa-satellite-dish"></i>Awaiting live events…</div>
         {% endfor %}
       </div>
     </div>
-  </div>
 
-</div><!-- /dashboard-grid -->
-
-<!-- ══ Scripts ═══════════════════════════════════════════════════════════════ -->
-<script>
-/* ── Surveillance WebSocket ─────────────────────────────────────────────────── */
-(function() {
-  const proto    = location.protocol === 'https:' ? 'wss' : 'ws';
-  const socket   = new WebSocket(`${proto}://${location.host}/ws/pose/`);
-
-  const idLog    = document.getElementById('id-log');
-  const actionLog= document.getElementById('action-log');
-  const counterEl= document.getElementById('counter');
-  const labelEl  = document.getElementById('label');
-  const mainView = document.getElementById('dash-counter');
-  const toastCon = document.getElementById('toast-container');
-
-  socket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-
-    if (data.type === 'TARGET_MATCH') {
-      createLogItem(idLog, "{% trans 'CONFIRMED' %}", data.name, 'match-bg');
-    }
-
-    if (data.type === 'STAT_UPDATE') {
-      counterEl.innerText   = data.count.toString().padStart(2, '0');
-      labelEl.innerText     = data.message || '';
-      counterEl.style.color = data.count === 0 ? 'var(--text-muted)' : 'var(--accent)';
-      if (data.action === 'FALL DETECTED') {
-        createLogItem(actionLog, "{% trans 'CRITICAL' %}", "{% trans 'FALL DETECTED' %}", 'fall-bg');
-        triggerFlash('var(--danger)');
-      } else if (data.action === 'HAND WAVING') {
-        createLogItem(actionLog, "{% trans 'GREETING' %}", "{% trans 'Wave Detected' %}", 'wave-bg');
-      }
-    }
-
-    if (data.type === 'CAMERA_STATUS') {
-      /* Update camera tiles in real-time */
-      window._updateCamTile && window._updateCamTile(data.camera_id, data.status);
-    }
-
-    if (data.type === 'NOTIFICATION') {
-      showToast(data);
-      socket.send(JSON.stringify({ type: 'MARK_READ', notification_id: data.notification_id }));
-    }
-  };
-
-  function createLogItem(container, title, message, className) {
-    const item = document.createElement('div');
-    item.className = `alert-item ${className}`;
-    item.innerHTML = `<strong>${title}:</strong> ${message}<br>
-      <small style="color:var(--text-muted)">${new Date().toLocaleTimeString()}</small>`;
-    container.prepend(item);
-    if (container.children.length > 12) container.removeChild(container.lastChild);
-  }
-
-  function triggerFlash(color) {
-    mainView.style.boxShadow = `inset 0 0 60px ${color}44`;
-    setTimeout(() => mainView.style.boxShadow = 'none', 900);
-  }
-
-  function showToast(data) {
-    const typeClass = { assignment:'', pass_back:'pass-back', detection:'detection' }[data.notification_type] || '';
-    const toast = document.createElement('div');
-    toast.className = `toast ${typeClass}`;
-    toast.innerHTML = `
-      <div class="toast-title">${data.title}</div>
-      <div>${(data.message || '').substring(0, 100)}${(data.message||'').length > 100 ? '…' : ''}</div>
-      <small style="color:var(--text-muted)">${data.created_at || ''}</small>
-    `;
-    toast.onclick = () => toast.remove();
-    toastCon.prepend(toast);
-    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 8000);
-  }
-
-  socket.onclose = () => {
-    document.getElementById('sys-status').innerText      = "{% trans 'DISCONNECTED' %}";
-    document.getElementById('sys-status').style.color    = 'var(--danger)';
-    counterEl.style.color = 'var(--danger)';
-  };
-})();
-
-/* ── Camera tile renderer ───────────────────────────────────────────────────── */
-(function initCamTiles() {
-
-  function buildTile(cam) {
-    const isLive = cam.status === 'online' && cam.is_active;
-    return `
-      <a href="${isLive ? '/cameras/'+cam.id+'/view/' : '#'}"
-         id="ctile-${cam.id}"
-         class="cam-tile${isLive ? '' : ' offline'}"
-         ${isLive ? 'target="_blank" onclick="openCamViewer(event,'+cam.id+')"' : 'onclick="return false"'}>
-        <span class="cam-tile__dot ${cam.status}"></span>
-        <div class="cam-tile__body">
-          <div class="cam-tile__name">${cam.name}</div>
-          <div class="cam-tile__meta">
-            <span><i class="fas fa-map-marker-alt" style="font-size:.6rem;"></i> ${cam.location}</span>
+    <!-- Detection breakdown chart -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><i class="fas fa-chart-bar"></i> Detection Breakdown</div>
+      </div>
+      <div class="panel-body">
+        <div class="sec-hd">By Event Type</div>
+        <div class="bar-chart" id="breakdown-chart">
+          <div class="bc-row">
+            <div class="bc-label">Normal</div>
+            <div class="bc-track"><div class="bc-fill" style="--bc:#4ecca3;width:0%;" id="bc-normal"></div></div>
+            <div class="bc-val" id="bcv-normal">{{ normal_count|default:"0" }}</div>
+          </div>
+          <div class="bc-row">
+            <div class="bc-label">Fall Detected</div>
+            <div class="bc-track"><div class="bc-fill" style="--bc:#e94560;width:0%;" id="bc-fall"></div></div>
+            <div class="bc-val" id="bcv-fall">{{ fall_count|default:"0" }}</div>
+          </div>
+          <div class="bc-row">
+            <div class="bc-label">Hand Waving</div>
+            <div class="bc-track"><div class="bc-fill" style="--bc:#f5c842;width:0%;" id="bc-wave"></div></div>
+            <div class="bc-val" id="bcv-wave">{{ wave_count|default:"0" }}</div>
+          </div>
+          <div class="bc-row">
+            <div class="bc-label">Target Match</div>
+            <div class="bc-track"><div class="bc-fill" style="--bc:#3b82f6;width:0%;" id="bc-match"></div></div>
+            <div class="bc-val" id="bcv-match">{{ target_match_count|default:"0" }}</div>
           </div>
         </div>
-        ${isLive ? '<span class="cam-tile__arrow"><i class="fas fa-external-link-alt"></i></span>' : ''}
-        ${!cam.is_active
-          ? '<span class="cam-tile__badge" style="background:rgba(231,76,60,.12);color:#e74c3c;">OFF</span>'
-          : ''}
-      </a>`;
-  }
 
-  function renderTiles(cameras) {
-    const wrap = document.getElementById('cam-tiles');
-    const loading = document.getElementById('cam-tiles-loading');
-    if (loading) loading.remove();
+        <div class="sec-hd" style="margin-top:1rem;">By Verification Status</div>
+        <div class="bar-chart">
+          <div class="bc-row">
+            <div class="bc-label">Approved</div>
+            <div class="bc-track"><div class="bc-fill" style="--bc:#2ecc71;width:{{ approved_pct|default:0 }}%;"></div></div>
+            <div class="bc-val">{{ approved_count|default:"0" }}</div>
+          </div>
+          <div class="bc-row">
+            <div class="bc-label">Pending</div>
+            <div class="bc-track"><div class="bc-fill" style="--bc:#f5c842;width:{{ pending_pct|default:0 }}%;"></div></div>
+            <div class="bc-val">{{ pending_count|default:"0" }}</div>
+          </div>
+          <div class="bc-row">
+            <div class="bc-label">Rejected</div>
+            <div class="bc-track"><div class="bc-fill" style="--bc:#e94560;width:{{ rejected_pct|default:0 }}%;"></div></div>
+            <div class="bc-val">{{ rejected_count|default:"0" }}</div>
+          </div>
+          <div class="bc-row">
+            <div class="bc-label">Unreviewed</div>
+            <div class="bc-track"><div class="bc-fill" style="--bc:#4a5568;width:{{ unreviewed_pct|default:0 }}%;"></div></div>
+            <div class="bc-val">{{ unreviewed_count|default:"0" }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    if (!cameras.length) {
-      wrap.innerHTML = `<div class="cam-empty">
-        <i class="fas fa-video-slash"></i> No cameras registered.</div>`;
-      return;
-    }
+  </div><!-- /col1 -->
 
-    cameras.forEach(cam => {
-      let tile = document.getElementById(`ctile-${cam.id}`);
-      if (!tile) {
-        wrap.insertAdjacentHTML('beforeend', buildTile(cam));
-      } else {
-        /* Update dot class */
-        const dot = tile.querySelector('.cam-tile__dot');
-        if (dot) dot.className = `cam-tile__dot ${cam.status}`;
-        const isLive = cam.status === 'online' && cam.is_active;
-        tile.classList.toggle('offline', !isLive);
-        if (isLive) {
-          tile.href = `/cameras/${cam.id}/view/`;
-          tile.setAttribute('target', '_blank');
-        } else {
-          tile.href = '#';
-        }
-      }
-    });
+  <!-- ══ COL 2: Cameras + person counter + verifications ══ -->
+  <div style="display:flex;flex-direction:column;gap:.75rem;">
 
-    /* Update online count */
-    const online = cameras.filter(c => c.status === 'online' && c.is_active).length;
-    const rc = document.getElementById('running-count');
-    if (rc) rc.textContent = `${online} online`;
-  }
+    <!-- Live person counter + camera count -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><span class="live-dot"></span> <i class="fas fa-eye"></i> Live Vision</div>
+        <span class="panel-badge" id="sys-status-badge">ACTIVE</span>
+      </div>
+      <div class="panel-body" style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;padding:.8rem 1rem;">
+        <!-- Person counter ring -->
+        <div class="counter-widget" style="padding:0;">
+          <div class="counter-ring">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle class="ring-bg"   cx="50" cy="50" r="45"/>
+              <circle class="ring-fill" cx="50" cy="50" r="45" id="ring-fill"/>
+            </svg>
+            <div class="counter-num" id="counter-num">0</div>
+          </div>
+          <div class="counter-lbl">persons in frame</div>
+        </div>
 
-  function fetchAndRender() {
-    fetch('/cameras/status/')
-      .then(r => r.json())
-      .then(d => renderTiles(d.cameras || []))
-      .catch(() => {});
-  }
+        <!-- Live mini stats column -->
+        <div style="flex:1;min-width:100px;display:flex;flex-direction:column;gap:.75rem;">
 
-  fetchAndRender();
-  setInterval(fetchAndRender, 8000);
+          <div>
+            <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--c-muted);margin-bottom:.35rem;">Today's Spark</div>
+            <div class="mini-graph" id="today-spark">
+              {% for i in "12345678901234567890"|make_list %}
+              <div class="mg-bar" style="height:{{ forloop.counter|add:2 }}px;"></div>
+              {% endfor %}
+            </div>
+          </div>
 
-  /* Expose so the WS handler above can call it on CAMERA_STATUS messages */
-  window._updateCamTile = function(camera_id, status) {
-    const tile = document.getElementById(`ctile-${camera_id}`);
-    if (!tile) return;
-    const dot = tile.querySelector('.cam-tile__dot');
-    if (dot) dot.className = `cam-tile__dot ${status}`;
-    const isLive = status === 'online';
-    tile.classList.toggle('offline', !isLive);
-    if (isLive) {
-      tile.href = `/cameras/${camera_id}/view/`;
-      tile.setAttribute('target', '_blank');
-    } else {
-      tile.href = '#';
-    }
-    /* Recount */
-    const online = document.querySelectorAll('.cam-tile:not(.offline)').length;
-    const rc = document.getElementById('running-count');
-    if (rc) rc.textContent = `${online} online`;
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;">
+            <div style="background:rgba(233,69,96,.08);border:1px solid rgba(233,69,96,.18);border-radius:7px;padding:.5rem .65rem;text-align:center;">
+              <div style="font-family:var(--dash-font-mono);font-size:1.1rem;font-weight:700;color:#e94560;" id="live-falls">{{ fall_count|default:"0" }}</div>
+              <div style="font-size:.6rem;text-transform:uppercase;color:var(--c-muted);">Falls</div>
+            </div>
+            <div style="background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.18);border-radius:7px;padding:.5rem .65rem;text-align:center;">
+              <div style="font-family:var(--dash-font-mono);font-size:1.1rem;font-weight:700;color:#f5c842;" id="live-waves">{{ wave_count|default:"0" }}</div>
+              <div style="font-size:.6rem;text-transform:uppercase;color:var(--c-muted);">Waves</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Camera tiles -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><i class="fas fa-camera"></i> Connected Cameras</div>
+        <a href="{% url 'camera_dashboard' %}" style="font-size:.65rem;color:var(--c-muted);text-decoration:none;">manage →</a>
+      </div>
+      <div class="panel-body" style="padding:.75rem;">
+        <div class="cam-grid" id="cam-tiles">
+          <div style="grid-column:1/-1;" class="no-data"><i class="fas fa-spinner fa-spin"></i>Loading cameras…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Verifications -->
+    <div class="panel" style="flex:1;">
+      <div class="panel-hd">
+        <div class="panel-title"><i class="fas fa-shield-alt"></i> Verification Queue</div>
+        {% if is_admin or user.profile.role == 'supervisor' %}
+        <a href="{% url 'pending_verifications' %}" style="font-size:.65rem;color:var(--c-accent);text-decoration:none;">review all →</a>
+        {% endif %}
+      </div>
+      <div class="panel-body--pad0 panel-body--scroll" style="max-height:220px;">
+        {% for event in pending_events %}
+        <div class="vq-item">
+          {% if event.matched_target and event.matched_target.image %}
+          <img class="vq-thumb" src="{{ event.matched_target.image.url }}" alt="" style="display:block;">
+          {% else %}
+          <div class="vq-thumb"><i class="fas fa-user"></i></div>
+          {% endif %}
+          <div style="flex:1;min-width:0;">
+            <div class="vq-name">{{ event.matched_target_name|default:"Unknown" }}</div>
+            <div class="vq-cam">
+              <i class="fas fa-video" style="font-size:.6rem;"></i>
+              {{ event.camera.name|default:"—" }} · {{ event.timestamp|date:"H:i" }}
+            </div>
+          </div>
+          <span class="vq-status pending">PENDING</span>
+        </div>
+        {% for event in recent_events %}
+          {% if event.verification_status == 'pending' and not forloop.parentloop.last %}
+          {% endif %}
+        {% endfor %}
+        {% empty %}
+        <div class="no-data"><i class="fas fa-check-double"></i>Queue clear</div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div><!-- /col2 -->
+
+  <!-- ══ SIDEBAR: assignments, notifications, quick actions, system ══ -->
+  <div class="db-sidebar">
+
+    <!-- Quick Actions -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+      </div>
+      <div class="panel-body" style="padding:.75rem;">
+        <div class="quick-links">
+          <a href="{% url 'camera_dashboard' %}" class="ql-btn">
+            <i class="fas fa-video"></i> Cameras
+          </a>
+          <a href="{% url 'detection_history' %}" class="ql-btn">
+            <i class="fas fa-history"></i> History
+          </a>
+          <a href="{% url 'notifications_list' %}" class="ql-btn">
+            <i class="fas fa-bell"></i> Alerts
+            {% if unread_count %}<span style="background:var(--c-red);color:#fff;border-radius:10px;padding:1px 5px;font-size:.6rem;margin-left:auto;">{{ unread_count }}</span>{% endif %}
+          </a>
+          {% if is_admin or user.profile.role == 'supervisor' %}
+          <a href="{% url 'pending_verifications' %}" class="ql-btn">
+            <i class="fas fa-shield-alt"></i> Verify
+          </a>
+          <a href="{% url 'target_management' %}" class="ql-btn">
+            <i class="fas fa-crosshairs"></i> Targets
+          </a>
+          {% endif %}
+          {% if user.profile.role == 'operator' %}
+          <a href="{% url 'operator_assignments' %}" class="ql-btn">
+            <i class="fas fa-tasks"></i> My Tasks
+          </a>
+          {% endif %}
+          {% if is_admin %}
+          <a href="{% url 'account_manage' %}" class="ql-btn">
+            <i class="fas fa-users-cog"></i> Accounts
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Assignments -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><i class="fas fa-tasks"></i> Recent Assignments</div>
+        <a href="{% url 'operator_assignments' %}" style="font-size:.65rem;color:var(--c-muted);text-decoration:none;">all →</a>
+      </div>
+      <div class="panel-body--pad0">
+        {% for a in recent_assignments %}
+        <div class="assign-mini">
+          {% if a.target.image %}
+          <img src="{{ a.target.image.url }}" alt="">
+          {% else %}
+          <div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;color:var(--c-muted);font-size:.75rem;flex-shrink:0;"><i class="fas fa-user"></i></div>
+          {% endif %}
+          <div style="flex:1;min-width:0;">
+            <div class="am-name">{{ a.target.name }} {{ a.target.last_name }}</div>
+            <div class="am-to">→ {{ a.assigned_to.username|default:"?" }}</div>
+          </div>
+          <span class="status-pip pip-{{ a.status }}">{{ a.get_status_display }}</span>
+        </div>
+        {% empty %}
+        <div class="no-data" style="padding:1rem;"><i class="fas fa-inbox"></i>No assignments</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><i class="fas fa-bell"></i> Notifications</div>
+        <a href="{% url 'notifications_list' %}" style="font-size:.65rem;color:var(--c-muted);text-decoration:none;">all →</a>
+      </div>
+      <div class="panel-body--pad0" id="notif-mini-feed">
+        {% for n in recent_notifications %}
+        <div class="notif-mini" onclick="window.location='{% url 'notifications_list' %}'">
+          <span class="notif-pip" style="background:
+            {% if n.notification_type == 'detection' %}#e94560
+            {% elif n.notification_type == 'approved' %}#2ecc71
+            {% elif n.notification_type == 'assignment' %}#4ecca3
+            {% elif n.notification_type == 'pass_back' %}#f5c842
+            {% else %}#a78bfa{% endif %};"></span>
+          <div style="flex:1;min-width:0;">
+            <div class="nm-title">{{ n.title }}</div>
+            <div class="nm-msg">{{ n.message }}</div>
+            <div class="nm-ts">{{ n.created_at|date:"d M · H:i" }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="no-data" style="padding:1rem;"><i class="fas fa-bell-slash"></i>No new alerts</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- System Health -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><i class="fas fa-heartbeat"></i> System Health</div>
+      </div>
+      <div class="panel-body">
+        <div class="health-row">
+          <div class="health-lbl">WebSocket</div>
+          <div class="health-bar"><div class="health-fill" id="health-ws" style="width:100%;background:#2ecc71;"></div></div>
+          <div class="health-val" id="health-ws-lbl">OK</div>
+        </div>
+        <div class="health-row">
+          <div class="health-lbl">DB</div>
+          <div class="health-bar"><div class="health-fill" style="width:100%;background:#2ecc71;"></div></div>
+          <div class="health-val">OK</div>
+        </div>
+        <div class="health-row">
+          <div class="health-lbl">Engine</div>
+          <div class="health-bar"><div class="health-fill" id="health-engine" style="width:0%;background:#f5c842;transition:width 1s;"></div></div>
+          <div class="health-val" id="health-engine-lbl">—</div>
+        </div>
+        <div class="health-row">
+          <div class="health-lbl">Cameras</div>
+          <div class="health-bar"><div class="health-fill" id="health-cams" style="width:0%;background:#4ecca3;transition:width 1s;"></div></div>
+          <div class="health-val" id="health-cams-lbl">—</div>
+        </div>
+
+        <!-- Uptime gauge -->
+        <div style="margin-top:1rem;border-top:1px solid var(--c-border);padding-top:.9rem;">
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" width="120" height="65" viewBox="0 0 120 65">
+              <!-- half-circle: r=50, cx=60, cy=60 → top arc length = π*50 ≈ 157 -->
+              <path class="gauge-arc-bg"   d="M10,60 A50,50 0 0,1 110,60"/>
+              <path class="gauge-arc-fill" id="gauge-arc" d="M10,60 A50,50 0 0,1 110,60"
+                    stroke-dasharray="157" stroke-dashoffset="157"
+                    style="stroke:var(--c-accent);"/>
+            </svg>
+            <div class="gauge-val" id="gauge-val">98%</div>
+            <div class="gauge-lbl">System Uptime</div>
+          </div>
+        </div>
+
+        <div style="margin-top:.9rem;border-top:1px solid var(--c-border);padding-top:.7rem;
+                    display:flex;justify-content:space-between;font-size:.68rem;color:var(--c-muted);font-family:var(--dash-font-mono);">
+          <span>SSL <span style="color:#2ecc71;">●</span></span>
+          <span>0.4ms latency</span>
+          <span id="sb-clock2">--:--:--</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+</div><!-- /db-grid -->
+</div><!-- /db-wrap -->
+
+<!-- Toast container -->
+<div id="db-toasts"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   BUTTERFLY DASHBOARD CONTROLLER
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Clock ─────────────────────────────────────────────────── */
+function tick() {
+  const now = new Date();
+  const ts  = now.toLocaleString('en-GB', { weekday:'short', year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const el  = document.getElementById('db-clock');
+  const el2 = document.getElementById('sb-clock2');
+  if (el)  el.textContent  = ts;
+  if (el2) el2.textContent = now.toTimeString().slice(0, 8);
+}
+tick(); setInterval(tick, 1000);
+
+/* ── Gauges & bar charts on load ──────────────────────────── */
+(function initCharts() {
+  // Uptime gauge: 98% → offset = 157*(1-0.98) = ~3
+  setTimeout(() => {
+    const arc = document.getElementById('gauge-arc');
+    if (arc) arc.style.strokeDashoffset = (157 * 0.02).toString();
+  }, 600);
+
+  // Detection breakdown bars
+  const counts = {
+    normal: {{ normal_count|default:0 }},
+    fall:   {{ fall_count|default:0 }},
+    wave:   {{ wave_count|default:0 }},
+    match:  {{ target_match_count|default:0 }},
   };
+  const total = Math.max(1, Object.values(counts).reduce((a,b) => a+b, 0));
+  setTimeout(() => {
+    for (const [k, v] of Object.entries(counts)) {
+      const el = document.getElementById(`bc-${k}`);
+      if (el) el.style.width = ((v / total) * 100).toFixed(1) + '%';
+    }
+  }, 700);
 
+  // Person counter ring (live via WS)
+  updateRing(0);
 })();
 
-/* ── Open viewer popup ──────────────────────────────────────────────────────── */
-function openCamViewer(event, cameraId) {
-  event.preventDefault();
-  const url  = `/cameras/${cameraId}/view/`;
-  const w    = Math.min(window.screen.availWidth  - 60, 1280);
-  const h    = Math.min(window.screen.availHeight - 60, 780);
-  const left = Math.round((window.screen.availWidth  - w) / 2);
-  const top  = Math.round((window.screen.availHeight - h) / 2);
-  const win  = window.open(
-    url, `cam_viewer_${cameraId}`,
-    `width=${w},height=${h},left=${left},top=${top},` +
-    `toolbar=no,menubar=no,location=no,status=no,scrollbars=no,resizable=yes`
-  );
-  if (win) win.focus();
+/* ── Ring counter ─────────────────────────────────────────── */
+function updateRing(n) {
+  const MAX = 20;
+  const el  = document.getElementById('counter-num');
+  const ring= document.getElementById('ring-fill');
+  if (el)   el.textContent  = n;
+  if (ring) {
+    const pct    = Math.min(n / MAX, 1);
+    const offset = 283 * (1 - pct);
+    ring.style.strokeDashoffset = offset;
+    ring.style.stroke = n === 0 ? 'rgba(78,204,163,.3)' : n > 10 ? '#e94560' : '#4ecca3';
+  }
 }
-</script>
 
+/* ── Today sparkline ──────────────────────────────────────── */
+(function buildSparkline() {
+  const data = [
+    {{ spark_data|default:"2,4,3,7,5,8,6,9,4,5,7,3,8,10,6,4,9,7,5,8" }}
+  ];
+  const wrap = document.getElementById('today-spark');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const max = Math.max(...data, 1);
+  data.forEach(v => {
+    const b = document.createElement('div');
+    b.className = 'mg-bar';
+    b.style.height = ((v / max) * 28 + 4) + 'px';
+    if (v === max) b.style.background = 'rgba(78,204,163,.55)';
+    wrap.appendChild(b);
+  });
+})();
+
+/* ── Toast helper ─────────────────────────────────────────── */
+function dbToast(icon, color, title, msg, dur = 7000) {
+  const c = document.getElementById('db-toasts');
+  const t = document.createElement('div');
+  t.className = 'db-toast';
+  t.innerHTML = `<i class="fas fa-${icon}" style="color:${color};"></i>
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:700;font-size:.8rem;">${title}</div>
+      <div style="font-size:.72rem;color:var(--c-muted);margin-top:2px;">${(msg||'').slice(0,80)}${(msg||'').length>80?'…':''}</div>
+    </div>
+    <i class="fas fa-times" style="font-size:.7rem;color:var(--c-muted);flex-shrink:0;" onclick="this.parentNode.remove()"></i>`;
+  t.onclick = e => { if(!e.target.classList.contains('fa-times')) t.remove(); };
+  c.prepend(t);
+  setTimeout(() => { if (t.parentNode) t.remove(); }, dur);
+}
+
+/* ── Feed item builder ────────────────────────────────────── */
+function addFeedItem(iconClass, iconBg, title, sub, ts) {
+  const feed  = document.getElementById('activity-feed');
+  const noData= feed.querySelector('.no-data');
+  if (noData) noData.remove();
+
+  const div = document.createElement('div');
+  div.className = 'feed-item';
+  div.style.padding = '.55rem .75rem';
+  div.innerHTML = `
+    <div class="feed-icon ${iconBg}"><i class="fas fa-${iconClass}"></i></div>
+    <div class="feed-body">
+      <div class="feed-title">${title}</div>
+      <div class="feed-sub">${sub}</div>
+    </div>
+    <div class="feed-ts">${ts}</div>`;
+  feed.prepend(div);
+
+  // Keep max 30 items
+  const items = feed.querySelectorAll('.feed-item');
+  if (items.length > 30) items[items.length - 1].remove();
+
+  // Update count badge
+  const badge = document.getElementById('feed-count');
+  if (badge) badge.textContent = `${items.length} events`;
+}
+
+/* ── Camera tile renderer ─────────────────────────────────── */
+function renderCamTiles(cameras) {
+  const wrap = document.getElementById('cam-tiles');
+  if (!wrap) return;
+
+  const online = cameras.filter(c => c.status === 'online' && c.is_active).length;
+
+  // KPI update
+  const kpiOnline = document.getElementById('kpi-cams-online');
+  const kpiTotal  = document.getElementById('kpi-cams-total');
+  if (kpiOnline) kpiOnline.innerHTML = `${online}<small>online</small>`;
+  if (kpiTotal)  kpiTotal.textContent = `of ${cameras.length} total`;
+
+  // Engine health
+  const he = document.getElementById('health-engine');
+  const hel= document.getElementById('health-engine-lbl');
+  const pct = cameras.length > 0 ? Math.round((online/cameras.length)*100) : 0;
+  if (he)  he.style.width = pct + '%';
+  if (hel) hel.textContent = pct + '%';
+
+  // Camera health bar
+  const hc = document.getElementById('health-cams');
+  const hcl= document.getElementById('health-cams-lbl');
+  if (hc)  hc.style.width = pct + '%';
+  if (hcl) hcl.textContent = `${online}/${cameras.length}`;
+
+  if (!cameras.length) {
+    wrap.innerHTML = '<div class="no-data" style="grid-column:1/-1;"><i class="fas fa-video-slash"></i>No cameras registered</div>';
+    return;
+  }
+
+  wrap.innerHTML = '';
+  cameras.forEach(cam => {
+    const isLive = cam.status === 'online' && cam.is_active;
+    const div = document.createElement(isLive ? 'a' : 'div');
+    if (isLive) { div.href = `/cameras/${cam.id}/view/`; div.target = '_blank'; }
+    div.className = 'cam-tile' + (isLive ? '' : ' offline');
+    div.id = `dct-${cam.id}`;
+    div.innerHTML = `
+      <span class="cam-dot ${cam.status}"></span>
+      <div class="cam-info">
+        <div class="cam-name">${cam.name}</div>
+        <div class="cam-loc"><i class="fas fa-map-marker-alt" style="font-size:.55rem;"></i> ${cam.location}</div>
+      </div>
+      ${isLive ? '<i class="fas fa-external-link-alt" style="font-size:.6rem;color:rgba(78,204,163,.4);"></i>' : ''}`;
+    wrap.appendChild(div);
+  });
+}
+
+/* ── Camera status update ─────────────────────────────────── */
+function updateCamTile(camId, status) {
+  const tile = document.getElementById(`dct-${camId}`);
+  if (!tile) return;
+  const dot = tile.querySelector('.cam-dot');
+  if (dot) { dot.className = `cam-dot ${status}`; }
+  tile.classList.toggle('offline', status !== 'online');
+}
+
+/* ── Poll camera status ───────────────────────────────────── */
+let _cameras = [];
+function pollCameras() {
+  fetch('/cameras/status/')
+    .then(r => r.json())
+    .then(d => { _cameras = d.cameras || []; renderCamTiles(_cameras); })
+    .catch(() => {});
+}
+pollCameras();
+setInterval(pollCameras, 8000);
+
+/* ── WebSocket ────────────────────────────────────────────── */
+(function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws    = new WebSocket(`${proto}://${location.host}/ws/pose/`);
+  let retries = 0;
+
+  ws.onopen = () => {
+    retries = 0;
+    document.getElementById('health-ws').style.width = '100%';
+    document.getElementById('health-ws').style.background = '#2ecc71';
+    document.getElementById('health-ws-lbl').textContent = 'OK';
+    ws.send(JSON.stringify({ type: 'PING' }));
+    setInterval(() => ws.readyState === 1 && ws.send(JSON.stringify({ type: 'PING' })), 25000);
+  };
+
+  ws.onmessage = ({ data }) => {
+    let msg;
+    try { msg = JSON.parse(data); } catch { return; }
+
+    if (msg.type === 'STAT_UPDATE') {
+      const n = msg.count || 0;
+      updateRing(n);
+      document.getElementById('kpi-persons').textContent = n;
+      const delta = document.getElementById('kpi-persons-delta');
+      if (delta) { delta.textContent = 'live'; delta.className = 'kpi__delta up'; }
+    }
+
+    if (msg.type === 'TARGET_MATCH') {
+      addFeedItem('user-check', 'feed-icon--match',
+        `<span style="color:#4ecca3;">MATCH</span>: ${msg.name}`,
+        `<span><i class="fas fa-video" style="font-size:.6rem;"></i> ${msg.camera}</span>`,
+        new Date().toTimeString().slice(0,8)
+      );
+      dbToast('user-check', '#4ecca3', `TARGET MATCH: ${msg.name}`, `Camera: ${msg.camera}`, 10000);
+    }
+
+    if (msg.type === 'ALARM') {
+      const isFall = msg.action === 'FALL DETECTED';
+      addFeedItem(
+        isFall ? 'exclamation-triangle' : 'hand-paper',
+        isFall ? 'feed-icon--fall' : 'feed-icon--wave',
+        `<span style="color:${isFall ? '#e94560' : '#f5c842'};">${msg.action}</span>`,
+        `<span><i class="fas fa-video" style="font-size:.6rem;"></i> ${msg.camera}</span>`,
+        new Date().toTimeString().slice(0,8)
+      );
+      dbToast(isFall ? 'exclamation-triangle' : 'hand-paper',
+        isFall ? '#e94560' : '#f5c842', msg.action, `Camera: ${msg.camera}`, 8000);
+    }
+
+    if (msg.type === 'CAMERA_STATUS') {
+      updateCamTile(msg.camera_id, msg.status);
+      pollCameras(); // refresh counts
+    }
+
+    if (msg.type === 'NOTIFICATION') {
+      // Inject into notif feed
+      const feed = document.getElementById('notif-mini-feed');
+      const nd   = feed.querySelector('.no-data');
+      if (nd) nd.remove();
+      const colorMap = { detection:'#e94560', approved:'#2ecc71', assignment:'#4ecca3', pass_back:'#f5c842' };
+      const col = colorMap[msg.notification_type] || '#a78bfa';
+      const item = document.createElement('div');
+      item.className = 'notif-mini';
+      item.onclick = () => window.location = '{% url "notifications_list" %}';
+      item.innerHTML = `
+        <span class="notif-pip" style="background:${col};"></span>
+        <div style="flex:1;min-width:0;">
+          <div class="nm-title">${msg.title}</div>
+          <div class="nm-msg">${(msg.message||'').slice(0,60)}</div>
+          <div class="nm-ts">${msg.created_at||new Date().toLocaleTimeString()}</div>
+        </div>`;
+      feed.prepend(item);
+      const items = feed.querySelectorAll('.notif-mini');
+      if (items.length > 8) items[items.length-1].remove();
+
+      // Bell badge
+      const badge = document.querySelector('[data-notif-badge]');
+      if (badge) {
+        const cur = parseInt(badge.getAttribute('data-count')||'0', 10);
+        badge.setAttribute('data-count', cur+1);
+        badge.textContent = cur+1;
+      }
+      dbToast('bell', col, msg.title, msg.message);
+    }
+  };
+
+  ws.onclose = () => {
+    const hw  = document.getElementById('health-ws');
+    const hwl = document.getElementById('health-ws-lbl');
+    if (hw)  { hw.style.width = '20%'; hw.style.background = '#e94560'; }
+    if (hwl) hwl.textContent = 'DOWN';
+    const badge = document.getElementById('sys-status-badge');
+    if (badge) { badge.textContent = 'OFFLINE'; badge.style.background = 'rgba(233,69,96,.12)'; badge.style.color = '#e94560'; }
+    const delay = Math.min(1000 * 2**retries++, 20000);
+    setTimeout(connectWS, delay);
+  };
+})();
+
+/* ── ACTIVITY LOG from STAT_UPDATE ───────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  // Animate bars in
+  setTimeout(() => {
+    document.querySelectorAll('.bc-fill[style]').forEach(el => {
+      // already set inline, just trigger reflow for transition
+      el.getBoundingClientRect();
+    });
+  }, 100);
+});
+</script>
 {% endblock %}

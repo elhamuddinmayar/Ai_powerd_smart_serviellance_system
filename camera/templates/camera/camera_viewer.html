@@ -42,19 +42,35 @@
       height: 52px;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
       flex-shrink: 0;
       z-index: 10;
+      overflow: hidden;
     }
-    .topbar__brand { font-family: var(--mono); font-size: .78rem; color: var(--accent); letter-spacing: 3px; flex-shrink: 0; }
-    .topbar__sep   { width: 1px; height: 22px; background: rgba(255,255,255,.1); }
-    .topbar__cam-name { font-size: .9rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-    .topbar__loc   { font-size: .72rem; color: var(--muted); white-space: nowrap; }
+    .topbar__brand {
+      font-family: var(--mono);
+      font-size: .78rem;
+      color: var(--accent);
+      letter-spacing: 3px;
+      flex-shrink: 0;
+    }
+    .topbar__sep   { width: 1px; height: 22px; background: rgba(255,255,255,.1); flex-shrink: 0; }
+    .topbar__cam-name {
+      font-size: .9rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+    }
+    .topbar__loc   { font-size: .72rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
 
     .status-pill {
       display: flex; align-items: center; gap: 6px; padding: 4px 10px;
       border-radius: 20px; font-size: .72rem; font-weight: 700; border: 1px solid;
-      white-space: nowrap;
+      white-space: nowrap; flex-shrink: 0;
     }
     .status-pill.online  { background: rgba(46,204,113,.1); border-color: rgba(46,204,113,.3); color: #2ecc71; }
     .status-pill.offline { background: rgba(231,76,60,.1);  border-color: rgba(231,76,60,.3);  color: #e74c3c; }
@@ -63,6 +79,14 @@
     .status-pill.online .status-dot  { animation: pulse-dot 1.4s infinite; }
     .status-pill.unknown .status-dot { animation: pulse-dot 2s infinite; }
     @keyframes pulse-dot { 0%,100%{ box-shadow: 0 0 0 0 rgba(78,204,163,.5); } 60%{ box-shadow: 0 0 0 5px rgba(78,204,163,0); } }
+
+    /* Button group (desktop) */
+    .topbar__btns {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
 
     .tb-btn {
       background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
@@ -73,6 +97,45 @@
     .tb-btn:hover         { border-color: var(--accent); color: var(--accent); }
     .tb-btn.danger:hover  { border-color: var(--danger); color: var(--danger); }
     .tb-btn.active        { border-color: var(--accent); color: var(--accent); background: rgba(78,204,163,.08); }
+
+    /* Mobile overflow menu */
+    .topbar__mobile-menu {
+      display: none;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .topbar__mobile-menu-btn {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .85rem;
+      display: flex;
+      align-items: center;
+    }
+    .topbar__mobile-menu-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .topbar__dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px;
+      min-width: 160px;
+      z-index: 100;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    }
+    .topbar__dropdown.open { display: flex; }
+    .topbar__dropdown .tb-btn {
+      width: 100%;
+      justify-content: flex-start;
+    }
 
     /* ── Main canvas ── */
     .viewer-body { flex: 1; display: flex; overflow: hidden; position: relative; }
@@ -91,7 +154,7 @@
     .offline-overlay {
       display: none; position: absolute; inset: 0;
       background: rgba(0,0,0,.85); align-items: center; justify-content: center;
-      flex-direction: column; gap: 1rem; text-align: center;
+      flex-direction: column; gap: 1rem; text-align: center; padding: 1rem;
     }
     .offline-overlay.visible { display: flex; }
     .offline-overlay i  { font-size: 3.5rem; color: var(--danger); opacity: .7; }
@@ -116,11 +179,22 @@
       font-size: .65rem; color: rgba(78,204,163,.7); line-height: 1.6; pointer-events: none; }
 
     /* Bottom status bar */
-    .statusbar { background: var(--panel); border-top: 1px solid rgba(255,255,255,.06);
-      height: 32px; display: flex; align-items: center; padding: 0 14px; gap: 20px;
-      font-size: .68rem; color: var(--muted); font-family: var(--mono); flex-shrink: 0; }
-    .statusbar span { display: flex; align-items: center; gap: 5px; }
-    .statusbar .sep { width: 1px; height: 14px; background: rgba(255,255,255,.07); }
+    .statusbar {
+      background: var(--panel);
+      border-top: 1px solid rgba(255,255,255,.06);
+      height: 32px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 12px;
+      font-size: .68rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .statusbar span { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .statusbar .sep { width: 1px; height: 14px; background: rgba(255,255,255,.07); flex-shrink: 0; }
 
     /* Right info panel */
     .info-panel { width: 0; background: var(--panel); border-left: 1px solid var(--border);
@@ -150,6 +224,65 @@
 
     /* FPS meter in HUD */
     #hud-fps { color: rgba(78,204,163,.5); }
+
+    /* ══ RESPONSIVE BREAKPOINTS ══════════════════════════════════════════ */
+
+    /* Tablet — hide brand & location text, condense status pill */
+    @media (max-width: 900px) {
+      .topbar__brand { display: none; }
+      .topbar__sep:first-of-type { display: none; }
+      .topbar__loc { display: none; }
+      .topbar__sep.sep-loc { display: none; }
+
+      .topbar__btns .tb-btn span.btn-label { display: none; } /* icon-only on tablet */
+      .tb-btn { padding: 6px 8px; }
+    }
+
+    /* Mobile — collapse most controls into overflow menu */
+    @media (max-width: 600px) {
+      .topbar { padding: 0 10px; gap: 8px; height: 48px; }
+
+      /* Hide desktop button group */
+      .topbar__btns { display: none; }
+
+      /* Show mobile overflow menu */
+      .topbar__mobile-menu { display: flex; align-items: center; }
+
+      .topbar__cam-name { font-size: .82rem; }
+
+      .status-pill { padding: 3px 7px; font-size: .66rem; }
+      .status-pill span:not(.status-dot) { display: none; } /* dot only on tiny screens */
+
+      /* Bottom statusbar: show only the most important items */
+      .statusbar .hide-mobile { display: none; }
+      .statusbar .sep.hide-mobile { display: none; }
+      .statusbar { padding: 0 10px; gap: 8px; }
+
+      /* HUD: smaller text */
+      .hud { font-size: .58rem; }
+      .hud #hud-fps { display: none; }
+
+      /* Info panel: full width overlay on mobile */
+      .info-panel.open {
+        position: absolute;
+        inset: 0;
+        width: 100% !important;
+        z-index: 50;
+      }
+
+      /* Corners: hide on very small */
+      .corner { display: none; }
+
+      /* Offline overlay padding */
+      .offline-overlay i { font-size: 2.5rem; }
+      .offline-overlay h2 { font-size: 1rem; }
+    }
+
+    /* Very small phones */
+    @media (max-width: 380px) {
+      .topbar__cam-name { font-size: .75rem; }
+      .statusbar { font-size: .6rem; gap: 6px; }
+    }
   </style>
 </head>
 <body>
@@ -162,10 +295,11 @@
     <i class="fas fa-video" style="color:var(--accent);margin-right:6px;font-size:.8rem;"></i>
     {{ cam.name }}
   </div>
-  <div class="topbar__loc">
+  <div class="topbar__loc sep-loc">
     <i class="fas fa-map-marker-alt" style="font-size:.7rem;margin-right:3px;"></i>
     {{ cam.location }}
   </div>
+  <div class="topbar__sep sep-loc"></div>
 
   <div id="status-pill" class="status-pill {{ cam.status }}">
     <span class="status-dot"></span>
@@ -174,15 +308,54 @@
 
   <div class="topbar__sep"></div>
 
-  <button class="tb-btn" id="btn-stretch"    onclick="toggleStretch()"    title="Toggle fit/fill"><i class="fas fa-expand-arrows-alt"></i></button>
-  <button class="tb-btn" id="btn-info"       onclick="toggleInfoPanel()"  title="Camera info"><i class="fas fa-info-circle"></i></button>
-  <button class="tb-btn" id="btn-snap"       onclick="takeSnapshot()"     title="Screenshot (S)"><i class="fas fa-camera"></i></button>
-  <button class="tb-btn" id="btn-fullscreen" onclick="toggleFullscreen()" title="Fullscreen (F)"><i class="fas fa-expand"></i></button>
+  <!-- Desktop button group -->
+  <div class="topbar__btns">
+    <button class="tb-btn" id="btn-stretch"    onclick="toggleStretch()"    title="Toggle fit/fill">
+      <i class="fas fa-expand-arrows-alt"></i>
+      <span class="btn-label">Fit</span>
+    </button>
+    <button class="tb-btn" id="btn-info"       onclick="toggleInfoPanel()"  title="Camera info">
+      <i class="fas fa-info-circle"></i>
+      <span class="btn-label">Info</span>
+    </button>
+    <button class="tb-btn" id="btn-snap"       onclick="takeSnapshot()"     title="Screenshot (S)">
+      <i class="fas fa-camera"></i>
+      <span class="btn-label">Snap</span>
+    </button>
+    <button class="tb-btn" id="btn-fullscreen" onclick="toggleFullscreen()" title="Fullscreen (F)">
+      <i class="fas fa-expand"></i>
+      <span class="btn-label">Full</span>
+    </button>
+    <div class="topbar__sep"></div>
+    <button class="tb-btn danger" onclick="exitViewer()" title="Close viewer">
+      <i class="fas fa-times"></i>
+      <span class="btn-label">Exit</span>
+    </button>
+  </div>
 
-  <div class="topbar__sep"></div>
-  <button class="tb-btn danger" onclick="exitViewer()" title="Close viewer">
-    <i class="fas fa-times"></i> Exit
-  </button>
+  <!-- Mobile overflow menu -->
+  <div class="topbar__mobile-menu">
+    <button class="topbar__mobile-menu-btn" onclick="toggleMobileMenu()" id="mobileMenuBtn">
+      <i class="fas fa-ellipsis-v"></i>
+    </button>
+    <div class="topbar__dropdown" id="mobileDropdown">
+      <button class="tb-btn" onclick="toggleStretch(); toggleMobileMenu()">
+        <i class="fas fa-expand-arrows-alt"></i> Toggle Fit/Fill
+      </button>
+      <button class="tb-btn" onclick="toggleInfoPanel(); toggleMobileMenu()">
+        <i class="fas fa-info-circle"></i> Camera Info
+      </button>
+      <button class="tb-btn" onclick="takeSnapshot(); toggleMobileMenu()">
+        <i class="fas fa-camera"></i> Screenshot
+      </button>
+      <button class="tb-btn" onclick="toggleFullscreen(); toggleMobileMenu()">
+        <i class="fas fa-expand"></i> Fullscreen
+      </button>
+      <button class="tb-btn danger" onclick="exitViewer()">
+        <i class="fas fa-times"></i> Exit
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- ── Main body ── -->
@@ -199,14 +372,8 @@
       <div id="hud-fps">-- fps</div>
     </div>
 
-    <!--
-      IMPORTANT: src is intentionally blank — the JS CameraPoller below
-      loads every frame via fetch() and sets a blob: URL.
-      This is the ASGI-safe replacement for MJPEG src= streaming.
-    -->
     <img id="live-feed" alt="Live camera feed" style="display:none;">
 
-    <!-- Offline / connecting overlay -->
     <div class="offline-overlay visible" id="offline-overlay">
       <i class="fas fa-circle-notch fa-spin" id="overlay-icon"></i>
       <h2 id="overlay-title">Connecting…</h2>
@@ -223,7 +390,11 @@
   <div class="info-panel" id="info-panel">
     <div class="info-panel-inner">
       <div>
-        <div class="info-section-title">Camera</div>
+        <div class="info-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          Camera
+          <!-- Close button for mobile overlay -->
+          <button onclick="toggleInfoPanel()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;" title="Close">✕</button>
+        </div>
         <div class="info-row"><label>Name</label><span>{{ cam.name }}</span></div>
         <div class="info-row"><label>Location</label><span>{{ cam.location }}</span></div>
         <div class="info-row"><label>Source</label><span>{{ cam.index_or_url }}</span></div>
@@ -269,39 +440,19 @@
 <!-- ── Status bar ── -->
 <div class="statusbar">
   <span><i class="fas fa-circle" style="color:var(--accent);font-size:.5rem;"></i> LIVE</span>
-  <span class="sep"></span>
-  <span id="sb-cam">CAM {{ cam.id }}</span>
-  <span class="sep"></span>
+  <span class="sep hide-mobile"></span>
+  <span class="hide-mobile" id="sb-cam">CAM {{ cam.id }}</span>
+  <span class="sep hide-mobile"></span>
   <span id="sb-res">--</span>
   <span class="sep"></span>
   <span id="sb-clock">--:--:--</span>
-  <span class="sep"></span>
-  <span id="sb-snaps">0 snapshots</span>
+  <span class="sep hide-mobile"></span>
+  <span class="hide-mobile" id="sb-snaps">0 snapshots</span>
 </div>
 
 <div class="flash" id="flash"></div>
 
 <script>
-/* ════════════════════════════════════════════════════════════════
-   CameraPoller
-   ─────────────────────────────────────────────────────────────
-   Replaces MJPEG streaming with a simple fetch loop.
-
-   WHY THIS EXISTS:
-     Daphne (the ASGI server) buffers StreamingHttpResponse chunks
-     internally, so a persistent MJPEG connection never delivers
-     any frames to the browser — the <img> just spins forever.
-
-   HOW IT WORKS:
-     1. fetch /cameras/<id>/frame/?_=<timestamp>  (one JPEG per call)
-     2. Convert response blob → objectURL
-     3. Set img.src = objectURL, revoke the old blob URL
-     4. Repeat after (1000 / FPS) ms
-
-   Each fetch is a normal short HTTP request.
-   Daphne handles these perfectly — no buffering issues possible.
-   ════════════════════════════════════════════════════════════════ */
-
 class CameraPoller {
   constructor(cameraId, imgEl, fps = 25) {
     this.cameraId   = cameraId;
@@ -316,20 +467,9 @@ class CameraPoller {
     this._prevBlob  = null;
   }
 
-  start() {
-    this._active = true;
-    this._schedule(0);
-  }
-
-  stop() {
-    this._active = false;
-    clearTimeout(this._timer);
-  }
-
-  reset() {
-    this._errCount = 0;
-    this._schedule(0);
-  }
+  start() { this._active = true; this._schedule(0); }
+  stop()  { this._active = false; clearTimeout(this._timer); }
+  reset() { this._errCount = 0; this._schedule(0); }
 
   _schedule(delayMs) {
     clearTimeout(this._timer);
@@ -338,109 +478,76 @@ class CameraPoller {
 
   async _fetch() {
     if (!this._active) return;
-
     try {
       const resp = await fetch(`${this.frameUrl}?_=${Date.now()}`);
-
-      if (!resp.ok) {
-        this._handleError(`HTTP ${resp.status}`);
-        return;
-      }
-
+      if (!resp.ok) { this._handleError(`HTTP ${resp.status}`); return; }
       const cameraStatus = resp.headers.get('X-Camera-Status') || 'live';
       const blob = await resp.blob();
-
-      // Swap blob URL — revoke old one immediately to free memory
       const newUrl = URL.createObjectURL(blob);
       if (this._prevBlob) URL.revokeObjectURL(this._prevBlob);
       this._prevBlob = newUrl;
-
       this.img.src = newUrl;
-
-      if (this.img.style.display === 'none') {
-        this.img.style.display = 'block';
-      }
-
-      if (cameraStatus === 'connecting') {
-        this._handleConnecting();
-      } else {
-        this._handleLive();
-      }
-
+      if (this.img.style.display === 'none') this.img.style.display = 'block';
+      if (cameraStatus === 'connecting') this._handleConnecting();
+      else this._handleLive();
       this._errCount = 0;
       this._countFps();
       this._schedule(Math.round(1000 / this.fps));
-
     } catch (err) {
       this._handleError(err.message);
     }
   }
 
   _handleLive() {
-    const overlay = document.getElementById('offline-overlay');
-    overlay.classList.remove('visible');
+    document.getElementById('offline-overlay').classList.remove('visible');
     updateStatus('online');
   }
 
   _handleConnecting() {
-    const overlay   = document.getElementById('offline-overlay');
-    const icon      = document.getElementById('overlay-icon');
-    const title     = document.getElementById('overlay-title');
-    const msg       = document.getElementById('overlay-msg');
-    icon.className  = 'fas fa-circle-notch fa-spin';
-    icon.style.color = 'var(--warn)';
-    title.textContent = 'Connecting…';
-    msg.textContent   = 'Waiting for the first frame from the camera engine.';
+    const overlay = document.getElementById('offline-overlay');
+    document.getElementById('overlay-icon').className = 'fas fa-circle-notch fa-spin';
+    document.getElementById('overlay-icon').style.color = 'var(--warn)';
+    document.getElementById('overlay-title').textContent = 'Connecting…';
+    document.getElementById('overlay-msg').textContent = 'Waiting for the first frame from the camera engine.';
     overlay.classList.add('visible');
     updateStatus('unknown');
   }
 
   _handleError(reason) {
     this._errCount++;
-    console.warn(`[CameraPoller] Frame error (${this._errCount}): ${reason}`);
-
-    const overlay   = document.getElementById('offline-overlay');
-    const icon      = document.getElementById('overlay-icon');
-    const title     = document.getElementById('overlay-title');
-    const msg       = document.getElementById('overlay-msg');
-
     if (this._errCount >= 3) {
-      icon.className  = 'fas fa-video-slash';
-      icon.style.color = 'var(--danger)';
-      title.textContent = 'Feed Unavailable';
-      msg.textContent   = 'Camera may be offline or still starting up.';
+      const overlay = document.getElementById('offline-overlay');
+      document.getElementById('overlay-icon').className = 'fas fa-video-slash';
+      document.getElementById('overlay-icon').style.color = 'var(--danger)';
+      document.getElementById('overlay-title').textContent = 'Feed Unavailable';
+      document.getElementById('overlay-msg').textContent = 'Camera may be offline or still starting up.';
       overlay.classList.add('visible');
       updateStatus('offline');
     }
-
-    // Back-off: 1 s per error, max 8 s
     const delay = Math.min(1000 * this._errCount, 8000);
     if (this._active) this._schedule(delay);
   }
 
   _countFps() {
     this._frameCount++;
-    const now   = Date.now();
+    const now = Date.now();
     const delta = (now - this._fpsTs) / 1000;
     if (delta >= 1) {
       const fps = Math.round(this._frameCount / delta);
       document.getElementById('hud-fps').textContent = fps + ' fps';
-      // Infer resolution from natural image size
       if (this.img.naturalWidth) {
         document.getElementById('sb-res').textContent =
           this.img.naturalWidth + '×' + this.img.naturalHeight;
       }
       this._frameCount = 0;
-      this._fpsTs      = now;
+      this._fpsTs = now;
     }
   }
 }
 
-/* ── Boot poller ── */
 const poller = new CameraPoller({{ cam.id }}, document.getElementById('live-feed'), 25);
 poller.start();
 
-/* ── Clock ── */
 function tick() {
   const t = new Date().toTimeString().slice(0, 8);
   document.getElementById('hud-time').textContent = t;
@@ -449,32 +556,25 @@ function tick() {
 tick();
 setInterval(tick, 1000);
 
-/* ── Status badge helper ── */
 function updateStatus(status) {
   const pill = document.getElementById('status-pill');
   const txt  = document.getElementById('status-text');
   const info = document.getElementById('info-status');
   pill.className = 'status-pill ' + status;
-  txt.textContent  = status.toUpperCase();
+  txt.textContent = status.toUpperCase();
   if (info) {
     info.textContent = status.toUpperCase();
-    info.style.color = status === 'online' ? '#2ecc71'
-                     : status === 'offline' ? '#e74c3c' : '#f39c12';
+    info.style.color = status === 'online' ? '#2ecc71' : status === 'offline' ? '#e74c3c' : '#f39c12';
   }
 }
 
-/* ── WebSocket for WS-pushed status updates ── */
 let wsRetries = 0;
 (function connectWS() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws    = new WebSocket(`${proto}://${location.host}/ws/camera/`);
   ws.onmessage = (e) => {
     const d = JSON.parse(e.data);
-    if (d.type === 'CAMERA_STATUS' && d.camera_id == {{ cam.id }}) {
-      updateStatus(d.status);
-      // If WS says offline but poller hasn't caught up yet, that's fine —
-      // the poller will show the overlay within its next error cycle.
-    }
+    if (d.type === 'CAMERA_STATUS' && d.camera_id == {{ cam.id }}) updateStatus(d.status);
   };
   ws.onclose = () => {
     const delay = Math.min(1000 * 2 ** wsRetries++, 20000);
@@ -482,7 +582,6 @@ let wsRetries = 0;
   };
 })();
 
-/* ── Controls ── */
 let infoPanelOpen = false;
 let stretched     = false;
 let snapCount     = 0;
@@ -490,52 +589,59 @@ let snapCount     = 0;
 function toggleStretch() {
   stretched = !stretched;
   document.getElementById('feed-wrap').classList.toggle('stretch', stretched);
-  document.getElementById('btn-stretch').classList.toggle('active', stretched);
+  document.getElementById('btn-stretch') && document.getElementById('btn-stretch').classList.toggle('active', stretched);
 }
+
 function toggleInfoPanel() {
   infoPanelOpen = !infoPanelOpen;
   document.getElementById('info-panel').classList.toggle('open', infoPanelOpen);
-  document.getElementById('btn-info').classList.toggle('active', infoPanelOpen);
+  document.getElementById('btn-info') && document.getElementById('btn-info').classList.toggle('active', infoPanelOpen);
 }
+
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen();
-    document.getElementById('btn-fullscreen').innerHTML = '<i class="fas fa-compress"></i>';
-    document.getElementById('fs-hint').style.display = 'none';
+    document.getElementById('btn-fullscreen') && (document.getElementById('btn-fullscreen').innerHTML = '<i class="fas fa-compress"></i><span class="btn-label">Exit</span>');
+    document.getElementById('fs-hint') && (document.getElementById('fs-hint').style.display = 'none');
   } else {
     document.exitFullscreen();
-    document.getElementById('btn-fullscreen').innerHTML = '<i class="fas fa-expand"></i>';
-    document.getElementById('fs-hint').style.display = '';
+    document.getElementById('btn-fullscreen') && (document.getElementById('btn-fullscreen').innerHTML = '<i class="fas fa-expand"></i><span class="btn-label">Full</span>');
+    document.getElementById('fs-hint') && (document.getElementById('fs-hint').style.display = '');
   }
 }
+
 function exitViewer() {
   poller.stop();
   if (window.opener) window.close();
   else window.location.href = '{% url "camera_dashboard" %}';
 }
 
-/* ── Screenshot ── */
+function toggleMobileMenu() {
+  document.getElementById('mobileDropdown').classList.toggle('open');
+}
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('mobileDropdown');
+  const btn  = document.getElementById('mobileMenuBtn');
+  if (menu && menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+
 function takeSnapshot() {
   const img = document.getElementById('live-feed');
   if (!img.src || img.style.display === 'none') { alert('No frame available yet.'); return; }
-
   const flash = document.getElementById('flash');
   flash.classList.add('go');
   setTimeout(() => flash.classList.remove('go'), 150);
-
-  // Draw current frame to canvas
   const canvas  = document.createElement('canvas');
   canvas.width  = img.naturalWidth  || img.width;
   canvas.height = img.naturalHeight || img.height;
   canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
   const dataURL = canvas.toDataURL('image/jpeg', .92);
-
-  // Trigger download
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const a  = document.createElement('a');
   a.href = dataURL; a.download = `cam{{ cam.id }}_${ts}.jpg`; a.click();
-
-  // Add to sidebar strip
   snapCount++;
   document.getElementById('sb-snaps').textContent = snapCount + ' snapshot' + (snapCount > 1 ? 's' : '');
   const strip = document.getElementById('snap-strip');
@@ -548,14 +654,13 @@ function takeSnapshot() {
   if (!infoPanelOpen) toggleInfoPanel();
 }
 
-/* ── Keyboard shortcuts ── */
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT') return;
   switch (e.key) {
     case 'f': case 'F': toggleFullscreen(); break;
     case 's': case 'S': takeSnapshot();     break;
     case 'i': case 'I': toggleInfoPanel();  break;
-    case 'Escape':       exitViewer();       break;
+    case 'Escape': exitViewer(); break;
   }
 });
 

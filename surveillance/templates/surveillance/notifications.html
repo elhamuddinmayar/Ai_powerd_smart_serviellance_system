@@ -3,94 +3,663 @@
 
 {% block title %}{% trans "Notifications" %}{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   NOTIFICATIONS PAGE  —  Butterfly Surveillance System
+   Aesthetic: Tactical terminal / signal intelligence feed
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Page wrapper ── */
+.notif-page {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* ── Hero header ── */
+.notif-hero {
+  position: relative;
+  padding: 2rem 0 1.6rem;
+  margin-bottom: .2rem;
+  overflow: hidden;
+}
+.notif-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -60px; right: -60px; bottom: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 10% 50%, rgba(78,204,163,.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 90% 30%, rgba(233,69,96,.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.notif-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.notif-title-block {}
+.notif-eyebrow {
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .22em;
+  color: var(--accent);
+  font-family: 'Share Tech Mono', monospace;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .35rem;
+}
+.notif-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 22px; height: 1px;
+  background: var(--accent);
+}
+.notif-main-title {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -.01em;
+  line-height: 1.1;
+  font-family: 'Exo 2', sans-serif;
+}
+.notif-main-title span { color: var(--accent); }
+
+.notif-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  padding-top: .25rem;
+}
+
+/* ── Stats strip ── */
+.notif-stats {
+  display: flex;
+  gap: .6rem;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+}
+.n-stat {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .35rem .75rem;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 20px;
+  font-size: .73rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all .18s;
+  user-select: none;
+}
+.n-stat:hover  { border-color: rgba(255,255,255,.15); color: var(--text); }
+.n-stat.active { border-color: var(--n-color, var(--accent)); color: var(--n-color, var(--accent)); background: rgba(78,204,163,.07); }
+.n-stat__dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--n-color, var(--accent));
+  flex-shrink: 0;
+}
+.n-stat__count {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .75rem;
+  color: var(--n-color, var(--accent));
+  font-weight: 700;
+}
+
+/* ── Filter / search bar ── */
+.notif-bar {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .65rem .9rem;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.notif-bar-search {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+.notif-bar-search i {
+  position: absolute;
+  left: .7rem; top: 50%;
+  transform: translateY(-50%);
+  color: #3a4a5a;
+  font-size: .72rem;
+  pointer-events: none;
+}
+.n-search {
+  width: 100%;
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 7px;
+  color: #ddd;
+  padding: .45rem .75rem .45rem 2rem;
+  font-size: .8rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .18s;
+  box-sizing: border-box;
+}
+.n-search:focus { border-color: var(--accent); }
+.n-search::placeholder { color: #2e3d4f; }
+
+.notif-bar-right {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-shrink: 0;
+}
+.n-count-lbl {
+  font-size: .72rem;
+  color: var(--text-muted);
+  font-family: 'Share Tech Mono', monospace;
+  white-space: nowrap;
+}
+.n-count-lbl strong { color: var(--accent); }
+
+/* ── Feed list ── */
+.notif-feed {
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+}
+
+/* ── Individual notification card ── */
+.n-card {
+  position: relative;
+  background: rgba(18,25,41,.85);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s, transform .18s;
+  animation: nCardIn .32s ease both;
+}
+.n-card:hover {
+  border-color: rgba(255,255,255,.14);
+  box-shadow: 0 6px 28px rgba(0,0,0,.45);
+  transform: translateX(3px);
+}
+
+@keyframes nCardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Stagger delays */
+.n-card:nth-child(1)  { animation-delay: .04s; }
+.n-card:nth-child(2)  { animation-delay: .08s; }
+.n-card:nth-child(3)  { animation-delay: .12s; }
+.n-card:nth-child(4)  { animation-delay: .16s; }
+.n-card:nth-child(5)  { animation-delay: .20s; }
+.n-card:nth-child(6)  { animation-delay: .24s; }
+.n-card:nth-child(7)  { animation-delay: .28s; }
+.n-card:nth-child(8)  { animation-delay: .32s; }
+.n-card:nth-child(9)  { animation-delay: .36s; }
+.n-card:nth-child(10) { animation-delay: .40s; }
+
+/* Left accent bar */
+.n-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--nc, rgba(78,204,163,.4));
+  border-radius: 3px 0 0 3px;
+  transition: background .2s;
+}
+.n-card:hover::before { background: var(--nc, var(--accent)); }
+
+/* Type-specific accent colours */
+.n-card[data-type="assignment"]   { --nc: #4ecca3; }
+.n-card[data-type="pass_back"]    { --nc: #f39c12; }
+.n-card[data-type="detection"]    { --nc: #e94560; }
+.n-card[data-type="approved"]     { --nc: #2ecc71; }
+.n-card[data-type="rejected"]     { --nc: #e74c3c; }
+.n-card[data-type="verification"] { --nc: #3498db; }
+.n-card[data-type="system"]       { --nc: #9b59b6; }
+
+.n-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: .9rem;
+  padding: .9rem 1rem .9rem 1.3rem;
+}
+
+/* Icon bubble */
+.n-icon-bubble {
+  flex-shrink: 0;
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .95rem;
+  background: rgba(var(--nc-rgb, 78,204,163), .1);
+  border: 1px solid rgba(var(--nc-rgb, 78,204,163), .2);
+  margin-top: .05rem;
+}
+/* inline RGB versions for rgba() */
+.n-card[data-type="assignment"]   .n-icon-bubble { background: rgba(78,204,163,.1);  border-color: rgba(78,204,163,.2);  color:#4ecca3; }
+.n-card[data-type="pass_back"]    .n-icon-bubble { background: rgba(243,156,18,.1);  border-color: rgba(243,156,18,.2);  color:#f39c12; }
+.n-card[data-type="detection"]    .n-icon-bubble { background: rgba(233,69,96,.1);   border-color: rgba(233,69,96,.2);   color:#e94560; }
+.n-card[data-type="approved"]     .n-icon-bubble { background: rgba(46,204,113,.1);  border-color: rgba(46,204,113,.2);  color:#2ecc71; }
+.n-card[data-type="rejected"]     .n-icon-bubble { background: rgba(231,76,60,.1);   border-color: rgba(231,76,60,.2);   color:#e74c3c; }
+.n-card[data-type="verification"] .n-icon-bubble { background: rgba(52,152,219,.1);  border-color: rgba(52,152,219,.2);  color:#3498db; }
+.n-card[data-type="system"]       .n-icon-bubble { background: rgba(155,89,182,.1);  border-color: rgba(155,89,182,.2);  color:#9b59b6; }
+
+/* Body */
+.n-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+}
+
+.n-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.n-title {
+  font-size: .92rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.n-meta {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.n-type-badge {
+  font-size: .6rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  padding: .15rem .5rem;
+  border-radius: 4px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.n-time {
+  font-size: .69rem;
+  color: var(--text-muted);
+  font-family: 'Share Tech Mono', monospace;
+  white-space: nowrap;
+}
+
+.n-msg {
+  font-size: .8rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+/* Action buttons row */
+.n-actions {
+  display: flex;
+  gap: .4rem;
+  margin-top: .35rem;
+  flex-wrap: wrap;
+}
+
+/* Divider line between cards in same day */
+.n-day-divider {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .5rem 0 .2rem;
+  color: var(--text-muted);
+  font-size: .67rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-family: 'Share Tech Mono', monospace;
+}
+.n-day-divider::before,
+.n-day-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,.06);
+}
+
+/* ── No-results ── */
+.n-no-results {
+  display: none;
+  text-align: center;
+  padding: 3.5rem 1rem;
+  color: var(--text-muted);
+}
+.n-no-results i { font-size: 2.5rem; display: block; margin-bottom: .7rem; opacity: .2; }
+
+/* ── Empty state ── */
+.n-empty {
+  text-align: center;
+  padding: 5rem 1rem;
+}
+.n-empty-ring {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  border: 2px solid rgba(78,204,163,.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.2rem;
+  position: relative;
+}
+.n-empty-ring::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid rgba(78,204,163,.07);
+}
+.n-empty-ring i { font-size: 2.2rem; color: rgba(78,204,163,.3); }
+.n-empty h2 { font-size: 1.1rem; color: var(--text-dim); margin-bottom: .4rem; }
+.n-empty p  { font-size: .82rem; color: var(--text-muted); }
+
+/* ── Mark all read button ── */
+.btn-mark-all {
+  background: rgba(78,204,163,.08);
+  border: 1px solid rgba(78,204,163,.22);
+  color: var(--accent);
+  padding: .42rem .9rem;
+  border-radius: 7px;
+  font-size: .76rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .18s;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  white-space: nowrap;
+}
+.btn-mark-all:hover { background: rgba(78,204,163,.16); box-shadow: 0 0 14px rgba(78,204,163,.15); }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .notif-hero { padding: 1.4rem 0 1rem; }
+  .notif-main-title { font-size: 1.55rem; }
+  .notif-hero-actions { width: 100%; justify-content: flex-end; }
+  .n-card-inner { gap: .65rem; padding: .75rem .85rem .75rem 1.1rem; }
+  .n-icon-bubble { width: 32px; height: 32px; font-size: .8rem; border-radius: 8px; }
+  .n-title { font-size: .85rem; }
+  .n-msg   { font-size: .76rem; }
+  .notif-stats { gap: .4rem; }
+  .n-stat { padding: .28rem .55rem; font-size: .68rem; }
+  .notif-bar { padding: .5rem .7rem; gap: .5rem; }
+}
+
+@media (max-width: 400px) {
+  .n-meta { justify-content: flex-start; }
+  .n-top-row { flex-direction: column; gap: .25rem; }
+  .n-type-badge { display: none; }
+  .n-actions .b-btn { flex: 1 1 auto; justify-content: center; min-width: 100px; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="b-page-header">
-  <div>
-    <h1 class="b-page-title"><i class="fas fa-bell"></i> {% trans "Notifications" %}</h1>
-    <p class="b-page-sub">{% trans "All your system notifications — most recent first." %}</p>
-  </div>
-</div>
+<div class="notif-page">
 
-{% if notifications %}
-<div style="max-width:800px;display:flex;flex-direction:column;gap:.8rem;">
-  {% for notif in notifications %}
-  {% with type=notif.notification_type %}
-  <div class="b-card"
-       style="border-left:3px solid
-         {% if type == 'assignment' %}var(--accent)
-         {% elif type == 'pass_back' %}var(--warn)
-         {% elif type == 'detection' %}var(--danger)
-         {% elif type == 'approved' %}#2ecc71
-         {% elif type == 'rejected' %}var(--danger)
-         {% elif type == 'verification' %}var(--info)
-         {% else %}var(--border){% endif %};">
-
-    <div class="flex items-center justify-between gap-2 flex-wrap">
-      <div class="flex items-center gap-2">
-        <span style="font-size:1.1rem;">
-          {% if type == 'assignment' %}<i class="fas fa-tasks text-accent"></i>
-          {% elif type == 'pass_back' %}<i class="fas fa-undo text-warn"></i>
-          {% elif type == 'detection' %}<i class="fas fa-eye text-danger"></i>
-          {% elif type == 'approved' %}<i class="fas fa-check-double" style="color:#2ecc71"></i>
-          {% elif type == 'rejected' %}<i class="fas fa-ban text-danger"></i>
-          {% elif type == 'verification' %}<i class="fas fa-shield-alt" style="color:var(--info)"></i>
-          {% else %}<i class="fas fa-bell text-muted"></i>{% endif %}
-        </span>
-        <div>
-          <div style="font-weight:700;font-size:.9rem;color:
-            {% if type == 'assignment' %}var(--accent)
-            {% elif type == 'pass_back' %}var(--warn)
-            {% elif type == 'detection' or type == 'rejected' %}var(--danger)
-            {% elif type == 'approved' %}#2ecc71
-            {% elif type == 'verification' %}var(--info)
-            {% else %}var(--text){% endif %};">
-            {{ notif.title }}
-          </div>
-          <div style="font-size:.72rem;color:var(--text-muted);">
-            {{ notif.get_notification_type_display }}
-          </div>
-        </div>
+  <!-- ══ Hero header ══════════════════════════════════════════ -->
+  <div class="notif-hero">
+    <div class="notif-hero-top">
+      <div class="notif-title-block">
+        <div class="notif-eyebrow">{% trans "Signal Intelligence Feed" %}</div>
+        <h1 class="notif-main-title">{% trans "Notifi" %}<span>{% trans "cations" %}</span></h1>
       </div>
-      <span style="font-size:.72rem;color:var(--text-muted);white-space:nowrap;">
-        <i class="fas fa-clock"></i> {{ notif.created_at|date:"d M Y H:i" }}
-      </span>
+      <div class="notif-hero-actions">
+        {% if notifications %}
+        <button class="btn-mark-all" id="markAllBtn" onclick="markAllRead()">
+          <i class="fas fa-check-double"></i>
+          <span>{% trans "Mark all read" %}</span>
+        </button>
+        {% endif %}
+        <a href="{% url 'home' %}" class="b-btn b-btn--ghost b-btn--sm">
+          <i class="fas fa-arrow-left"></i>
+          <span class="hide-xs">{% trans "Hub" %}</span>
+        </a>
+      </div>
     </div>
 
-    <div style="font-size:.83rem;color:var(--text-dim);margin-top:.7rem;
-                white-space:pre-line;line-height:1.6;">
-      {{ notif.message }}
-    </div>
+    {% if notifications %}
+    <!-- Type filter pills / stats -->
+    <div class="notif-stats" id="filterPills">
+      <div class="n-stat active" data-filter="all"
+           style="--n-color:var(--accent);" onclick="setFilter('all', this)">
+        <span class="n-stat__dot"></span>
+        {% trans "All" %}
+        <span class="n-stat__count" id="cnt-all">{{ notifications|length }}</span>
+      </div>
 
-    {% if notif.related_assignment or notif.related_event %}
-    <div class="flex gap-2 mt-2">
-      {% if notif.related_assignment %}
-      <a href="{% url 'operator_assignments' %}" class="b-btn b-btn--ghost b-btn--sm">
-        <i class="fas fa-tasks"></i> {% trans "View Assignment" %}
-      </a>
-      {% endif %}
-      {% if notif.related_event and notif.related_event.verification_status == 'approved' %}
-      <a href="{% url 'export_detection_pdf' notif.related_event.pk %}"
-         class="b-btn b-btn--pdf b-btn--sm" target="_blank">
-        <i class="fas fa-file-pdf"></i> {% trans "Export PDF" %}
-      </a>
-      {% endif %}
-      {% if notif.related_event and is_admin %}
-      <a href="{% url 'pending_verifications' %}" class="b-btn b-btn--ghost b-btn--sm">
-        <i class="fas fa-shield-alt"></i> {% trans "Verify" %}
-      </a>
-      {% endif %}
+      {% with types=notifications|dictsort:"notification_type" %}
+      {% endwith %}
+
+      <!-- Build unique type pills via template logic -->
+      {% regroup notifications by notification_type as type_groups %}
+      {% for grp in type_groups %}
+      <div class="n-stat" data-filter="{{ grp.grouper }}"
+           onclick="setFilter('{{ grp.grouper }}', this)"
+           style="
+             --n-color:
+               {% if grp.grouper == 'assignment' %}#4ecca3
+               {% elif grp.grouper == 'pass_back' %}#f39c12
+               {% elif grp.grouper == 'detection' %}#e94560
+               {% elif grp.grouper == 'approved' %}#2ecc71
+               {% elif grp.grouper == 'rejected' %}#e74c3c
+               {% elif grp.grouper == 'verification' %}#3498db
+               {% else %}#9b59b6{% endif %};">
+        <span class="n-stat__dot"></span>
+        {% if grp.grouper == 'assignment' %}{% trans "Assignment" %}
+        {% elif grp.grouper == 'pass_back' %}{% trans "Passed Back" %}
+        {% elif grp.grouper == 'detection' %}{% trans "Detection" %}
+        {% elif grp.grouper == 'approved' %}{% trans "Approved" %}
+        {% elif grp.grouper == 'rejected' %}{% trans "Rejected" %}
+        {% elif grp.grouper == 'verification' %}{% trans "Verification" %}
+        {% else %}{% trans "System" %}{% endif %}
+        <span class="n-stat__count">{{ grp.list|length }}</span>
+      </div>
+      {% endfor %}
     </div>
     {% endif %}
   </div>
-  {% endwith %}
-  {% endfor %}
-</div>
 
-{% else %}
-<div class="b-empty">
-  <i class="fas fa-bell-slash"></i>
-  <h2>{% trans "No Notifications" %}</h2>
-  <p>{% trans "You have no notifications yet." %}</p>
-</div>
-{% endif %}
+  {% if notifications %}
+
+  <!-- ══ Search + count bar ══════════════════════════════════ -->
+  <div class="notif-bar">
+    <div class="notif-bar-search">
+      <i class="fas fa-search"></i>
+      <input type="text" class="n-search" id="nSearch"
+             placeholder="{% trans 'Search notifications…' %}"
+             oninput="applySearch()">
+    </div>
+    <div class="notif-bar-right">
+      <span class="n-count-lbl">
+        <strong id="visibleCount">{{ notifications|length }}</strong>
+        {% trans "shown" %}
+      </span>
+    </div>
+  </div>
+
+  <!-- ══ Feed ════════════════════════════════════════════════ -->
+  <div class="notif-feed" id="notifFeed">
+
+    {% for notif in notifications %}
+    <div class="n-card"
+         data-type="{{ notif.notification_type }}"
+         data-text="{{ notif.title|lower }} {{ notif.message|lower }}">
+
+      <div class="n-card-inner">
+
+        <!-- Icon bubble -->
+        <div class="n-icon-bubble">
+          {% if notif.notification_type == 'assignment' %}<i class="fas fa-tasks"></i>
+          {% elif notif.notification_type == 'pass_back' %}<i class="fas fa-undo"></i>
+          {% elif notif.notification_type == 'detection' %}<i class="fas fa-eye"></i>
+          {% elif notif.notification_type == 'approved' %}<i class="fas fa-check-double"></i>
+          {% elif notif.notification_type == 'rejected' %}<i class="fas fa-ban"></i>
+          {% elif notif.notification_type == 'verification' %}<i class="fas fa-shield-alt"></i>
+          {% else %}<i class="fas fa-bell"></i>{% endif %}
+        </div>
+
+        <!-- Body -->
+        <div class="n-body">
+          <div class="n-top-row">
+            <div class="n-title">{{ notif.title }}</div>
+            <div class="n-meta">
+              <!-- Type badge -->
+              <span class="n-type-badge"
+                    style="
+                      {% if notif.notification_type == 'assignment' %}background:rgba(78,204,163,.12);color:#4ecca3;
+                      {% elif notif.notification_type == 'pass_back' %}background:rgba(243,156,18,.12);color:#f39c12;
+                      {% elif notif.notification_type == 'detection' %}background:rgba(233,69,96,.12);color:#e94560;
+                      {% elif notif.notification_type == 'approved' %}background:rgba(46,204,113,.12);color:#2ecc71;
+                      {% elif notif.notification_type == 'rejected' %}background:rgba(231,76,60,.12);color:#e74c3c;
+                      {% elif notif.notification_type == 'verification' %}background:rgba(52,152,219,.12);color:#3498db;
+                      {% else %}background:rgba(155,89,182,.12);color:#9b59b6;{% endif %}">
+                {{ notif.get_notification_type_display }}
+              </span>
+              <!-- Timestamp -->
+              <span class="n-time"
+                    title="{{ notif.created_at|date:'Y-m-d H:i:s' }}">
+                <i class="fas fa-clock" style="font-size:.6rem;margin-right:2px;"></i>
+                {{ notif.created_at|date:"d M · H:i" }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Message -->
+          {% if notif.message %}
+          <div class="n-msg">{{ notif.message }}</div>
+          {% endif %}
+
+          <!-- Action buttons -->
+          {% if notif.related_assignment or notif.related_event %}
+          <div class="n-actions">
+            {% if notif.related_assignment %}
+            <a href="{% url 'operator_assignments' %}" class="b-btn b-btn--ghost b-btn--sm">
+              <i class="fas fa-tasks"></i> {% trans "View Assignment" %}
+            </a>
+            {% endif %}
+            {% if notif.related_event %}
+              {% if notif.related_event.verification_status == 'approved' %}
+              <a href="{% url 'export_detection_pdf' notif.related_event.pk %}"
+                 class="b-btn b-btn--pdf b-btn--sm" target="_blank">
+                <i class="fas fa-file-pdf"></i> {% trans "Export PDF" %}
+              </a>
+              {% endif %}
+              {% if is_admin %}
+              <a href="{% url 'pending_verifications' %}" class="b-btn b-btn--ghost b-btn--sm">
+                <i class="fas fa-shield-alt"></i> {% trans "Verify" %}
+              </a>
+              {% endif %}
+            {% endif %}
+          </div>
+          {% endif %}
+
+        </div><!-- /n-body -->
+      </div><!-- /n-card-inner -->
+    </div><!-- /n-card -->
+    {% endfor %}
+
+    <!-- No-results placeholder (shown by JS) -->
+    <div class="n-no-results" id="noResults">
+      <i class="fas fa-satellite-dish"></i>
+      {% trans "No notifications match your search." %}
+    </div>
+
+  </div><!-- /notif-feed -->
+
+  {% else %}
+
+  <!-- ══ Empty state ══════════════════════════════════════════ -->
+  <div class="n-empty">
+    <div class="n-empty-ring">
+      <i class="fas fa-bell-slash"></i>
+    </div>
+    <h2>{% trans "Signal Clear" %}</h2>
+    <p>{% trans "You have no notifications. Check back after field operations." %}</p>
+  </div>
+
+  {% endif %}
+
+</div><!-- /notif-page -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ══ Filter + Search ══════════════════════════════════════════════ */
+let activeFilter = 'all';
+
+function setFilter(type, el) {
+  activeFilter = type;
+  // update pill styles
+  document.querySelectorAll('#filterPills .n-stat').forEach(p => {
+    p.classList.toggle('active', p.dataset.filter === type);
+  });
+  applySearch();
+}
+
+function applySearch() {
+  const q     = (document.getElementById('nSearch')?.value || '').trim().toLowerCase();
+  const cards = document.querySelectorAll('#notifFeed .n-card');
+  let   shown = 0;
+
+  cards.forEach(card => {
+    const typeOk = activeFilter === 'all' || card.dataset.type === activeFilter;
+    const textOk = !q || (card.dataset.text || '').includes(q);
+    const visible = typeOk && textOk;
+    card.style.display = visible ? '' : 'none';
+    if (visible) shown++;
+  });
+
+  const countEl = document.getElementById('visibleCount');
+  if (countEl) countEl.textContent = shown;
+
+  const noRes = document.getElementById('noResults');
+  if (noRes) noRes.style.display = shown === 0 ? 'block' : 'none';
+}
+
+/* ══ Mark all read (client-side visual) ══════════════════════════ */
+function markAllRead() {
+  const btn = document.getElementById('markAllBtn');
+  if (btn) {
+    btn.innerHTML = '<i class="fas fa-check"></i> <span>Done</span>';
+    btn.disabled  = true;
+    btn.style.opacity = '.5';
+  }
+  // You can wire a real AJAX call here if you add a backend endpoint.
+}
+
+/* ══ Keyboard shortcut: / focuses search ══════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+    e.preventDefault();
+    document.getElementById('nSearch')?.focus();
+  }
+});
+</script>
 {% endblock %}

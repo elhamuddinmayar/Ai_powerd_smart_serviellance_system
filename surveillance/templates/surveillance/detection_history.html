@@ -3,7 +3,289 @@
 
 {% block title %}{% trans "Detection History" %}{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.history-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 1.4rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .history-layout { grid-template-columns: 1fr; }
+  .filter-sidebar { order: 2; }
+  .history-main   { order: 1; }
+}
+
+/* ── Filter sidebar ─────────────────────────────────────────────────────── */
+.filter-sidebar {
+  background: var(--card, #121929);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  padding: 1.2rem;
+  position: sticky;
+  top: 80px;
+}
+.filter-title {
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--text-muted, #64748b);
+  padding-bottom: .65rem;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.filter-title a {
+  font-size: .68rem;
+  color: #e74c3c;
+  text-decoration: none;
+  opacity: .7;
+  transition: opacity .15s;
+}
+.filter-title a:hover { opacity: 1; }
+
+.filter-group { margin-bottom: 1rem; }
+.filter-label {
+  display: block;
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-muted, #64748b);
+  margin-bottom: .4rem;
+}
+.filter-select,
+.filter-input {
+  width: 100%;
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 7px;
+  color: #ddd;
+  padding: .48rem .7rem;
+  font-size: .8rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .18s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.filter-select:focus,
+.filter-input:focus  { border-color: #4ecca3; }
+.filter-select option { background: #121929; }
+
+.filter-input::placeholder { color: #3a4a5a; }
+
+.filter-date-row { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+
+/* Action quick-pills */
+.action-pills {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+.action-pill {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .42rem .7rem;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,.07);
+  cursor: pointer;
+  font-size: .78rem;
+  color: #888;
+  transition: all .15s;
+  background: transparent;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+}
+.action-pill:hover { border-color: #555; color: #ccc; }
+.action-pill.active-fall   { background: rgba(231,76,60,.12); border-color: rgba(231,76,60,.4); color: #e74c3c; }
+.action-pill.active-wave   { background: rgba(243,156,18,.12); border-color: rgba(243,156,18,.4); color: #f39c12; }
+.action-pill.active-normal { background: rgba(78,204,163,.10); border-color: rgba(78,204,163,.3); color: #4ecca3; }
+.action-pill.active-all    { background: rgba(78,204,163,.10); border-color: rgba(78,204,163,.3); color: #4ecca3; }
+.pill-count {
+  margin-left: auto;
+  font-size: .67rem;
+  background: rgba(255,255,255,.06);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-family: monospace;
+}
+
+.btn-apply {
+  width: 100%;
+  background: #4ecca3;
+  color: #0a0e1a;
+  border: none;
+  padding: .55rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: .8rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s;
+  margin-top: .5rem;
+}
+.btn-apply:hover { background: #45b791; }
+
+/* ── Stats strip ────────────────────────────────────────────────────────── */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .7rem;
+  margin-bottom: 1rem;
+}
+@media (max-width: 600px) { .stats-strip { grid-template-columns: 1fr 1fr; } }
+
+.stat-chip {
+  background: var(--card, #121929);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px;
+  padding: .7rem .9rem;
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+.stat-chip__val {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: monospace;
+  line-height: 1;
+}
+.stat-chip__lbl {
+  font-size: .62rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-muted, #64748b);
+}
+.stat-chip--total  .stat-chip__val { color: #4ecca3; }
+.stat-chip--fall   .stat-chip__val { color: #e74c3c; }
+.stat-chip--wave   .stat-chip__val { color: #f39c12; }
+.stat-chip--target .stat-chip__val { color: #3498db; }
+
+/* ── Sort bar ───────────────────────────────────────────────────────────── */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .6rem;
+  margin-bottom: .9rem;
+  padding: .55rem .8rem;
+  background: rgba(0,0,0,.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.05);
+}
+.sort-bar-left { font-size: .78rem; color: #888; display: flex; align-items: center; gap: .5rem; }
+.sort-bar-left strong { color: #ccc; }
+.sort-select-inline {
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 6px;
+  color: #ccc;
+  padding: .3rem .6rem;
+  font-size: .76rem;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+}
+.sort-select-inline:focus { border-color: #4ecca3; }
+
+/* ── Table tweaks ───────────────────────────────────────────────────────── */
+.b-table th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.b-table th.sortable:hover { color: #4ecca3; }
+.sort-arrow { font-size: .6rem; margin-left: 3px; opacity: .5; }
+.sort-arrow.active { opacity: 1; color: #4ecca3; }
+
+/* Active filter tags */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-bottom: .8rem;
+}
+.filter-tag {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .22rem .65rem;
+  border-radius: 20px;
+  font-size: .72rem;
+  background: rgba(78,204,163,.1);
+  border: 1px solid rgba(78,204,163,.25);
+  color: #4ecca3;
+}
+.filter-tag a { color: inherit; text-decoration: none; opacity: .7; margin-left: 2px; }
+.filter-tag a:hover { opacity: 1; }
+
+/* Search box */
+.search-wrap {
+  position: relative;
+  margin-bottom: .9rem;
+}
+.search-wrap i {
+  position: absolute;
+  left: .75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #555;
+  font-size: .78rem;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  color: #ddd;
+  padding: .52rem .75rem .52rem 2.1rem;
+  font-size: .82rem;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color .18s;
+}
+.search-input:focus { border-color: #4ecca3; }
+.search-input::placeholder { color: #3a4a5a; }
+
+/* Mobile filter toggle */
+.filter-toggle-btn {
+  display: none;
+  align-items: center;
+  gap: .4rem;
+  padding: .45rem 1rem;
+  background: rgba(78,204,163,.1);
+  border: 1px solid rgba(78,204,163,.25);
+  border-radius: 7px;
+  color: #4ecca3;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: .8rem;
+}
+@media (max-width: 900px) {
+  .filter-toggle-btn { display: flex; }
+  .filter-sidebar { display: none; }
+  .filter-sidebar.open { display: block; }
+}
+
+/* Hide columns on mobile */
+@media (max-width: 700px) {
+  .col-camera, .col-verif, .col-count { display: none; }
+}
+@media (max-width: 500px) {
+  .col-action { display: none; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
+
 <div class="b-page-header">
   <div>
     <h1 class="b-page-title"><i class="fas fa-history"></i> {% trans "Detection History" %}</h1>
@@ -17,127 +299,435 @@
       {% endif %}
     </p>
   </div>
-  <button class="b-btn b-btn--ghost" onclick="printPage()">
-    <i class="fas fa-print"></i> {% trans "Print" %}
-  </button>
+  <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+    <button class="b-btn b-btn--ghost" onclick="printPage()">
+      <i class="fas fa-print"></i> {% trans "Print" %}
+    </button>
+  </div>
 </div>
 
-<div class="b-table-wrap">
-  <table class="b-table">
-    <thead>
-      <tr>
-        <th>{% trans "Timestamp" %}</th>
-        <th>{% trans "Snapshot" %}</th>
-        <th>{% trans "Target" %}</th>
-        <th class="col-camera">{% trans "Camera" %}</th>
-        <th>{% trans "Action" %}</th>
-        <th class="col-verif">{% trans "Verification" %}</th>
-        <th>{% trans "Export" %}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for event in page_obj %}
-      <tr style="{% if event.matched_target %}background:rgba(233,69,96,.02){% endif %}">
+<!-- Mobile filter toggle -->
+<button class="filter-toggle-btn" onclick="document.querySelector('.filter-sidebar').classList.toggle('open')">
+  <i class="fas fa-sliders-h"></i> Filters &amp; Sort
+</button>
 
-        <td style="font-size:.76rem;color:var(--text-muted);white-space:nowrap;font-family:var(--font-mono);">
-          {{ event.timestamp|date:"Y-m-d H:i:s" }}
-        </td>
+<div class="history-layout">
 
-        <td>
-          {% if event.frame_snapshot %}
-            <img src="/media/{{ event.frame_snapshot }}" alt="snap"
-                 style="width:42px;height:42px;border-radius:5px;object-fit:cover;cursor:zoom-in;"
-                 onclick="openSnap(this.src)" loading="lazy">
-          {% else %}
-            <span style="color:var(--text-muted);font-size:.8rem;">—</span>
-          {% endif %}
-        </td>
+  <!-- ══ FILTER SIDEBAR ════════════════════════════════════════════════════ -->
+  <aside class="filter-sidebar">
+    <form method="GET" id="filterForm">
 
-        <td>
-          {% if event.matched_target %}
-          <div style="display:flex;align-items:center;gap:.45rem;">
-            {% if event.matched_target.image %}
-            <img src="{{ event.matched_target.image.url }}" alt=""
-                 style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0;" loading="lazy">
-            {% endif %}
-            <span style="font-size:.82rem;font-weight:600;color:var(--danger);">
-              {{ event.matched_target_name }}
-            </span>
-          </div>
-          {% else %}
-          <span style="color:var(--text-muted);font-size:.8rem;">—</span>
-          {% endif %}
-        </td>
+      <div class="filter-title">
+        <span><i class="fas fa-filter" style="color:#4ecca3;margin-right:5px;"></i> Filters</span>
+        <a href="{% url 'detection_history' %}">✕ Reset all</a>
+      </div>
 
-        <td class="col-camera">
-          {% if event.camera %}
-          <div style="font-size:.82rem;color:var(--text);">{{ event.camera.name }}</div>
-          <div style="font-size:.7rem;color:var(--text-muted);">{{ event.camera.location }}</div>
-          {% else %}
-          <span style="color:var(--text-muted);font-size:.8rem;">—</span>
-          {% endif %}
-        </td>
+      <!-- Search -->
+      <div class="filter-group">
+        <label class="filter-label">Search</label>
+        <input type="text" name="q" class="filter-input"
+               placeholder="Name, camera, location…" value="{{ f_q }}">
+      </div>
 
-        <td>
-          <span class="b-badge
-            {% if event.action == 'Normal' %}b-badge--gray
-            {% elif 'FALL' in event.action %}b-badge--red
-            {% else %}b-badge--yellow{% endif %}">
-            {{ event.action }}
-          </span>
-        </td>
+      <!-- Action type — quick pills -->
+      <div class="filter-group">
+        <label class="filter-label">Event Type</label>
+        <div class="action-pills">
 
-        <td class="col-verif">
-          <span class="b-badge b-verif--{{ event.verification_status }}">
-            {{ event.get_verification_status_display }}
-          </span>
-        </td>
+          <button type="button"
+                  class="action-pill {% if not f_action %}active-all{% endif %}"
+                  onclick="setFilter('action','')">
+            <i class="fas fa-list" style="font-size:.7rem;"></i>
+            All Events
+            <span class="pill-count">{{ total_count }}</span>
+          </button>
 
-        <td>
-          {% if event.verification_status == 'approved' %}
-          <a href="{% url 'export_detection_pdf' event.pk %}" class="b-btn b-btn--pdf b-btn--sm" target="_blank">
-            <i class="fas fa-file-pdf"></i> PDF
-          </a>
-          {% elif event.matched_target and event.verification_status == 'pending' %}
-          <span style="color:var(--text-muted);font-size:.73rem;">
-            <i class="fas fa-hourglass-half text-warn"></i> {% trans "Pending" %}
-          </span>
-          {% else %}
-          <span style="color:var(--text-muted);font-size:.8rem;">—</span>
-          {% endif %}
-        </td>
+          <button type="button"
+                  class="action-pill {% if f_action == 'FALL DETECTED' %}active-fall{% endif %}"
+                  onclick="setFilter('action','FALL DETECTED')">
+            <i class="fas fa-exclamation-triangle" style="font-size:.7rem;color:#e74c3c;"></i>
+            Fall Detected
+            <span class="pill-count" style="color:#e74c3c;">{{ fall_count }}</span>
+          </button>
 
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="7" style="text-align:center;color:var(--text-muted);padding:3rem;">
-          <i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.25;"></i>
-          {% trans "No detection events found." %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+          <button type="button"
+                  class="action-pill {% if f_action == 'HAND WAVING' %}active-wave{% endif %}"
+                  onclick="setFilter('action','HAND WAVING')">
+            <i class="fas fa-hand-paper" style="font-size:.7rem;color:#f39c12;"></i>
+            Hand Waving
+            <span class="pill-count" style="color:#f39c12;">{{ wave_count }}</span>
+          </button>
 
-<!-- Hide less critical columns on mobile -->
-<style>
-  @media (max-width: 700px) {
-    .col-camera, .col-verif { display: none; }
-  }
-</style>
+          <button type="button"
+                  class="action-pill {% if f_action == 'Normal' %}active-normal{% endif %}"
+                  onclick="setFilter('action','Normal')">
+            <i class="fas fa-check" style="font-size:.7rem;color:#4ecca3;"></i>
+            Normal
+          </button>
 
-{% if page_obj.has_other_pages %}
-<div class="b-pagination">
-  {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}" class="b-page-btn">‹ {% trans "Prev" %}</a>
-  {% endif %}
-  <span class="b-page-info">
-    {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
-  </span>
-  {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}" class="b-page-btn">{% trans "Next" %} ›</a>
-  {% endif %}
-</div>
-{% endif %}
+        </div>
+        <!-- Hidden field that gets filled by the pills -->
+        <input type="hidden" name="action" id="actionInput" value="{{ f_action }}">
+      </div>
+
+      <!-- Target captured -->
+      <div class="filter-group">
+        <label class="filter-label">Target Match</label>
+        <select name="target" class="filter-select" onchange="this.form.submit()">
+          <option value=""     {% if not f_target %}selected{% endif %}>All events</option>
+          <option value="yes"  {% if f_target == 'yes' %}selected{% endif %}>
+            ✓ Target captured ({{ target_count }})
+          </option>
+          <option value="no"   {% if f_target == 'no' %}selected{% endif %}>
+            — No target match
+          </option>
+        </select>
+      </div>
+
+      <!-- Verification status -->
+      <div class="filter-group">
+        <label class="filter-label">Verification</label>
+        <select name="verif" class="filter-select" onchange="this.form.submit()">
+          <option value=""             {% if not f_verif %}selected{% endif %}>All statuses</option>
+          <option value="pending"      {% if f_verif == 'pending' %}selected{% endif %}>⏳ Pending</option>
+          <option value="approved"     {% if f_verif == 'approved' %}selected{% endif %}>✓ Approved</option>
+          <option value="rejected"     {% if f_verif == 'rejected' %}selected{% endif %}>✗ Rejected</option>
+          <option value="unreviewed"   {% if f_verif == 'unreviewed' %}selected{% endif %}>— Unreviewed</option>
+        </select>
+      </div>
+
+      <!-- Camera -->
+      {% if all_cameras %}
+      <div class="filter-group">
+        <label class="filter-label">Camera</label>
+        <select name="camera" class="filter-select" onchange="this.form.submit()">
+          <option value="">All cameras</option>
+          {% for cam in all_cameras %}
+          <option value="{{ cam.id }}" {% if f_camera == cam.id|stringformat:'s' %}selected{% endif %}>
+            {{ cam.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+
+      <!-- Date range -->
+      <div class="filter-group">
+        <label class="filter-label">Date Range</label>
+        <div class="filter-date-row">
+          <input type="date" name="date_from" class="filter-input"
+                 value="{{ f_date_from }}" title="From">
+          <input type="date" name="date_to"   class="filter-input"
+                 value="{{ f_date_to }}"   title="To">
+        </div>
+      </div>
+
+      <!-- Sort -->
+      <div class="filter-group">
+        <label class="filter-label">Sort By</label>
+        <select name="sort" class="filter-select">
+          <option value="-timestamp"          {% if f_sort == '-timestamp'          %}selected{% endif %}>Newest first</option>
+          <option value="timestamp"           {% if f_sort == 'timestamp'           %}selected{% endif %}>Oldest first</option>
+          <option value="action"              {% if f_sort == 'action'              %}selected{% endif %}>Event type A→Z</option>
+          <option value="-action"             {% if f_sort == '-action'             %}selected{% endif %}>Event type Z→A</option>
+          <option value="-person_count"       {% if f_sort == '-person_count'       %}selected{% endif %}>Most people first</option>
+          <option value="person_count"        {% if f_sort == 'person_count'        %}selected{% endif %}>Fewest people first</option>
+          <option value="verification_status" {% if f_sort == 'verification_status' %}selected{% endif %}>Verification status</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-apply">
+        <i class="fas fa-check"></i> Apply Filters
+      </button>
+
+    </form>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══════════════════════════════════════════════════════ -->
+  <div class="history-main">
+
+    <!-- Stats strip -->
+    <div class="stats-strip">
+      <div class="stat-chip stat-chip--total">
+        <div class="stat-chip__val">{{ total_count }}</div>
+        <div class="stat-chip__lbl">Total Events</div>
+      </div>
+      <div class="stat-chip stat-chip--target">
+        <div class="stat-chip__val">{{ target_count }}</div>
+        <div class="stat-chip__lbl">Targets Matched</div>
+      </div>
+      <div class="stat-chip stat-chip--fall">
+        <div class="stat-chip__val">{{ fall_count }}</div>
+        <div class="stat-chip__lbl">Falls Detected</div>
+      </div>
+      <div class="stat-chip stat-chip--wave">
+        <div class="stat-chip__val">{{ wave_count }}</div>
+        <div class="stat-chip__lbl">Hand Waving</div>
+      </div>
+    </div>
+
+    <!-- Active filter tags -->
+    {% if f_action or f_target or f_verif or f_camera or f_date_from or f_date_to or f_q %}
+    <div class="active-filters">
+      <span style="font-size:.7rem;color:#666;align-self:center;">Active:</span>
+
+      {% if f_q %}
+      <span class="filter-tag">
+        <i class="fas fa-search" style="font-size:.6rem;"></i>
+        "{{ f_q }}"
+        <a href="?{{ get_params }}" onclick="return removeParam('q')">✕</a>
+      </span>
+      {% endif %}
+
+      {% if f_action %}
+      <span class="filter-tag"
+            style="{% if f_action == 'FALL DETECTED' %}background:rgba(231,76,60,.1);border-color:rgba(231,76,60,.3);color:#e74c3c;
+                   {% elif f_action == 'HAND WAVING' %}background:rgba(243,156,18,.1);border-color:rgba(243,156,18,.3);color:#f39c12;{% endif %}">
+        <i class="fas fa-{% if f_action == 'FALL DETECTED' %}exclamation-triangle{% elif f_action == 'HAND WAVING' %}hand-paper{% else %}check{% endif %}" style="font-size:.6rem;"></i>
+        {{ f_action }}
+        <a href="?{{ get_params }}" onclick="return removeParam('action')">✕</a>
+      </span>
+      {% endif %}
+
+      {% if f_target %}
+      <span class="filter-tag">
+        <i class="fas fa-crosshairs" style="font-size:.6rem;"></i>
+        {% if f_target == 'yes' %}Target matched{% else %}No target{% endif %}
+        <a href="?{{ get_params }}" onclick="return removeParam('target')">✕</a>
+      </span>
+      {% endif %}
+
+      {% if f_verif %}
+      <span class="filter-tag">
+        <i class="fas fa-shield-alt" style="font-size:.6rem;"></i>
+        {{ f_verif|capfirst }}
+        <a href="?{{ get_params }}" onclick="return removeParam('verif')">✕</a>
+      </span>
+      {% endif %}
+
+      {% if f_camera %}
+      <span class="filter-tag">
+        <i class="fas fa-video" style="font-size:.6rem;"></i>
+        Camera #{{ f_camera }}
+        <a href="?{{ get_params }}" onclick="return removeParam('camera')">✕</a>
+      </span>
+      {% endif %}
+
+      {% if f_date_from or f_date_to %}
+      <span class="filter-tag">
+        <i class="fas fa-calendar" style="font-size:.6rem;"></i>
+        {{ f_date_from|default:"…" }} → {{ f_date_to|default:"…" }}
+        <a href="?{{ get_params }}" onclick="return removeParam('date_from', 'date_to')">✕</a>
+      </span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Search bar (duplicated inline for convenience) -->
+    <form method="GET" class="search-wrap" id="searchForm">
+      <!-- Carry over all other active filters -->
+      {% if f_action %}<input type="hidden" name="action" value="{{ f_action }}">{% endif %}
+      {% if f_target %}<input type="hidden" name="target" value="{{ f_target }}">{% endif %}
+      {% if f_verif  %}<input type="hidden" name="verif"  value="{{ f_verif }}">{% endif %}
+      {% if f_camera %}<input type="hidden" name="camera" value="{{ f_camera }}">{% endif %}
+      {% if f_date_from %}<input type="hidden" name="date_from" value="{{ f_date_from }}">{% endif %}
+      {% if f_date_to   %}<input type="hidden" name="date_to"   value="{{ f_date_to }}">{% endif %}
+      {% if f_sort %}<input type="hidden" name="sort" value="{{ f_sort }}">{% endif %}
+      <i class="fas fa-search"></i>
+      <input type="text" name="q" class="search-input"
+             placeholder="Search by target name, camera, or location…"
+             value="{{ f_q }}">
+    </form>
+
+    <!-- Table -->
+    <div class="b-table-wrap">
+      <table class="b-table">
+        <thead>
+          <tr>
+            <th class="sortable" onclick="sortBy('-timestamp','timestamp')">
+              Timestamp
+              <span class="sort-arrow {% if f_sort == '-timestamp' or f_sort == 'timestamp' %}active{% endif %}">
+                {% if f_sort == 'timestamp' %}▲{% else %}▼{% endif %}
+              </span>
+            </th>
+            <th>Snapshot</th>
+            <th>Target</th>
+            <th class="col-camera">Camera</th>
+            <th class="sortable col-action" onclick="sortBy('action','-action')">
+              Event
+              <span class="sort-arrow {% if f_sort == 'action' or f_sort == '-action' %}active{% endif %}">
+                {% if f_sort == '-action' %}▼{% else %}▲{% endif %}
+              </span>
+            </th>
+            <th class="col-count sortable" onclick="sortBy('-person_count','person_count')" title="Person count">
+              <i class="fas fa-users"></i>
+              <span class="sort-arrow {% if f_sort == '-person_count' or f_sort == 'person_count' %}active{% endif %}">
+                {% if f_sort == 'person_count' %}▲{% else %}▼{% endif %}
+              </span>
+            </th>
+            <th class="col-verif">Verification</th>
+            <th>Export</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for event in page_obj %}
+          <tr style="{% if event.matched_target %}background:rgba(233,69,96,.02){% endif %}">
+
+            <td style="font-size:.76rem;color:var(--text-muted);white-space:nowrap;font-family:monospace;">
+              {{ event.timestamp|date:"Y-m-d" }}<br>
+              <span style="color:#666;">{{ event.timestamp|date:"H:i:s" }}</span>
+            </td>
+
+            <td>
+              {% if event.frame_snapshot %}
+                <img src="/media/{{ event.frame_snapshot }}" alt="snap"
+                     style="width:42px;height:42px;border-radius:5px;object-fit:cover;cursor:zoom-in;"
+                     onclick="openSnap(this.src)" loading="lazy">
+              {% else %}
+                <span style="color:var(--text-muted);font-size:.8rem;">—</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if event.matched_target %}
+              <div style="display:flex;align-items:center;gap:.45rem;">
+                {% if event.matched_target.image %}
+                <img src="{{ event.matched_target.image.url }}" alt=""
+                     style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0;" loading="lazy">
+                {% endif %}
+                <span style="font-size:.82rem;font-weight:600;color:#e94560;">
+                  {{ event.matched_target_name }}
+                </span>
+              </div>
+              {% else %}
+                <span style="color:var(--text-muted);font-size:.8rem;">—</span>
+              {% endif %}
+            </td>
+
+            <td class="col-camera">
+              {% if event.camera %}
+              <div style="font-size:.82rem;color:var(--text);">{{ event.camera.name }}</div>
+              <div style="font-size:.7rem;color:var(--text-muted);">{{ event.camera.location }}</div>
+              {% else %}
+                <span style="color:var(--text-muted);font-size:.8rem;">—</span>
+              {% endif %}
+            </td>
+
+            <td class="col-action">
+              <span class="b-badge
+                {% if event.action == 'Normal' %}b-badge--gray
+                {% elif 'FALL' in event.action %}b-badge--red
+                {% else %}b-badge--yellow{% endif %}">
+                {% if 'FALL' in event.action %}
+                  <i class="fas fa-exclamation-triangle" style="font-size:.6rem;"></i>
+                {% elif 'WAVING' in event.action %}
+                  <i class="fas fa-hand-paper" style="font-size:.6rem;"></i>
+                {% endif %}
+                {{ event.action }}
+              </span>
+            </td>
+
+            <td class="col-count" style="text-align:center;font-family:monospace;color:#aaa;font-size:.82rem;">
+              {{ event.person_count }}
+            </td>
+
+            <td class="col-verif">
+              <span class="b-badge b-verif--{{ event.verification_status }}">
+                {{ event.get_verification_status_display }}
+              </span>
+            </td>
+
+            <td>
+              {% if event.verification_status == 'approved' %}
+              <a href="{% url 'export_detection_pdf' event.pk %}"
+                 class="b-btn b-btn--pdf b-btn--sm" target="_blank">
+                <i class="fas fa-file-pdf"></i> PDF
+              </a>
+              {% elif event.matched_target and event.verification_status == 'pending' %}
+              <span style="color:var(--text-muted);font-size:.73rem;">
+                <i class="fas fa-hourglass-half" style="color:#f39c12;"></i> Pending
+              </span>
+              {% else %}
+              <span style="color:var(--text-muted);font-size:.8rem;">—</span>
+              {% endif %}
+            </td>
+
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" style="text-align:center;color:var(--text-muted);padding:3rem;">
+              <i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.25;"></i>
+              No events match the current filters.
+              <br>
+              <a href="{% url 'detection_history' %}"
+                 style="color:#4ecca3;font-size:.8rem;text-decoration:none;margin-top:.5rem;display:inline-block;">
+                ✕ Clear all filters
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="b-pagination">
+      {% if page_obj.has_previous %}
+        <a href="?{{ get_params }}&page={{ page_obj.previous_page_number }}" class="b-page-btn">‹ Prev</a>
+      {% endif %}
+      <span class="b-page-info">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        &nbsp;·&nbsp; {{ total_count }} total
+      </span>
+      {% if page_obj.has_next %}
+        <a href="?{{ get_params }}&page={{ page_obj.next_page_number }}" class="b-page-btn">Next ›</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div><!-- /history-main -->
+</div><!-- /history-layout -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ── Action pills set hidden input then submit ── */
+function setFilter(name, value) {
+  document.getElementById('actionInput').value = value;
+  document.getElementById('filterForm').submit();
+}
+
+/* ── Column header sort toggle ── */
+function sortBy(desc, asc) {
+  const current = new URLSearchParams(location.search).get('sort') || '-timestamp';
+  const next    = current === desc ? asc : desc;
+  const params  = new URLSearchParams(location.search);
+  params.set('sort', next);
+  params.delete('page');
+  location.search = params.toString();
+}
+
+/* ── Remove a single filter tag ── */
+function removeParam(...keys) {
+  const params = new URLSearchParams(location.search);
+  keys.forEach(k => params.delete(k));
+  params.delete('page');
+  location.search = params.toString();
+  return false;   // prevent default link navigation
+}
+
+/* ── Live search (debounced) ── */
+const searchInput = document.querySelector('.search-input');
+if (searchInput) {
+  let debounce;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      document.getElementById('searchForm').submit();
+    }, 500);
+  });
+}
+</script>
 {% endblock %}

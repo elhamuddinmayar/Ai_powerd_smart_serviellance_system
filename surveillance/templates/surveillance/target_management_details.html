@@ -3,6 +3,49 @@
 
 {% block title %}Target: {{ target.name }} {{ target.last_name }}{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ── Responsive detail grid ────────────────────────────────────────────── */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Page header actions – stack on small screens ─────────────────────── */
+  @media (max-width: 600px) {
+    .detail-header-actions {
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .detail-header-actions .b-btn {
+      flex: 1 1 auto;
+      justify-content: center;
+      min-width: 120px;
+    }
+  }
+
+  /* ── Assignment form – select + textarea full width on mobile ─────────── */
+  @media (max-width: 500px) {
+    .b-select, .b-textarea { font-size: .82rem; }
+  }
+
+  /* ── Assignment card – wrap badge row on mobile ───────────────────────── */
+  @media (max-width: 480px) {
+    .assign-meta-row { flex-direction: column !important; align-items: flex-start !important; }
+  }
+
+  /* ── Detection event row – wrap on very small screens ────────────────── */
+  @media (max-width: 420px) {
+    .detect-event-row { flex-direction: column !important; align-items: flex-start !important; gap: .3rem !important; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Page header -->
 <div class="b-page-header">
@@ -13,20 +56,20 @@
     </h1>
     <p class="b-page-sub">{% trans "Target Dossier & Assignment Management" %}</p>
   </div>
-  <div class="flex gap-2 flex-wrap">
+  <div class="flex gap-2 flex-wrap detail-header-actions">
     <a href="{% url 'export_target_pdf' target.pk %}" class="b-btn b-btn--pdf" target="_blank">
       <i class="fas fa-id-card"></i> {% trans "Full Dossier PDF" %}
     </a>
     <button class="b-btn b-btn--ghost" onclick="printPage()">
-  <i class="fas fa-print"></i> {% trans "Print" %}
-</button>
+      <i class="fas fa-print"></i> {% trans "Print" %}
+    </button>
     <a href="{% url 'target_management' %}" class="b-btn b-btn--ghost">
       <i class="fas fa-arrow-left"></i> {% trans "Back" %}
     </a>
   </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:1.5rem;align-items:start;">
+<div class="detail-grid">
 
   <!-- ── Left: Target Info ──────────────────────────────── -->
   <div style="display:flex;flex-direction:column;gap:1.2rem;">
@@ -47,12 +90,12 @@
       <div style="font-size:1.2rem;font-weight:700;">
         {{ target.name }} {{ target.last_name }}
       </div>
-      <div class="mt-1">
+      <div class="mt-1" style="display:flex;justify-content:center;flex-wrap:wrap;gap:.4rem;">
         <span class="b-badge {% if target.is_found %}b-badge--green{% else %}b-badge--red{% endif %}">
           {% if target.is_found %}{% trans "FOUND" %}{% else %}{% trans "ACTIVE" %}{% endif %}
         </span>
         {% if target.expires_at %}
-        <span class="b-badge b-badge--yellow" style="margin-left:.3rem;">
+        <span class="b-badge b-badge--yellow">
           <i class="fas fa-clock"></i> {% trans "Expires" %} {{ target.expires_at|date:"d M Y" }}
         </span>
         {% endif %}
@@ -65,50 +108,57 @@
                   color:var(--text-muted);margin-bottom:.8rem;">
         {% trans "Personal Information" %}
       </div>
-      {% for row in info_rows %}
-      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+
+      {% with rows=target %}
+      {% for label, value in  forloop.counter|add:0|divisibleby:1 %}{% endfor %}
+      {% endwith %}
+
+      <!-- Info rows inline -->
+      {% for pair in info_pairs %}
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;flex-wrap:wrap;gap:.25rem;">
         <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;
                      text-transform:uppercase;letter-spacing:.05em;padding-top:.1rem;">
-          {{ row.0 }}
+          {{ pair.0 }}
         </span>
-        <span style="color:var(--text);">{{ row.1|default:"—" }}</span>
+        <span style="flex:1;min-width:0;color:var(--text);">{{ pair.1|default:"—" }}</span>
       </div>
-      {% endfor %}
-      <!-- We'll just render the info inline -->
-      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+      {% empty %}
+      {# Fallback: render target fields directly #}
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;flex-wrap:wrap;gap:.25rem;">
         <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Father" %}</span>
-        <span>{{ target.father_name }}</span>
+        <span style="flex:1;min-width:0;">{{ target.father_name }}</span>
       </div>
-      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;flex-wrap:wrap;gap:.25rem;">
         <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Age" %}</span>
-        <span>{{ target.age }}</span>
+        <span style="flex:1;min-width:0;">{{ target.age }}</span>
       </div>
-      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;flex-wrap:wrap;gap:.25rem;">
         <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Gender" %}</span>
-        <span>{{ target.get_gender_display }}</span>
+        <span style="flex:1;min-width:0;">{{ target.get_gender_display }}</span>
       </div>
-      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;flex-wrap:wrap;gap:.25rem;">
         <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Tazkira" %}</span>
-        <span>{{ target.tazkira_number|default:"N/A" }}</span>
+        <span style="flex:1;min-width:0;">{{ target.tazkira_number|default:"N/A" }}</span>
       </div>
-      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;flex-wrap:wrap;gap:.25rem;">
         <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Phone" %}</span>
-        <span>{{ target.phone_number }}</span>
+        <span style="flex:1;min-width:0;">{{ target.phone_number }}</span>
       </div>
-      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;flex-wrap:wrap;gap:.25rem;">
         <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Address" %}</span>
-        <span>{{ target.address }}</span>
+        <span style="flex:1;min-width:0;word-break:break-word;">{{ target.address }}</span>
       </div>
-      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;">
+      <div style="display:flex;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;flex-wrap:wrap;gap:.25rem;">
         <span style="width:110px;flex-shrink:0;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">{% trans "Crime" %}</span>
-        <span class="text-danger">{{ target.crime }}</span>
+        <span style="flex:1;min-width:0;color:var(--danger);">{{ target.crime }}</span>
       </div>
       {% if target.description %}
       <div style="padding:.45rem 0;font-size:.84rem;">
         <div style="color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">{% trans "Notes" %}</div>
-        <div style="color:var(--text-dim);">{{ target.description }}</div>
+        <div style="color:var(--text-dim);word-break:break-word;">{{ target.description }}</div>
       </div>
       {% endif %}
+      {% endfor %}
     </div>
   </div>
 
@@ -142,7 +192,7 @@
           <textarea name="note" class="b-textarea"
                     placeholder="{% trans 'Instructions for the operator...' %}" rows="2"></textarea>
         </div>
-        <button type="submit" class="b-btn b-btn--primary">
+        <button type="submit" class="b-btn b-btn--primary" style="width:100%;">
           <i class="fas fa-paper-plane"></i> {% trans "Assign Target" %}
         </button>
       </form>
@@ -162,27 +212,24 @@
         <div style="border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;
                     border-left:3px solid {% if a.status == 'pending' %}var(--warn){% elif a.status == 'acknowledged' %}var(--accent){% elif a.status == 'passed_back' %}var(--info){% else %}#555{% endif %};">
 
-          <!-- Assignment header -->
-          <div class="flex items-center justify-between flex-wrap gap-1 mb-1">
+          <div class="flex items-center justify-between flex-wrap gap-1 mb-1 assign-meta-row">
             <div style="font-weight:600;font-size:.9rem;">
               <i class="fas fa-user" style="color:var(--text-muted);"></i>
               {{ a.assigned_to.username|default:"?" }}
             </div>
             <span class="b-badge b-status--{{ a.status }}">{{ a.get_status_display }}</span>
           </div>
-          <div style="font-size:.75rem;color:var(--text-muted);">
-            <i class="fas fa-user-tie"></i> {% trans "By" %}: {{ a.assigned_by.username|default:"?" }}
-            &nbsp;·&nbsp;
-            <i class="fas fa-calendar"></i> {{ a.created_at|date:"Y-m-d H:i" }}
+          <div style="font-size:.75rem;color:var(--text-muted);flex-wrap:wrap;display:flex;gap:.4rem;">
+            <span><i class="fas fa-user-tie"></i> {% trans "By" %}: {{ a.assigned_by.username|default:"?" }}</span>
+            <span><i class="fas fa-calendar"></i> {{ a.created_at|date:"Y-m-d H:i" }}</span>
           </div>
           {% if a.note %}
           <div style="font-size:.8rem;color:var(--text-dim);margin-top:.4rem;
-                      padding:.3rem .6rem;background:rgba(255,255,255,.04);border-radius:4px;">
+                      padding:.3rem .6rem;background:rgba(255,255,255,.04);border-radius:4px;word-break:break-word;">
             {{ a.note }}
           </div>
           {% endif %}
 
-          <!-- Detection events for this assignment -->
           {% with events=a.detection_events.all %}
           {% if events %}
           <div style="margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border);">
@@ -191,15 +238,13 @@
               {% trans "Detections" %}
             </div>
             {% for ev in events %}
-            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;
+            <div class="detect-event-row" style="display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;
                         font-size:.78rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
               <span class="b-badge b-verif--{{ ev.verification_status }} b-badge--sm">
                 {{ ev.get_verification_status_display }}
               </span>
               <span style="color:var(--text-muted);">{{ ev.timestamp|date:"Y-m-d H:i" }}</span>
               <span style="color:var(--text-dim);">{{ ev.camera.name|default:"—" }}</span>
-
-              <!-- Admin PDF export (always visible to admin/supervisor) -->
               <a href="{% url 'export_detection_pdf' ev.pk %}" class="b-btn b-btn--pdf b-btn--sm" target="_blank">
                 <i class="fas fa-file-pdf"></i> PDF
               </a>
@@ -209,7 +254,6 @@
           {% endif %}
           {% endwith %}
 
-          <!-- Status: passed back needs admin action -->
           {% if a.status == 'passed_back' %}
           <div class="b-alert b-alert--warning mt-2">
             <i class="fas fa-undo"></i>
@@ -229,6 +273,6 @@
     </div>
 
   </div><!-- /right -->
-</div>
+</div><!-- /detail-grid -->
 
 {% endblock %}
