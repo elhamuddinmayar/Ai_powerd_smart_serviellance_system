@@ -1,1144 +1,621 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}Command Hub{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block extra_css %}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
-
+/* ─── Design tokens (flat modern, one accent) ─────────────────────────────── */
 :root {
-  --h-font-display: 'Syne', sans-serif;
-  --h-font-mono:    'DM Mono', monospace;
-  --h-accent:  #4ecca3;
-  --h-red:     #e94560;
-  --h-yellow:  #f5c518;
-  --h-blue:    #38bdf8;
-  --h-purple:  #a78bfa;
-  --h-orange:  #fb923c;
-  --h-panel:   rgba(11,15,26,.85);
-  --h-border:  rgba(255,255,255,.065);
-  --h-border2: rgba(78,204,163,.2);
-  --h-muted:   #4a5568;
-  --h-dim:     #94a3b8;
-  --h-text:    #e2e8f0;
+  --surface-0: #0d1117;
+  --surface-1: #161b22;
+  --surface-2: #21262d;
+  --surface-3: #30363d;
+  --border:    #30363d;
+  --border-subtle: #21262d;
+  --accent:    #4ecca3;
+  --accent-bg: rgba(78,204,163,.08);
+  --text-pri:  #e6edf3;
+  --text-sec:  #8b949e;
+  --text-ter:  #484f58;
+  --danger:    #f85149;
+  --warn:      #d29922;
+  --blue:      #388bfd;
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
 }
 
-/* ── Page wrapper ──────────────────────────────────── */
-.home-page { font-family: var(--h-font-display); color: var(--h-text); }
-
-/* ── Animated scanline background ─────────────────── */
-.home-page::before {
-  content: '';
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(78,204,163,.012) 2px,
-      rgba(78,204,163,.012) 4px
-    );
-  animation: scanlines 12s linear infinite;
-}
-@keyframes scanlines { from { background-position: 0 0; } to { background-position: 0 100vh; } }
-
-/* ── Noise overlay ─────────────────────────────────── */
-.home-page::after {
-  content: '';
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  opacity: .025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
+/* ─── Page shell ───────────────────────────────────────────────────────────── */
+.home-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
-.home-content { position: relative; z-index: 1; }
-
-/* ═══════════════════════════════════════════════════
-   HERO
-═══════════════════════════════════════════════════ */
-.hero {
-  text-align: center;
-  padding: 3.5rem 0 2.5rem;
-  position: relative;
+/* ─── Welcome header ───────────────────────────────────────────────────────── */
+.home-welcome {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
 }
 
-/* Glowing orb behind title */
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 20%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 400px; height: 200px;
-  background: radial-gradient(ellipse, rgba(78,204,163,.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.hero-eyebrow {
-  display: inline-flex; align-items: center; gap: .6rem;
-  font-family: var(--h-font-mono);
-  font-size: .65rem; letter-spacing: .2em; color: var(--h-accent);
+.home-welcome__greeting {
+  font-size: .75rem;
   text-transform: uppercase;
-  padding: .3rem .9rem; border-radius: 20px;
-  background: rgba(78,204,163,.07); border: 1px solid rgba(78,204,163,.2);
-  margin-bottom: 1.4rem;
-  animation: fadeUp .6s ease both;
+  letter-spacing: .12em;
+  color: var(--text-ter);
+  margin-bottom: .4rem;
 }
-.hero-eyebrow .pulse {
-  width: 6px; height: 6px; border-radius: 50%; background: var(--h-accent);
-  animation: blink 1.2s infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
-.hero-title {
-  font-size: clamp(2.5rem, 7vw, 5rem);
-  font-weight: 800; line-height: .95;
+.home-welcome__name {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-pri);
+  margin-bottom: .5rem;
   letter-spacing: -.02em;
-  margin-bottom: 1rem;
-  animation: fadeUp .7s ease .1s both;
-}
-.hero-title .line1 { display: block; color: var(--h-text); }
-.hero-title .line2 {
-  display: block;
-  background: linear-gradient(135deg, var(--h-accent) 0%, #38bdf8 60%, var(--h-purple) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
-.hero-sub {
-  font-family: var(--h-font-mono);
-  font-size: .8rem; color: var(--h-dim); letter-spacing: .05em;
-  max-width: 480px; margin: 0 auto 2rem;
-  line-height: 1.7;
-  animation: fadeUp .7s ease .2s both;
+.home-welcome__name span { color: var(--accent); }
+
+.home-welcome__desc {
+  font-size: .875rem;
+  color: var(--text-sec);
+  line-height: 1.6;
+  max-width: 480px;
 }
 
-/* Live stats bar */
-.hero-stats {
-  display: inline-flex; align-items: center; gap: 0;
-  background: var(--h-panel); border: 1px solid var(--h-border);
-  border-radius: 12px; overflow: hidden;
-  animation: fadeUp .7s ease .3s both;
+.home-welcome__meta {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 1rem;
   flex-wrap: wrap;
 }
-.hero-stat {
-  padding: .7rem 1.4rem; text-align: center;
-  border-right: 1px solid var(--h-border);
-  min-width: 110px;
-}
-.hero-stat:last-child { border-right: none; }
-.hero-stat__val {
-  font-family: var(--h-font-mono);
-  font-size: 1.3rem; font-weight: 500; color: var(--h-accent); line-height: 1;
-}
-.hero-stat__lbl {
-  font-size: .6rem; text-transform: uppercase; letter-spacing: .12em;
-  color: var(--h-muted); margin-top: .25rem;
+
+.meta-chip {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .73rem;
+  color: var(--text-sec);
 }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+.meta-chip i { font-size: .65rem; color: var(--text-ter); }
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .2rem .65rem;
+  border-radius: 20px;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
-/* ═══════════════════════════════════════════════════
-   SECTION LABEL
-═══════════════════════════════════════════════════ */
-.sec-label {
-  display: flex; align-items: center; gap: .75rem;
-  font-family: var(--h-font-mono);
-  font-size: .62rem; text-transform: uppercase; letter-spacing: .18em;
-  color: var(--h-muted); margin-bottom: 1.1rem;
-}
-.sec-label::before {
-  content: ''; width: 18px; height: 1px;
-  background: linear-gradient(90deg, var(--h-accent), transparent);
-}
-.sec-label::after {
-  content: ''; flex: 1; height: 1px; background: var(--h-border);
+.role-pill--admin    { background: rgba(212,167,44,.1);  color: #d4a72c; border: 1px solid rgba(212,167,44,.2); }
+.role-pill--sup      { background: rgba(56,139,253,.1);  color: #388bfd; border: 1px solid rgba(56,139,253,.2); }
+.role-pill--operator { background: rgba(78,204,163,.1);  color: #4ecca3; border: 1px solid rgba(78,204,163,.2); }
+
+/* ─── Section label ────────────────────────────────────────────────────────── */
+.section-label {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--text-ter);
+  margin-bottom: .9rem;
+  display: flex;
+  align-items: center;
+  gap: .65rem;
 }
 
-/* ═══════════════════════════════════════════════════
-   HUB CARDS (navigation)
-═══════════════════════════════════════════════════ */
-.hub-grid {
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── Navigation cards grid ────────────────────────────────────────────────── */
+.nav-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: .75rem;
   margin-bottom: 2.5rem;
 }
 
-.hub-card {
-  background: var(--h-panel);
-  border: 1px solid var(--h-border);
-  border-radius: 14px; padding: 1.3rem 1.2rem;
-  text-decoration: none; color: var(--h-text);
-  display: flex; flex-direction: column; gap: .7rem;
-  position: relative; overflow: hidden;
-  transition: border-color .25s, transform .25s, box-shadow .25s;
-  backdrop-filter: blur(12px);
+.nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding: 1.1rem 1.2rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text-pri);
+  transition: border-color .15s, background .15s, transform .15s;
+  position: relative;
+  overflow: hidden;
 }
-.hub-card::after {
+
+.nav-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  transform: translateY(-1px);
+}
+
+/* Left accent strip */
+.nav-card::before {
   content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 30% 30%, rgba(var(--hc-rgb, 78,204,163),.07) 0%, transparent 70%);
-  opacity: 0; transition: opacity .3s;
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--nc, var(--accent));
+  opacity: 0;
+  transition: opacity .15s;
 }
-.hub-card:hover {
-  border-color: rgba(var(--hc-rgb, 78,204,163),.35);
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(var(--hc-rgb,78,204,163),.15);
-}
-.hub-card:hover::after { opacity: 1; }
+.nav-card:hover::before { opacity: 1; }
 
-.hub-card__top { display: flex; align-items: flex-start; justify-content: space-between; }
-.hub-card__icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
+.nav-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.nav-card__icon {
+  width: 34px; height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .85rem;
+  color: var(--nc, var(--accent));
+  transition: border-color .15s, background .15s;
+}
+.nav-card:hover .nav-card__icon {
+  border-color: var(--nc, var(--accent));
+  background: var(--accent-bg);
+}
+
+.nav-card__badge {
+  font-size: .6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: .15rem .45rem;
+  border-radius: 4px;
+  background: var(--surface-3);
+  color: var(--text-ter);
+  border: 1px solid var(--border);
+}
+
+.nav-card__badge--live {
+  background: rgba(78,204,163,.1);
+  color: var(--accent);
+  border-color: rgba(78,204,163,.25);
+}
+
+.nav-card__badge--alert {
+  background: rgba(248,81,73,.1);
+  color: var(--danger);
+  border-color: rgba(248,81,73,.25);
+}
+
+.nav-card__title {
   font-size: .95rem;
-  background: rgba(var(--hc-rgb,78,204,163),.1);
-  border: 1px solid rgba(var(--hc-rgb,78,204,163),.2);
-  color: var(--hc, var(--h-accent));
-  flex-shrink: 0;
-}
-.hub-card__tag {
-  font-family: var(--h-font-mono);
-  font-size: .58rem; padding: .15rem .5rem; border-radius: 4px;
-  font-weight: 500; text-transform: uppercase; letter-spacing: .06em;
-}
-
-.hub-card__title {
-  font-size: .95rem; font-weight: 700; color: var(--h-text);
+  font-weight: 600;
+  color: var(--text-pri);
   letter-spacing: -.01em;
 }
-.hub-card__desc {
-  font-size: .75rem; color: var(--h-dim); line-height: 1.6;
-  font-family: var(--h-font-mono); font-weight: 300;
+
+.nav-card__desc {
+  font-size: .78rem;
+  color: var(--text-sec);
+  line-height: 1.55;
+  flex: 1;
 }
-.hub-card__foot {
+
+.nav-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: .7rem;
+  color: var(--text-ter);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: .65rem;
   margin-top: auto;
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: .65rem; color: rgba(var(--hc-rgb,78,204,163),.5);
-  font-family: var(--h-font-mono);
 }
-.hub-card__arrow {
-  opacity: 0; transform: translateX(-6px);
-  transition: all .2s;
-  color: var(--hc, var(--h-accent));
+
+.nav-card__foot span { font-family: 'Courier New', monospace; font-size: .65rem; }
+
+.nav-card__arrow {
+  font-size: .72rem;
+  color: var(--nc, var(--accent));
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity .15s, transform .15s;
 }
-.hub-card:hover .hub-card__arrow { opacity: 1; transform: translateX(0); }
+.nav-card:hover .nav-card__arrow { opacity: 1; transform: translateX(0); }
 
-/* Card colour themes */
-.hc-green  { --hc: #4ecca3; --hc-rgb: 78,204,163; }
-.hc-red    { --hc: #e94560; --hc-rgb: 233,69,96; }
-.hc-yellow { --hc: #f5c518; --hc-rgb: 245,197,24; }
-.hc-blue   { --hc: #38bdf8; --hc-rgb: 56,189,248; }
-.hc-purple { --hc: #a78bfa; --hc-rgb: 167,139,250; }
-.hc-orange { --hc: #fb923c; --hc-rgb: 251,146,60; }
-.hc-teal   { --hc: #2dd4bf; --hc-rgb: 45,212,191; }
-.hc-pink   { --hc: #f472b6; --hc-rgb: 244,114,182; }
+/* Card color themes */
+.nc-green  { --nc: #4ecca3; }
+.nc-red    { --nc: #f85149; }
+.nc-yellow { --nc: #d29922; }
+.nc-blue   { --nc: #388bfd; }
+.nc-purple { --nc: #a371f7; }
+.nc-orange { --nc: #db6d28; }
 
-/* ═══════════════════════════════════════════════════
-   SYSTEM STATUS STRIP
-═══════════════════════════════════════════════════ */
-.sys-strip {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+/* ─── Quick instructions block ─────────────────────────────────────────────── */
+.instructions {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.instructions__header {
+  display: flex;
+  align-items: center;
   gap: .6rem;
-  margin-bottom: 2.5rem;
+  padding: .8rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
 }
 
-.sys-chip {
-  background: var(--h-panel); border: 1px solid var(--h-border);
-  border-radius: 10px; padding: .8rem 1rem;
-  display: flex; align-items: center; gap: .75rem;
-  backdrop-filter: blur(8px);
-  transition: border-color .2s;
-}
-.sys-chip:hover { border-color: rgba(255,255,255,.12); }
-
-.sys-chip__dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-}
-.sys-chip__dot.ok    { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; animation: glow-g 2s infinite; }
-.sys-chip__dot.warn  { background: #f5c518; box-shadow: 0 0 8px #f5c518; animation: glow-y 2s infinite; }
-.sys-chip__dot.error { background: #e94560; box-shadow: 0 0 8px #e94560; }
-@keyframes glow-g { 0%,100%{box-shadow:0 0 4px #2ecc71} 50%{box-shadow:0 0 12px #2ecc71} }
-@keyframes glow-y { 0%,100%{box-shadow:0 0 4px #f5c518} 50%{box-shadow:0 0 12px #f5c518} }
-
-.sys-chip__info { flex: 1; min-width: 0; }
-.sys-chip__name { font-size: .75rem; font-weight: 600; color: var(--h-text); }
-.sys-chip__val  { font-family: var(--h-font-mono); font-size: .65rem; color: var(--h-dim); margin-top: 1px; }
-
-/* ═══════════════════════════════════════════════════
-   ABOUT / FEATURES SECTION
-═══════════════════════════════════════════════════ */
-.about-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
-  align-items: start;
-}
-@media(max-width:768px){ .about-grid { grid-template-columns: 1fr; } }
-
-.about-card {
-  background: var(--h-panel); border: 1px solid var(--h-border);
-  border-radius: 14px; padding: 1.5rem;
-  backdrop-filter: blur(8px);
-}
-.about-card__title {
-  font-size: 1rem; font-weight: 700; margin-bottom: .6rem;
-  display: flex; align-items: center; gap: .5rem; color: var(--h-text);
-}
-.about-card__title i { color: var(--h-accent); font-size: .85rem; }
-.about-card__body {
-  font-family: var(--h-font-mono); font-size: .75rem;
-  color: var(--h-dim); line-height: 1.75;
-}
-
-/* Feature list */
-.feature-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .55rem; }
-.feature-list li {
-  display: flex; align-items: flex-start; gap: .6rem;
-  font-family: var(--h-font-mono); font-size: .76rem; color: var(--h-dim); line-height: 1.5;
-}
-.feature-list li::before {
-  content: '▸'; color: var(--h-accent); flex-shrink: 0; margin-top: 1px; font-size: .7rem;
-}
-
-/* Tech stack pills */
-.tech-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; }
-.tech-pill {
-  font-family: var(--h-font-mono); font-size: .62rem;
-  padding: .2rem .65rem; border-radius: 20px;
-  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.09);
-  color: var(--h-dim); transition: border-color .15s, color .15s;
-}
-.tech-pill:hover { border-color: rgba(78,204,163,.3); color: var(--h-accent); }
-
-/* ═══════════════════════════════════════════════════
-   ROLE BREAKDOWN
-═══════════════════════════════════════════════════ */
-.roles-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: .7rem;
-  margin-bottom: 2.5rem;
-}
-@media(max-width:640px){ .roles-grid { grid-template-columns: 1fr; } }
-
-.role-card {
-  background: var(--h-panel); border: 1px solid var(--h-border);
-  border-radius: 12px; padding: 1.1rem 1rem;
-  backdrop-filter: blur(8px); transition: border-color .2s;
-}
-.role-card:hover { border-color: rgba(255,255,255,.12); }
-.role-card__head {
-  display: flex; align-items: center; gap: .55rem; margin-bottom: .8rem;
-}
-.role-card__badge {
-  padding: .2rem .6rem; border-radius: 5px;
-  font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
-}
-.role-card__name { font-weight: 700; font-size: .88rem; }
-.role-card__perms { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .35rem; }
-.role-card__perms li {
-  font-family: var(--h-font-mono); font-size: .7rem; color: var(--h-dim);
-  display: flex; align-items: center; gap: .4rem;
-}
-.role-card__perms li i { font-size: .6rem; width: 10px; flex-shrink: 0; }
-
-/* ═══════════════════════════════════════════════════
-   RECENT ACTIVITY TICKER
-═══════════════════════════════════════════════════ */
-.ticker-wrap {
-  background: var(--h-panel); border: 1px solid var(--h-border);
-  border-radius: 12px; overflow: hidden; margin-bottom: 2.5rem;
-  backdrop-filter: blur(8px);
-}
-.ticker-head {
-  padding: .65rem 1rem;
-  background: rgba(0,0,0,.25); border-bottom: 1px solid var(--h-border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.ticker-label {
-  font-family: var(--h-font-mono); font-size: .62rem;
-  text-transform: uppercase; letter-spacing: .14em; color: var(--h-dim);
-  display: flex; align-items: center; gap: .5rem;
-}
-.ticker-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--h-accent); animation: blink 1.2s infinite; }
-
-.ticker-scroll { overflow: hidden; position: relative; height: 36px; }
-.ticker-inner {
-  display: flex; gap: 0;
-  white-space: nowrap;
-  animation: tickerMove 30s linear infinite;
-}
-.ticker-inner:hover { animation-play-state: paused; }
-.ticker-item {
-  display: inline-flex; align-items: center; gap: .5rem;
-  padding: .6rem 1.5rem;
-  font-family: var(--h-font-mono); font-size: .72rem; color: var(--h-dim);
-  border-right: 1px solid var(--h-border);
-}
-.ticker-item i { font-size: .65rem; }
-.ticker-item.match  i { color: var(--h-accent); }
-.ticker-item.fall   i { color: var(--h-red); }
-.ticker-item.wave   i { color: var(--h-yellow); }
-.ticker-item.normal i { color: var(--h-muted); }
-
-@keyframes tickerMove {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-/* ═══════════════════════════════════════════════════
-   WORKFLOW TIMELINE
-═══════════════════════════════════════════════════ */
-.workflow {
-  display: flex; gap: 0;
-  margin-bottom: 2.5rem;
-  overflow-x: auto;
-  padding-bottom: .5rem;
-}
-.wf-step {
-  flex: 1; min-width: 140px;
-  display: flex; flex-direction: column; align-items: center;
-  text-align: center; gap: .5rem;
-  position: relative; padding: 0 .5rem;
-}
-.wf-step::after {
-  content: '';
-  position: absolute; top: 20px;
-  left: 50%; right: -50%;
-  height: 1px; background: linear-gradient(90deg, var(--h-accent), rgba(78,204,163,.1));
-  z-index: 0;
-}
-.wf-step:last-child::after { display: none; }
-.wf-icon {
-  width: 40px; height: 40px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: .85rem; position: relative; z-index: 1;
-  background: rgba(78,204,163,.1); border: 1px solid rgba(78,204,163,.3);
-  color: var(--h-accent); flex-shrink: 0;
-}
-.wf-num {
-  font-family: var(--h-font-mono); font-size: .58rem;
-  color: var(--h-accent); letter-spacing: .1em;
-}
-.wf-title { font-size: .78rem; font-weight: 700; }
-.wf-desc  { font-family: var(--h-font-mono); font-size: .65rem; color: var(--h-dim); line-height: 1.5; }
-
-/* ═══════════════════════════════════════════════════
-   FOOTER
-═══════════════════════════════════════════════════ */
-.home-footer {
-  margin-top: 3rem;
-  border-top: 1px solid var(--h-border);
-  padding-top: 2.5rem;
-  position: relative; z-index: 1;
-}
-
-.footer-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-@media(max-width:900px){ .footer-grid { grid-template-columns: 1fr 1fr; } }
-@media(max-width:500px){ .footer-grid { grid-template-columns: 1fr; } }
-
-.footer-brand { }
-.footer-brand__logo {
-  font-family: var(--h-font-mono); font-size: .85rem;
-  letter-spacing: .2em; color: var(--h-accent);
-  display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem;
-}
-.footer-brand__logo span { opacity: .4; }
-.footer-brand__tagline {
-  font-family: var(--h-font-mono); font-size: .7rem;
-  color: var(--h-dim); line-height: 1.7; max-width: 280px;
-}
-.footer-brand__badges {
-  display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .75rem;
-}
-.footer-badge {
-  font-family: var(--h-font-mono); font-size: .58rem;
-  padding: .18rem .55rem; border-radius: 4px;
+.instructions__header-icon {
+  width: 26px; height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-bg);
   border: 1px solid rgba(78,204,163,.2);
-  color: var(--h-accent); background: rgba(78,204,163,.05);
-  letter-spacing: .06em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  color: var(--accent);
 }
 
-.footer-col__title {
-  font-size: .68rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .14em; color: var(--h-text);
-  margin-bottom: .9rem;
-  display: flex; align-items: center; gap: .4rem;
+.instructions__header-title {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-pri);
 }
-.footer-col__title::before { content: '//'; color: var(--h-accent); font-family: var(--h-font-mono); font-size: .6rem; }
 
-.footer-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem; }
-.footer-links li a {
-  font-family: var(--h-font-mono); font-size: .72rem;
-  color: var(--h-dim); text-decoration: none;
-  display: flex; align-items: center; gap: .45rem;
-  transition: color .15s;
+.instructions__body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0;
 }
-.footer-links li a i { font-size: .6rem; color: var(--h-muted); transition: color .15s; }
-.footer-links li a:hover { color: var(--h-accent); }
-.footer-links li a:hover i { color: var(--h-accent); }
 
-.footer-status { display: flex; flex-direction: column; gap: .45rem; }
-.footer-status-row {
-  display: flex; align-items: center; justify-content: space-between;
-  font-family: var(--h-font-mono); font-size: .68rem;
+.instruction-step {
+  padding: 1rem 1.1rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: .45rem;
 }
-.footer-status-row .fs-lbl { color: var(--h-muted); }
-.footer-status-row .fs-val { color: var(--h-accent); }
-.footer-status-row .fs-val.ok { color: #2ecc71; }
-.footer-status-row .fs-val.warn { color: var(--h-yellow); }
 
-.footer-bottom {
-  border-top: 1px solid var(--h-border); padding-top: 1.2rem;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: .75rem;
-  font-family: var(--h-font-mono); font-size: .65rem; color: var(--h-muted);
+.instruction-step:nth-last-child(-n+3) { border-bottom: none; }
+.instruction-step:last-child { border-right: none; }
+
+@media (max-width: 700px) {
+  .instruction-step { border-right: none; }
+  .instruction-step:nth-last-child(-n+3) { border-bottom: 1px solid var(--border); }
+  .instruction-step:last-child { border-bottom: none; }
 }
-.footer-bottom-left { display: flex; align-items: center; gap: 1rem; }
-.footer-bottom-left a { color: var(--h-muted); text-decoration: none; transition: color .15s; }
-.footer-bottom-left a:hover { color: var(--h-accent); }
-.footer-copy { opacity: .5; }
 
-/* Terminal blink cursor */
-.cursor { display: inline-block; width: 7px; height: .9em; background: var(--h-accent); animation: cursor-blink .8s steps(1) infinite; vertical-align: text-bottom; margin-left: 2px; }
-@keyframes cursor-blink { 50% { opacity: 0; } }
-
-/* Responsive misc */
-@media(max-width:480px){
-  .hero { padding: 2rem 0 1.5rem; }
-  .hero-title { font-size: 2.2rem; }
-  .hub-grid { grid-template-columns: 1fr 1fr; gap: .55rem; }
-  .hub-card { padding: 1rem .9rem; }
-  .hub-card__desc { display: none; }
-  .sys-strip { grid-template-columns: 1fr 1fr; }
+.instruction-step__num {
+  font-family: 'Courier New', monospace;
+  font-size: .65rem;
+  color: var(--text-ter);
 }
-@media(max-width:360px){ .hub-grid { grid-template-columns: 1fr; } }
 
-/* Stagger animations */
-.hub-card:nth-child(1) { animation: fadeUp .5s ease .1s both; }
-.hub-card:nth-child(2) { animation: fadeUp .5s ease .15s both; }
-.hub-card:nth-child(3) { animation: fadeUp .5s ease .20s both; }
-.hub-card:nth-child(4) { animation: fadeUp .5s ease .25s both; }
-.hub-card:nth-child(5) { animation: fadeUp .5s ease .30s both; }
-.hub-card:nth-child(6) { animation: fadeUp .5s ease .35s both; }
-.hub-card:nth-child(7) { animation: fadeUp .5s ease .40s both; }
-.hub-card:nth-child(8) { animation: fadeUp .5s ease .45s both; }
+.instruction-step__title {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-pri);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.instruction-step__title i {
+  font-size: .65rem;
+  color: var(--accent);
+}
+
+.instruction-step__text {
+  font-size: .74rem;
+  color: var(--text-sec);
+  line-height: 1.55;
+}
+
+/* ─── Notification banner ──────────────────────────────────────────────────── */
+.notif-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .7rem 1rem;
+  background: rgba(248,81,73,.06);
+  border: 1px solid rgba(248,81,73,.2);
+  border-radius: var(--radius);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.notif-banner__left {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-size: .82rem;
+  color: var(--text-sec);
+}
+
+.notif-banner__left i { color: var(--danger); font-size: .75rem; }
+.notif-banner__count  { font-weight: 700; color: var(--danger); }
+
+.notif-banner__link {
+  font-size: .75rem;
+  color: var(--danger);
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid rgba(248,81,73,.3);
+  padding: .28rem .7rem;
+  border-radius: var(--radius-sm);
+  transition: background .15s;
+  white-space: nowrap;
+}
+
+.notif-banner__link:hover { background: rgba(248,81,73,.08); }
+
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .home-shell { padding: 1.5rem 1rem 3rem; }
+  .nav-grid   { grid-template-columns: 1fr; }
+  .home-welcome__name { font-size: 1.3rem; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="home-page">
-<div class="home-content">
+<div class="home-shell">
 
-<!-- ══ HERO ══════════════════════════════════════════════════════════════ -->
-<div class="hero">
-  <div class="hero-eyebrow">
-    <span class="pulse"></span>
-    NEURAL SURVEILLANCE ACTIVE — AUTHORIZED ACCESS ONLY
-  </div>
-  <h1 class="hero-title">
-    <span class="line1">BUTTERFLY</span>
-    <span class="line2">COMMAND HUB<span class="cursor"></span></span>
-  </h1>
-  <p class="hero-sub">
-    AI-powered surveillance platform. Real-time threat detection,<br>
-    identity verification, and incident management.
-  </p>
-
-  <!-- Live stats -->
-  <div class="hero-stats">
-    <div class="hero-stat">
-      <div class="hero-stat__val" id="h-cams">—</div>
-      <div class="hero-stat__lbl">Cameras Online</div>
+  <!-- ── Welcome ─────────────────────────────────────────────────────────── -->
+  <div class="home-welcome">
+    <div class="home-welcome__greeting">{% trans "Welcome back" %}</div>
+    <div class="home-welcome__name">
+      {{ user.first_name|default:user.username }}<span>.</span>
     </div>
-    <div class="hero-stat">
-      <div class="hero-stat__val" id="h-persons">0</div>
-      <div class="hero-stat__lbl">Live Persons</div>
+    <div class="home-welcome__desc">
+      {% trans "Butterfly surveillance system. Select a module below to get started." %}
     </div>
-    <div class="hero-stat">
-      <div class="hero-stat__val">{{ unread_count|default:"0" }}</div>
-      <div class="hero-stat__lbl">Unread Alerts</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat__val" id="h-time">--:--</div>
-      <div class="hero-stat__lbl">System Time</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SYSTEM STATUS STRIP ══════════════════════════════════════════════ -->
-<div class="sec-label">System Status</div>
-<div class="sys-strip">
-  <div class="sys-chip">
-    <div class="sys-chip__dot ok" id="ws-dot"></div>
-    <div class="sys-chip__info">
-      <div class="sys-chip__name">WebSocket</div>
-      <div class="sys-chip__val" id="ws-status">Connecting…</div>
-    </div>
-  </div>
-  <div class="sys-chip">
-    <div class="sys-chip__dot ok"></div>
-    <div class="sys-chip__info">
-      <div class="sys-chip__name">Database</div>
-      <div class="sys-chip__val">MySQL · Connected</div>
-    </div>
-  </div>
-  <div class="sys-chip">
-    <div class="sys-chip__dot ok" id="engine-dot"></div>
-    <div class="sys-chip__info">
-      <div class="sys-chip__name">Detection Engine</div>
-      <div class="sys-chip__val" id="engine-status">YOLO11 · Active</div>
-    </div>
-  </div>
-  <div class="sys-chip">
-    <div class="sys-chip__dot ok"></div>
-    <div class="sys-chip__info">
-      <div class="sys-chip__name">Face Recognition</div>
-      <div class="sys-chip__val">DeepFace · Facenet512</div>
-    </div>
-  </div>
-  <div class="sys-chip">
-    <div class="sys-chip__dot ok"></div>
-    <div class="sys-chip__info">
-      <div class="sys-chip__name">Channel Layer</div>
-      <div class="sys-chip__val">Redis · 127.0.0.1:6379</div>
-    </div>
-  </div>
-  <div class="sys-chip">
-    <div class="sys-chip__dot ok"></div>
-    <div class="sys-chip__info">
-      <div class="sys-chip__name">ASGI Server</div>
-      <div class="sys-chip__val">Daphne · Running</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ NAVIGATION HUB ═══════════════════════════════════════════════════ -->
-<div class="sec-label">Navigation Hub</div>
-<div class="hub-grid">
-
-  <a href="{% url 'dashboard' %}" class="hub-card hc-green">
-    <div class="hub-card__top">
-      <div class="hub-card__icon"><i class="fas fa-tv"></i></div>
-      <span class="hub-card__tag" style="background:rgba(78,204,163,.1);color:#4ecca3;border:1px solid rgba(78,204,163,.2);">LIVE</span>
-    </div>
-    <div class="hub-card__title">Surveillance</div>
-    <div class="hub-card__desc">Real-time dashboard — live feed, person counter, activity alarms and target matches.</div>
-    <div class="hub-card__foot">
-      tactical-dashboard
-      <i class="fas fa-arrow-right hub-card__arrow"></i>
-    </div>
-  </a>
-
-  <a href="{% url 'camera_dashboard' %}" class="hub-card hc-orange">
-    <div class="hub-card__top">
-      <div class="hub-card__icon"><i class="fas fa-camera"></i></div>
-      <span class="hub-card__tag" id="cam-badge" style="background:rgba(251,146,60,.1);color:#fb923c;border:1px solid rgba(251,146,60,.2);">— online</span>
-    </div>
-    <div class="hub-card__title">Camera Control</div>
-    <div class="hub-card__desc">Register, manage and monitor all connected cameras. View live MJPEG streams.</div>
-    <div class="hub-card__foot">
-      camera-management
-      <i class="fas fa-arrow-right hub-card__arrow"></i>
-    </div>
-  </a>
-
-  <a href="{% url 'detection_history' %}" class="hub-card hc-teal">
-    <div class="hub-card__top">
-      <div class="hub-card__icon"><i class="fas fa-history"></i></div>
-    </div>
-    <div class="hub-card__title">Detection History</div>
-    <div class="hub-card__desc">Browse, filter and export all recorded detection events with snapshots and PDF reports.</div>
-    <div class="hub-card__foot">
-      event-log
-      <i class="fas fa-arrow-right hub-card__arrow"></i>
-    </div>
-  </a>
-
-  <a href="{% url 'notifications_list' %}" class="hub-card hc-purple">
-    <div class="hub-card__top">
-      <div class="hub-card__icon"><i class="fas fa-bell"></i></div>
-      {% if unread_count %}
-      <span class="hub-card__tag" style="background:rgba(233,69,96,.12);color:#e94560;border:1px solid rgba(233,69,96,.2);">{{ unread_count }} new</span>
+    <div class="home-welcome__meta">
+      {% if user.profile.role == 'admin' or user.is_superuser %}
+        <span class="role-pill role-pill--admin"><i class="fas fa-crown"></i> {% trans "Administrator" %}</span>
+      {% elif user.profile.role == 'supervisor' %}
+        <span class="role-pill role-pill--sup"><i class="fas fa-user-shield"></i> {% trans "Supervisor" %}</span>
+      {% else %}
+        <span class="role-pill role-pill--operator"><i class="fas fa-user"></i> {% trans "Operator" %}</span>
       {% endif %}
+      <span class="meta-chip"><i class="fas fa-id-badge"></i> {{ user.profile.badge_number }}</span>
+      <span class="meta-chip"><i class="fas fa-clock"></i> <span id="home-clock">--:--</span></span>
     </div>
-    <div class="hub-card__title">Notifications</div>
-    <div class="hub-card__desc">Assignments, detection alerts, verification outcomes and system messages in real-time.</div>
-    <div class="hub-card__foot">
-      signal-feed
-      <i class="fas fa-arrow-right hub-card__arrow"></i>
-    </div>
-  </a>
+  </div>
 
-  {% if user.profile.role == 'operator' %}
-  <a href="{% url 'operator_assignments' %}" class="hub-card hc-yellow">
-    <div class="hub-card__top">
-      <div class="hub-card__icon"><i class="fas fa-tasks"></i></div>
+  <!-- ── Unread alerts banner ────────────────────────────────────────────── -->
+  {% if unread_count %}
+  <div class="notif-banner">
+    <div class="notif-banner__left">
+      <i class="fas fa-bell"></i>
+      <span>You have <span class="notif-banner__count">{{ unread_count }}</span> unread notification{{ unread_count|pluralize }}</span>
     </div>
-    <div class="hub-card__title">My Assignments</div>
-    <div class="hub-card__desc">View and acknowledge targets assigned to you. Submit detections and pass back completed tasks.</div>
-    <div class="hub-card__foot">
-      operator-queue
-      <i class="fas fa-arrow-right hub-card__arrow"></i>
-    </div>
-  </a>
+    <a href="{% url 'notifications_list' %}" class="notif-banner__link">
+      View all <i class="fas fa-arrow-right" style="font-size:.65rem;"></i>
+    </a>
+  </div>
   {% endif %}
 
-  {% if user.profile.role == 'admin' or user.profile.role == 'supervisor' or user.is_superuser %}
-  <a href="{% url 'target_management' %}" class="hub-card hc-red">
-    <div class="hub-card__top">
-      <div class="hub-card__icon"><i class="fas fa-crosshairs"></i></div>
-    </div>
-    <div class="hub-card__title">Target Management</div>
-    <div class="hub-card__desc">Enroll, assign and track surveillance targets. Export full dossiers as encrypted PDF reports.</div>
-    <div class="hub-card__foot">
-      watchlist-db
-      <i class="fas fa-arrow-right hub-card__arrow"></i>
-    </div>
-  </a>
+  <!-- ── Main navigation ─────────────────────────────────────────────────── -->
+  <div class="section-label">{% trans "Modules" %}</div>
+  <div class="nav-grid">
 
-  <a href="{% url 'pending_verifications' %}" class="hub-card hc-blue">
-    <div class="hub-card__top">
-      <div class="hub-card__icon"><i class="fas fa-shield-alt"></i></div>
-    </div>
-    <div class="hub-card__title">Verifications</div>
-    <div class="hub-card__desc">Review detection events submitted by operators. Approve or reject with chain-of-custody notes.</div>
-    <div class="hub-card__foot">
-      verification-queue
-      <i class="fas fa-arrow-right hub-card__arrow"></i>
-    </div>
-  </a>
-  {% endif %}
-
-  {% if user.profile.role == 'admin' or user.is_superuser %}
-  <a href="{% url 'account_manage' %}" class="hub-card hc-pink">
-    <div class="hub-card__top">
-      <div class="hub-card__icon"><i class="fas fa-users-cog"></i></div>
-    </div>
-    <div class="hub-card__title">Account Management</div>
-    <div class="hub-card__desc">Register personnel, assign roles, manage access levels and revoke credentials.</div>
-    <div class="hub-card__foot">
-      access-control
-      <i class="fas fa-arrow-right hub-card__arrow"></i>
-    </div>
-  </a>
-  {% endif %}
-
-</div>
-
-<!-- ══ LIVE ACTIVITY TICKER ══════════════════════════════════════════════ -->
-<div class="sec-label">Live Activity Ticker</div>
-<div class="ticker-wrap">
-  <div class="ticker-head">
-    <div class="ticker-label">
-      <span class="ticker-dot"></span>
-      Real-time event stream
-    </div>
-    <span style="font-family:var(--h-font-mono);font-size:.62rem;color:var(--h-muted);" id="ticker-clock">--:--:--</span>
-  </div>
-  <div class="ticker-scroll">
-    <div class="ticker-inner" id="ticker-inner">
-      <!-- duplicated set for seamless loop -->
-      <span class="ticker-item normal"><i class="fas fa-circle"></i> System initialized · surveillance active</span>
-      <span class="ticker-item match"><i class="fas fa-user-check"></i> Identity engine loaded · Facenet512 ready</span>
-      <span class="ticker-item normal"><i class="fas fa-video"></i> Camera threads running · YOLO11 pose model loaded</span>
-      <span class="ticker-item wave"><i class="fas fa-wifi"></i> WebSocket channel layer connected · Redis OK</span>
-      <span class="ticker-item normal"><i class="fas fa-database"></i> MySQL database connected · queries OK</span>
-      <span class="ticker-item match"><i class="fas fa-shield-alt"></i> Verification workflow active · awaiting events</span>
-      <!-- duplicate for seamless loop -->
-      <span class="ticker-item normal"><i class="fas fa-circle"></i> System initialized · surveillance active</span>
-      <span class="ticker-item match"><i class="fas fa-user-check"></i> Identity engine loaded · Facenet512 ready</span>
-      <span class="ticker-item normal"><i class="fas fa-video"></i> Camera threads running · YOLO11 pose model loaded</span>
-      <span class="ticker-item wave"><i class="fas fa-wifi"></i> WebSocket channel layer connected · Redis OK</span>
-      <span class="ticker-item normal"><i class="fas fa-database"></i> MySQL database connected · queries OK</span>
-      <span class="ticker-item match"><i class="fas fa-shield-alt"></i> Verification workflow active · awaiting events</span>
-    </div>
-  </div>
-</div>
-
-<!-- ══ HOW IT WORKS WORKFLOW ═════════════════════════════════════════════ -->
-<div class="sec-label">Operational Workflow</div>
-<div class="workflow">
-  <div class="wf-step">
-    <div class="wf-icon"><i class="fas fa-camera"></i></div>
-    <div class="wf-num">01</div>
-    <div class="wf-title">Capture</div>
-    <div class="wf-desc">Camera threads stream live video via OpenCV on USB, RTSP or webcam sources.</div>
-  </div>
-  <div class="wf-step">
-    <div class="wf-icon"><i class="fas fa-brain"></i></div>
-    <div class="wf-num">02</div>
-    <div class="wf-title">Analyse</div>
-    <div class="wf-desc">YOLO11 pose model detects persons, counts them and classifies gestures every other frame.</div>
-  </div>
-  <div class="wf-step">
-    <div class="wf-icon"><i class="fas fa-user-check"></i></div>
-    <div class="wf-num">03</div>
-    <div class="wf-title">Identify</div>
-    <div class="wf-desc">DeepFace Facenet512 compares face crops against the watchlist via cosine similarity.</div>
-  </div>
-  <div class="wf-step">
-    <div class="wf-icon"><i class="fas fa-bolt"></i></div>
-    <div class="wf-num">04</div>
-    <div class="wf-title">Alert</div>
-    <div class="wf-desc">Matches and alarms broadcast instantly over WebSocket to all connected dashboards.</div>
-  </div>
-  <div class="wf-step">
-    <div class="wf-icon"><i class="fas fa-shield-alt"></i></div>
-    <div class="wf-num">05</div>
-    <div class="wf-title">Verify</div>
-    <div class="wf-desc">Supervisors review detection evidence and approve or reject with chain-of-custody notes.</div>
-  </div>
-  <div class="wf-step">
-    <div class="wf-icon"><i class="fas fa-file-pdf"></i></div>
-    <div class="wf-num">06</div>
-    <div class="wf-title">Export</div>
-    <div class="wf-desc">Approved events generate cryptographically-stamped PDF reports via ReportLab.</div>
-  </div>
-</div>
-
-<!-- ══ ABOUT + FEATURES ══════════════════════════════════════════════════ -->
-<div class="sec-label">System Overview</div>
-<div class="about-grid">
-
-  <div class="about-card">
-    <div class="about-card__title"><i class="fas fa-info-circle"></i> About Butterfly</div>
-    <div class="about-card__body">
-      Butterfly is a closed-circuit AI surveillance platform built for security operations centres. It integrates real-time computer vision, facial recognition, gesture detection and a structured incident-management workflow into a single unified interface.<br><br>
-      The system is designed for multi-role teams: admins configure and control, supervisors upload targets and verify detections, operators monitor assigned targets and submit field reports.
-    </div>
-    <div class="tech-row">
-      <span class="tech-pill">Django 5</span>
-      <span class="tech-pill">Daphne ASGI</span>
-      <span class="tech-pill">Channels WS</span>
-      <span class="tech-pill">Redis</span>
-      <span class="tech-pill">OpenCV</span>
-      <span class="tech-pill">YOLO11</span>
-      <span class="tech-pill">DeepFace</span>
-      <span class="tech-pill">Facenet512</span>
-      <span class="tech-pill">ReportLab</span>
-      <span class="tech-pill">MySQL</span>
-      <span class="tech-pill">Leaflet.js</span>
-    </div>
-  </div>
-
-  <div class="about-card">
-    <div class="about-card__title"><i class="fas fa-microchip"></i> Core Capabilities</div>
-    <ul class="feature-list">
-      <li>Live MJPEG camera streams with per-frame JPEG polling — compatible with any ASGI server</li>
-      <li>YOLO11-Pose person counting and gesture classification (fall detection, hand waving)</li>
-      <li>DeepFace facial recognition with configurable cosine-distance threshold and match cooldown</li>
-      <li>Real-time WebSocket broadcast of alarms, matches and camera status changes</li>
-      <li>Interactive Leaflet map with camera pin placement and live status markers</li>
-      <li>Full assignment workflow: enroll → assign → acknowledge → detect → verify → export</li>
-      <li>Role-scoped data access: admin / supervisor / operator with per-view guards</li>
-      <li>PDF dossier and detection report generation with reference photos and evidence snapshots</li>
-      <li>Multi-language support (English, Persian, Pashto) with RTL layout switching</li>
-      <li>Auto-discovery of local camera indices with accessibility probing</li>
-    </ul>
-  </div>
-
-</div>
-
-<!-- ══ ROLE BREAKDOWN ════════════════════════════════════════════════════ -->
-<div class="sec-label">Access Roles</div>
-<div class="roles-grid">
-
-  <div class="role-card">
-    <div class="role-card__head">
-      <div class="hub-card__icon hc-yellow" style="--hc:#f5c518;--hc-rgb:245,197,24;width:34px;height:34px;border-radius:8px;font-size:.8rem;">
-        <i class="fas fa-crown"></i>
+    <!-- Dashboard -->
+    <a href="{% url 'dashboard' %}" class="nav-card nc-green">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-tv"></i></div>
+        <span class="nav-card__badge nav-card__badge--live">Live</span>
       </div>
-      <div>
-        <span class="role-card__badge" style="background:rgba(245,197,24,.12);color:#f5c518;border:1px solid rgba(245,197,24,.2);">Admin</span>
-        <div class="role-card__name" style="margin-top:.2rem;">System Administrator</div>
+      <div class="nav-card__title">{% trans "Dashboard" %}</div>
+      <div class="nav-card__desc">{% trans "Real-time activity feed, person counter, alarms and camera status at a glance." %}</div>
+      <div class="nav-card__foot">
+        <span>surveillance · live</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
       </div>
-    </div>
-    <ul class="role-card__perms">
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Full system access</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Register & delete users</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Manage all cameras</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Verify any detection</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Export any PDF report</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>View entire watchlist</li>
-    </ul>
-  </div>
+    </a>
 
-  <div class="role-card">
-    <div class="role-card__head">
-      <div class="hub-card__icon hc-blue" style="--hc:#38bdf8;--hc-rgb:56,189,248;width:34px;height:34px;border-radius:8px;font-size:.8rem;">
-        <i class="fas fa-user-shield"></i>
+    <!-- Cameras -->
+    <a href="{% url 'camera_dashboard' %}" class="nav-card nc-orange">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-camera"></i></div>
+        <span class="nav-card__badge" id="cam-badge-home">— online</span>
       </div>
-      <div>
-        <span class="role-card__badge" style="background:rgba(56,189,248,.12);color:#38bdf8;border:1px solid rgba(56,189,248,.2);">Supervisor</span>
-        <div class="role-card__name" style="margin-top:.2rem;">Shift Supervisor</div>
+      <div class="nav-card__title">{% trans "Cameras" %}</div>
+      <div class="nav-card__desc">{% trans "Manage connected cameras, view live streams and check status across all locations." %}</div>
+      <div class="nav-card__foot">
+        <span>camera · control</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
       </div>
-    </div>
-    <ul class="role-card__perms">
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Upload & assign targets</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Verify own-target detections</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Export target dossier PDF</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>View operator assignments</li>
-      <li><i class="fas fa-times" style="color:#e94560;"></i>Cannot manage users</li>
-      <li><i class="fas fa-times" style="color:#e94560;"></i>Cannot manage cameras</li>
-    </ul>
-  </div>
+    </a>
 
-  <div class="role-card">
-    <div class="role-card__head">
-      <div class="hub-card__icon hc-green" style="width:34px;height:34px;border-radius:8px;font-size:.8rem;">
-        <i class="fas fa-user"></i>
+    <!-- Detection History -->
+    <a href="{% url 'detection_history' %}" class="nav-card nc-blue">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-history"></i></div>
       </div>
-      <div>
-        <span class="role-card__badge" style="background:rgba(78,204,163,.1);color:#4ecca3;border:1px solid rgba(78,204,163,.2);">Operator</span>
-        <div class="role-card__name" style="margin-top:.2rem;">Surveillance Operator</div>
+      <div class="nav-card__title">{% trans "Detection History" %}</div>
+      <div class="nav-card__desc">{% trans "Browse, filter and export all recorded detection events with snapshots." %}</div>
+      <div class="nav-card__foot">
+        <span>events · log</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
       </div>
-    </div>
-    <ul class="role-card__perms">
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>View assigned targets</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Acknowledge assignments</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Monitor live cameras</li>
-      <li><i class="fas fa-check" style="color:#4ecca3;"></i>Export approved PDFs</li>
-      <li><i class="fas fa-times" style="color:#e94560;"></i>Cannot upload targets</li>
-      <li><i class="fas fa-times" style="color:#e94560;"></i>Cannot verify detections</li>
-    </ul>
-  </div>
+    </a>
 
-</div>
-
-<!-- ══ FOOTER ════════════════════════════════════════════════════════════ -->
-<footer class="home-footer">
-  <div class="footer-grid">
-
-    <!-- Brand -->
-    <div class="footer-brand">
-      <div class="footer-brand__logo">
-        <span>◈</span> BUTTERFLY <span>/ SYS</span>
-      </div>
-      <p class="footer-brand__tagline">
-        AI-powered tactical surveillance platform for security operations. Real-time detection, identity confirmation and incident management.
-      </p>
-      <div class="footer-brand__badges">
-        <span class="footer-badge">YOLO11-POSE</span>
-        <span class="footer-badge">FACENET512</span>
-        <span class="footer-badge">DJANGO 5</span>
-        <span class="footer-badge">DAPHNE ASGI</span>
-      </div>
-    </div>
-
-    <!-- Navigation links -->
-    <div>
-      <div class="footer-col__title">Navigate</div>
-      <ul class="footer-links">
-        <li><a href="{% url 'dashboard' %}"><i class="fas fa-tv"></i> Surveillance Dashboard</a></li>
-        <li><a href="{% url 'camera_dashboard' %}"><i class="fas fa-camera"></i> Camera Control</a></li>
-        <li><a href="{% url 'detection_history' %}"><i class="fas fa-history"></i> Detection History</a></li>
-        <li><a href="{% url 'notifications_list' %}"><i class="fas fa-bell"></i> Notifications</a></li>
-        {% if user.profile.role != 'operator' %}
-        <li><a href="{% url 'target_management' %}"><i class="fas fa-crosshairs"></i> Target Management</a></li>
+    <!-- Notifications -->
+    <a href="{% url 'notifications_list' %}" class="nav-card nc-purple">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-bell"></i></div>
+        {% if unread_count %}
+        <span class="nav-card__badge nav-card__badge--alert">{{ unread_count }} new</span>
         {% endif %}
-      </ul>
-    </div>
-
-    <!-- Account links -->
-    <div>
-      <div class="footer-col__title">Account</div>
-      <ul class="footer-links">
-        <li><a href="{% url 'account_detail' user.id %}"><i class="fas fa-user"></i> My Profile</a></li>
-        {% if user.profile.role == 'operator' %}
-        <li><a href="{% url 'operator_assignments' %}"><i class="fas fa-tasks"></i> My Assignments</a></li>
-        {% endif %}
-        {% if is_admin or user.is_superuser %}
-        <li><a href="{% url 'account_manage' %}"><i class="fas fa-users-cog"></i> Manage Accounts</a></li>
-        {% endif %}
-        {% if user.profile.role == 'admin' or user.profile.role == 'supervisor' or user.is_superuser %}
-        <li><a href="{% url 'pending_verifications' %}"><i class="fas fa-shield-alt"></i> Verifications</a></li>
-        {% endif %}
-        <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li>
-      </ul>
-    </div>
-
-    <!-- Live system status -->
-    <div>
-      <div class="footer-col__title">System</div>
-      <div class="footer-status">
-        <div class="footer-status-row">
-          <span class="fs-lbl">WebSocket</span>
-          <span class="fs-val ok" id="f-ws">● Connected</span>
-        </div>
-        <div class="footer-status-row">
-          <span class="fs-lbl">Database</span>
-          <span class="fs-val ok">● MySQL OK</span>
-        </div>
-        <div class="footer-status-row">
-          <span class="fs-lbl">Engine</span>
-          <span class="fs-val ok" id="f-engine">● Running</span>
-        </div>
-        <div class="footer-status-row">
-          <span class="fs-lbl">Cameras</span>
-          <span class="fs-val" id="f-cams" style="color:var(--h-dim);">— loading</span>
-        </div>
-        <div class="footer-status-row" style="margin-top:.3rem;">
-          <span class="fs-lbl">Uptime</span>
-          <span class="fs-val" style="color:var(--h-dim);" id="f-uptime">98.2%</span>
-        </div>
-        <div class="footer-status-row">
-          <span class="fs-lbl">Version</span>
-          <span class="fs-val" style="color:var(--h-dim);">v13.0.0</span>
-        </div>
       </div>
-    </div>
+      <div class="nav-card__title">{% trans "Notifications" %}</div>
+      <div class="nav-card__desc">{% trans "Assignments, detection alerts, verification results and system messages." %}</div>
+      <div class="nav-card__foot">
+        <span>alerts · inbox</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
 
+    {% if user.profile.role == 'operator' %}
+    <!-- My Assignments -->
+    <a href="{% url 'operator_assignments' %}" class="nav-card nc-yellow">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-tasks"></i></div>
+      </div>
+      <div class="nav-card__title">{% trans "My Assignments" %}</div>
+      <div class="nav-card__desc">{% trans "View targets assigned to you, acknowledge tasks and submit field detections." %}</div>
+      <div class="nav-card__foot">
+        <span>operator · queue</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+    {% endif %}
+
+    {% if user.profile.role == 'admin' or user.profile.role == 'supervisor' or user.is_superuser %}
+    <!-- Target Management -->
+    <a href="{% url 'target_management' %}" class="nav-card nc-red">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-crosshairs"></i></div>
+      </div>
+      <div class="nav-card__title">{% trans "Targets" %}</div>
+      <div class="nav-card__desc">{% trans "Enroll, assign and track surveillance targets. Export full dossiers as PDF." %}</div>
+      <div class="nav-card__foot">
+        <span>watchlist · db</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+
+    <!-- Verifications -->
+    <a href="{% url 'pending_verifications' %}" class="nav-card nc-blue">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-shield-alt"></i></div>
+      </div>
+      <div class="nav-card__title">{% trans "Verifications" %}</div>
+      <div class="nav-card__desc">{% trans "Review operator-submitted detections. Approve or reject with chain-of-custody notes." %}</div>
+      <div class="nav-card__foot">
+        <span>review · queue</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+    {% endif %}
+
+    {% if user.profile.role == 'admin' or user.is_superuser %}
+    <!-- Accounts -->
+    <a href="{% url 'account_manage' %}" class="nav-card nc-purple">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-users-cog"></i></div>
+      </div>
+      <div class="nav-card__title">{% trans "Accounts" %}</div>
+      <div class="nav-card__desc">{% trans "Register personnel, assign roles and manage system access levels." %}</div>
+      <div class="nav-card__foot">
+        <span>access · control</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+    {% endif %}
+
+  </div><!-- /nav-grid -->
+
+  <!-- ── Quick instructions ───────────────────────────────────────────────── -->
+  <div class="section-label">{% trans "How it works" %}</div>
+  <div class="instructions">
+    <div class="instructions__header">
+      <div class="instructions__header-icon"><i class="fas fa-info"></i></div>
+      <div class="instructions__header-title">{% trans "Operational workflow" %}</div>
+    </div>
+    <div class="instructions__body">
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">01</div>
+        <div class="instruction-step__title"><i class="fas fa-camera"></i> {% trans "Connect a camera" %}</div>
+        <div class="instruction-step__text">{% trans "Go to Cameras and register a webcam or RTSP stream. The engine starts automatically." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">02</div>
+        <div class="instruction-step__title"><i class="fas fa-user-plus"></i> {% trans "Enroll a target" %}</div>
+        <div class="instruction-step__text">{% trans "Supervisors upload a reference photo to the Targets module. Set an expiry if needed." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">03</div>
+        <div class="instruction-step__title"><i class="fas fa-tasks"></i> {% trans "Assign to operator" %}</div>
+        <div class="instruction-step__text">{% trans "From the target detail page, assign monitoring to an operator with optional instructions." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">04</div>
+        <div class="instruction-step__title"><i class="fas fa-bolt"></i> {% trans "Receive alerts" %}</div>
+        <div class="instruction-step__text">{% trans "When a match or alarm triggers, all connected dashboards receive a real-time notification." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">05</div>
+        <div class="instruction-step__title"><i class="fas fa-shield-alt"></i> {% trans "Verify detection" %}</div>
+        <div class="instruction-step__text">{% trans "Supervisors review the evidence snapshot and approve or reject with a note." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">06</div>
+        <div class="instruction-step__title"><i class="fas fa-file-pdf"></i> {% trans "Export report" %}</div>
+        <div class="instruction-step__text">{% trans "Approved detections unlock a PDF report with full target info, metadata and photos." %}</div>
+      </div>
+
+    </div>
   </div>
 
-  <!-- Bottom bar -->
-  <div class="footer-bottom">
-    <div class="footer-bottom-left">
-      <span class="footer-copy">© 2025 Butterfly Surveillance System. All rights reserved.</span>
-      <a href="{% url 'dashboard' %}">Dashboard</a>
-      <a href="{% url 'detection_history' %}">History</a>
-      <a href="{% url 'notifications_list' %}">Alerts</a>
-    </div>
-    <div style="font-family:var(--h-font-mono);font-size:.62rem;color:var(--h-muted);display:flex;align-items:center;gap:.5rem;">
-      <span style="color:var(--h-accent);">◈</span>
-      BUTTERFLY / BUILD V13 · CLASSIFIED
-    </div>
-  </div>
-</footer>
+</div><!-- /home-shell -->
 
-</div><!-- /home-content -->
-</div><!-- /home-page -->
-{% endblock %}
-
-{% block extra_js %}
 <script>
-/* ── Clock ─────────────────────────────────── */
-function tick() {
-  const t = new Date().toTimeString().slice(0, 8);
-  const el = document.getElementById('h-time');
-  const el2 = document.getElementById('ticker-clock');
-  if (el)  el.textContent  = t.slice(0,5);
-  if (el2) el2.textContent = t;
+/* ── Clock ── */
+function homeTick() {
+  const el = document.getElementById('home-clock');
+  if (el) el.textContent = new Date().toTimeString().slice(0,8);
 }
-tick(); setInterval(tick, 1000);
+homeTick();
+setInterval(homeTick, 1000);
 
-/* ── Camera live count ─────────────────────── */
+/* ── Camera online count ── */
 fetch('/cameras/status/')
   .then(r => r.json())
   .then(d => {
     const cams   = d.cameras || [];
     const online = cams.filter(c => c.status === 'online' && c.is_active).length;
-    const el     = document.getElementById('h-cams');
-    const badge  = document.getElementById('cam-badge');
-    const fCams  = document.getElementById('f-cams');
-    if (el)    el.textContent    = online;
-    if (badge) badge.textContent = `${online} online`;
-    if (fCams) fCams.textContent = `● ${online}/${cams.length} online`;
-    if (fCams) fCams.style.color = online > 0 ? '#2ecc71' : '#e94560';
-  })
-  .catch(() => {});
-
-/* ── WebSocket ─────────────────────────────── */
-(function connectWS() {
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws    = new WebSocket(`${proto}://${location.host}/ws/pose/`);
-  let retries = 0;
-
-  ws.onopen = () => {
-    retries = 0;
-    const wsDot    = document.getElementById('ws-dot');
-    const wsStatus = document.getElementById('ws-status');
-    const fWs      = document.getElementById('f-ws');
-    if (wsDot)    { wsDot.className = 'sys-chip__dot ok'; }
-    if (wsStatus) wsStatus.textContent = 'Channels · Connected';
-    if (fWs)      { fWs.textContent = '● Connected'; fWs.style.color = '#2ecc71'; }
-    ws.send(JSON.stringify({ type: 'PING' }));
-    setInterval(() => ws.readyState === 1 && ws.send(JSON.stringify({ type: 'PING' })), 25000);
-  };
-
-  ws.onmessage = ({ data }) => {
-    let msg;
-    try { msg = JSON.parse(data); } catch { return; }
-
-    if (msg.type === 'STAT_UPDATE') {
-      const el = document.getElementById('h-persons');
-      if (el) el.textContent = msg.count || 0;
-
-      // Engine active signal
-      const ed  = document.getElementById('engine-dot');
-      const es  = document.getElementById('engine-status');
-      const fe  = document.getElementById('f-engine');
-      if (ed) ed.className = 'sys-chip__dot ok';
-      if (es) es.textContent = 'YOLO11 · Detecting';
-      if (fe) { fe.textContent = '● Running'; fe.style.color = '#2ecc71'; }
-
-      // Inject into ticker
-      if (msg.count > 0) {
-        injectTicker('normal', 'circle', `${msg.count} person${msg.count>1?'s':''} detected in frame`);
+    const badge  = document.getElementById('cam-badge-home');
+    if (badge) {
+      badge.textContent = `${online} online`;
+      if (online > 0) {
+        badge.classList.add('nav-card__badge--live');
       }
     }
-
-    if (msg.type === 'TARGET_MATCH') {
-      injectTicker('match', 'user-check', `TARGET MATCH: ${msg.name} · ${msg.camera}`);
-    }
-    if (msg.type === 'ALARM') {
-      const isFall = msg.action === 'FALL DETECTED';
-      injectTicker(isFall ? 'fall' : 'wave',
-        isFall ? 'exclamation-triangle' : 'hand-paper',
-        `${msg.action} · ${msg.camera}`);
-    }
-    if (msg.type === 'CAMERA_STATUS') {
-      // Refresh camera count
-      fetch('/cameras/status/').then(r=>r.json()).then(d=>{
-        const online = (d.cameras||[]).filter(c=>c.status==='online'&&c.is_active).length;
-        const total  = (d.cameras||[]).length;
-        const el     = document.getElementById('h-cams');
-        const badge  = document.getElementById('cam-badge');
-        const fCams  = document.getElementById('f-cams');
-        if (el)    el.textContent    = online;
-        if (badge) badge.textContent = `${online} online`;
-        if (fCams) { fCams.textContent = `● ${online}/${total} online`; fCams.style.color = online>0?'#2ecc71':'#e94560'; }
-      }).catch(()=>{});
-    }
-  };
-
-  ws.onclose = () => {
-    const wsDot    = document.getElementById('ws-dot');
-    const wsStatus = document.getElementById('ws-status');
-    const fWs      = document.getElementById('f-ws');
-    if (wsDot)    { wsDot.className = 'sys-chip__dot error'; }
-    if (wsStatus) wsStatus.textContent = 'Disconnected · Reconnecting…';
-    if (fWs)      { fWs.textContent = '● Disconnected'; fWs.style.color = '#e94560'; }
-    const delay = Math.min(1000 * 2**retries++, 20000);
-    setTimeout(connectWS, delay);
-  };
-})();
-
-/* ── Ticker live injection ─────────────────── */
-function injectTicker(cls, icon, text) {
-  const inner = document.getElementById('ticker-inner');
-  if (!inner) return;
-  const span = document.createElement('span');
-  span.className = `ticker-item ${cls}`;
-  span.innerHTML = `<i class="fas fa-${icon}"></i> ${text}`;
-  // Insert before midpoint so seamless loop works
-  const children = inner.children;
-  const mid = Math.floor(children.length / 2);
-  inner.insertBefore(span, children[mid] || null);
-  // Keep total items manageable (duplicate set = 2×N items)
-  if (inner.children.length > 30) inner.removeChild(inner.lastChild);
-}
+  })
+  .catch(() => {});
 </script>
 {% endblock %}
