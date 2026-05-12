@@ -1,9 +1,0 @@
-1:face Recognition 
-2:find specific person
-3:Person Pose detection (falling,waving),adding super user and sub user functionality
-4:language changing (pashto,dari,english)
-5:adding time duration for targeted person
-6:running detection services in background with out tapping the dashboard option in template
-7: adding camera control part
-8:add
-
