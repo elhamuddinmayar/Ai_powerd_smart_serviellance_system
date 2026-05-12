@@ -19,6 +19,17 @@
   <link rel="stylesheet" href="{% static 'css/butterfly.css' %}">
 
   {% block extra_css %}{% endblock %}
+
+  <script>
+    (function() {
+      var theme = localStorage.getItem('bf-theme') || 'dark';
+      if (theme === 'light') document.documentElement.classList.add('pre-light');
+    })();
+  </script>
+  <style>
+    /* Applied to <html> before <body> is available, prevents flash */
+    html.pre-light body { background: #f0f4f8 !important; }
+  </style>
 </head>
 <body>
 
@@ -82,6 +93,14 @@
         </option>
       {% endfor %}
     </select>
+
+    <!-- ★ Theme toggle button -->
+    <button class="b-theme-toggle" id="b-theme-toggle" aria-label="Switch to light mode" title="Toggle theme">
+      <!-- Moon = currently dark mode -->
+      <i class="fas fa-moon icon-dark"></i>
+      <!-- Sun = currently light mode -->
+      <i class="fas fa-sun icon-light"></i>
+    </button>
 
     {% if user.is_authenticated %}
       <!-- Notifications bell -->

@@ -410,3 +410,38 @@ function printPage() {
   document.body.setAttribute('data-print-time', new Date().toLocaleString());
   window.print();
 }
+
+
+
+
+/* ── Dark / Light Theme Toggle ─────────────────────────────── */
+(function initTheme() {
+  const STORAGE_KEY = 'bf-theme';
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
+    // Update button aria-label if button exists
+    const btn = document.getElementById('b-theme-toggle');
+    if (btn) {
+      btn.setAttribute('aria-label', theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+    }
+  }
+
+  // Apply immediately on script execution (body exists since script is at bottom of page)
+  const saved = localStorage.getItem(STORAGE_KEY) || 'dark';
+  applyTheme(saved);
+
+  // Wire up the button — no need to wait for DOMContentLoaded since script runs after body
+  const btn = document.getElementById('b-theme-toggle');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const next = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+      applyTheme(next);
+      localStorage.setItem(STORAGE_KEY, next);
+    });
+  }
+})();

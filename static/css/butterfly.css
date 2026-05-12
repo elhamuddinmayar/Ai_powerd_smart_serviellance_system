@@ -972,3 +972,181 @@ body::before {
     padding-bottom: 6px; margin-bottom: 10px;
   }
 }
+
+
+
+
+
+/* ============================================================
+   BUTTERFLY — Dark / Light Mode Theme
+   Append this block to the END of butterfly.css
+   ============================================================ */
+
+/* ── Theme toggle button ───────────────────────────────────── */
+.b-theme-toggle {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .88rem;
+  flex-shrink: 0;
+  transition: border-color .2s, color .2s, background .2s;
+  position: relative;
+  overflow: hidden;
+}
+.b-theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+/* icon swap */
+.b-theme-toggle .icon-dark,
+.b-theme-toggle .icon-light { transition: opacity .2s, transform .25s; position: absolute; }
+.b-theme-toggle .icon-dark  { opacity: 1; transform: scale(1); }
+.b-theme-toggle .icon-light { opacity: 0; transform: scale(.6); }
+body.light-mode .b-theme-toggle .icon-dark  { opacity: 0; transform: scale(.6); }
+body.light-mode .b-theme-toggle .icon-light { opacity: 1; transform: scale(1); }
+
+/* ── Light mode variable overrides ────────────────────────── */
+body.light-mode {
+  --bg:            #f0f4f8;
+  --panel:         #ffffff;
+  --panel-2:       #e8edf3;
+  --card:          #ffffff;
+  --accent:        #0ea87a;
+  --accent-dim:    rgba(14,168,122,.1);
+  --accent-glow:   rgba(14,168,122,.2);
+  --danger:        #d63355;
+  --danger-dim:    rgba(214,51,85,.1);
+  --warn:          #d97706;
+  --warn-dim:      rgba(217,119,6,.1);
+  --info:          #2563eb;
+  --info-dim:      rgba(37,99,235,.1);
+  --border:        rgba(0,0,0,.09);
+  --border-accent: rgba(14,168,122,.3);
+  --text:          #1a2332;
+  --text-muted:    #6b7a8d;
+  --text-dim:      #4a5568;
+  --shadow:        0 4px 24px rgba(0,0,0,.1);
+  --shadow-lg:     0 8px 40px rgba(0,0,0,.15);
+}
+
+/* Body background & grid tint */
+body.light-mode { background: var(--bg); }
+body.light-mode::before {
+  background-image:
+    linear-gradient(rgba(14,168,122,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14,168,122,.04) 1px, transparent 1px);
+}
+
+/* Navbar */
+body.light-mode .b-nav {
+  background: rgba(255,255,255,.95);
+  border-bottom-color: var(--border-accent);
+  box-shadow: 0 2px 16px rgba(0,0,0,.08);
+}
+body.light-mode .b-nav__brand { color: var(--accent); }
+
+/* Mobile nav overlay */
+body.light-mode .b-nav__links.open {
+  background: rgba(255,255,255,.98);
+  border-bottom-color: var(--border-accent);
+}
+
+/* Cards */
+body.light-mode .b-card  { background: var(--card); border-color: var(--border); }
+body.light-mode .b-stat  { background: var(--card); border-color: var(--border); }
+
+/* Table */
+body.light-mode .b-table { background: var(--card); }
+body.light-mode .b-table thead tr { background: rgba(0,0,0,.04); }
+body.light-mode .b-table tbody tr:hover { background: rgba(14,168,122,.04); }
+body.light-mode .b-table th { color: var(--text-muted); border-bottom-color: var(--border-accent); }
+body.light-mode .b-table td { border-bottom-color: var(--border); color: var(--text); }
+body.light-mode .b-table-wrap { border-color: var(--border); }
+
+/* Inputs */
+body.light-mode .b-input,
+body.light-mode .b-select,
+body.light-mode .b-textarea {
+  background: var(--panel-2);
+  border-color: rgba(0,0,0,.12);
+  color: var(--text);
+}
+body.light-mode .b-input::placeholder { color: var(--text-muted); }
+
+/* Buttons */
+body.light-mode .b-btn--ghost {
+  border-color: rgba(0,0,0,.14);
+  color: var(--text-dim);
+}
+body.light-mode .b-btn--ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Language selector */
+body.light-mode .b-lang {
+  background: var(--panel-2);
+  border-color: rgba(0,0,0,.12);
+  color: var(--text-dim);
+}
+
+/* User chip */
+body.light-mode .b-nav__user {
+  background: var(--panel-2);
+  border-color: rgba(0,0,0,.12);
+  color: var(--text-dim);
+}
+
+/* Notif bell */
+body.light-mode .notif-bell { color: var(--text-muted); }
+
+/* Scrollbar */
+body.light-mode ::-webkit-scrollbar-track { background: #e2e8f0; }
+body.light-mode ::-webkit-scrollbar-thumb { background: rgba(14,168,122,.35); }
+
+/* Modal */
+body.light-mode .b-modal         { background: var(--card); border-color: var(--border-accent); }
+body.light-mode .b-modal-backdrop { background: rgba(0,0,0,.5); }
+body.light-mode .b-cam-box        { background: var(--card); border-color: var(--border-accent); }
+body.light-mode .b-snap-modal     { background: rgba(0,0,0,.85); }
+
+/* Toasts */
+body.light-mode .b-toast {
+  background: #ffffff;
+  border-color: rgba(0,0,0,.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,.12);
+}
+body.light-mode .b-toast__title { color: var(--text); }
+body.light-mode .b-toast__close { color: var(--text-muted); }
+
+/* Assign cards */
+body.light-mode .assign-card { background: var(--card); border-color: rgba(0,0,0,.09); }
+body.light-mode .assign-photo-placeholder { background: var(--panel-2); color: #aaa; }
+
+/* Page toggle button in mobile */
+body.light-mode .b-nav__toggle {
+  border-color: rgba(0,0,0,.12);
+  color: var(--text-muted);
+}
+
+/* Smooth transition for theme switch (everything except background-image) */
+body,
+body *:not(script):not(style) {
+  transition:
+    background-color .25s ease,
+    border-color .25s ease,
+    color .2s ease,
+    box-shadow .25s ease;
+}
+/* Don't animate transforms/animations used for UI interactions */
+.b-btn:active,
+.b-toast { transition: none; }

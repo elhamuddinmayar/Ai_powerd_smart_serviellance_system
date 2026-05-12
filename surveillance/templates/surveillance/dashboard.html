@@ -389,6 +389,135 @@
   padding: 1.8rem; color: var(--c-muted); font-size: .78rem; gap: .5rem; text-align: center;
 }
 .no-data i { font-size: 1.8rem; opacity: .2; }
+
+
+
+/* ── PASTE THIS at the very bottom of the <style> block in dashboard.html ── */
+
+body.light-mode .db-wrap {
+  --c-bg:      #f0f4f8;
+  --c-panel:   #ffffff;
+  --c-border:  rgba(0,0,0,.08);
+  --c-border2: rgba(14,168,122,.25);
+  --c-accent:  #0ea87a;
+  --c-red:     #d63355;
+  --c-yellow:  #d97706;
+  --c-blue:    #2563eb;
+  --c-purple:  #7c3aed;
+  --c-muted:   #6b7a8d;
+  --c-text:    #1a2332;
+  --c-dim:     #4a5568;
+}
+
+/* KPI cards */
+body.light-mode .kpi {
+  background: #ffffff;
+  border-color: rgba(0,0,0,.09);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+body.light-mode .kpi:hover { border-color: rgba(0,0,0,.15); }
+
+/* Panels */
+body.light-mode .panel {
+  background: #ffffff;
+  border-color: rgba(0,0,0,.09);
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+body.light-mode .panel-hd {
+  background: rgba(0,0,0,.03);
+  border-bottom-color: rgba(0,0,0,.07);
+}
+
+/* Feed items */
+body.light-mode .feed-item { border-bottom-color: rgba(0,0,0,.07); }
+body.light-mode .feed-title { color: #1a2332; }
+body.light-mode .feed-icon--normal { background: rgba(0,0,0,.05); }
+
+/* Camera tiles */
+body.light-mode .cam-tile {
+  background: rgba(0,0,0,.03);
+  border-color: rgba(0,0,0,.09);
+  color: #1a2332;
+}
+body.light-mode .cam-tile:hover { border-color: rgba(14,168,122,.3); }
+
+/* VQ (verification queue) */
+body.light-mode .vq-item { border-bottom-color: rgba(0,0,0,.07); }
+body.light-mode .vq-item:hover { background: rgba(0,0,0,.02); }
+body.light-mode .vq-thumb { background: rgba(0,0,0,.05); border-color: rgba(14,168,122,.25); }
+body.light-mode .vq-name { color: #1a2332; }
+
+/* Quick links */
+body.light-mode .ql-btn {
+  background: rgba(0,0,0,.03);
+  border-color: rgba(0,0,0,.09);
+  color: #4a5568;
+}
+body.light-mode .ql-btn:hover {
+  border-color: rgba(14,168,122,.3);
+  color: #1a2332;
+  background: rgba(14,168,122,.05);
+}
+
+/* Assign mini */
+body.light-mode .assign-mini { border-bottom-color: rgba(0,0,0,.07); }
+body.light-mode .assign-mini:hover { background: rgba(0,0,0,.02); }
+
+/* Notif mini */
+body.light-mode .notif-mini { border-bottom-color: rgba(0,0,0,.07); }
+body.light-mode .notif-mini:hover { background: rgba(0,0,0,.02); }
+body.light-mode .nm-title { color: #1a2332; }
+
+/* Health rows */
+body.light-mode .health-bar { background: rgba(0,0,0,.07); }
+
+/* Donut/bar chart tracks */
+body.light-mode .bc-track { background: rgba(0,0,0,.07); }
+body.light-mode .mg-bar   { background: rgba(14,168,122,.25); }
+
+/* Gauge arc bg */
+body.light-mode .gauge-arc-bg { stroke: rgba(0,0,0,.08); }
+
+/* Toast */
+body.light-mode .db-toast {
+  background: #ffffff;
+  border-color: rgba(14,168,122,.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  color: #1a2332;
+}
+
+/* Section header line */
+body.light-mode .sec-hd::after { background: rgba(0,0,0,.08); }
+
+/* Sparkbar */
+body.light-mode .sparkbar { background: rgba(14,168,122,.2); }
+body.light-mode .sparkbar:hover { background: rgba(14,168,122,.5); }
+body.light-mode .sparkbar.hot   { background: rgba(214,51,85,.3); }
+
+/* Panel badge */
+body.light-mode .panel-badge {
+  background: rgba(14,168,122,.1);
+  border-color: rgba(14,168,122,.25);
+}
+
+/* No-data placeholder */
+body.light-mode .no-data { color: #6b7a8d; }
+
+/* Scrollbar in panels */
+body.light-mode .panel-body--scroll::-webkit-scrollbar-thumb { background: rgba(14,168,122,.25); }
+
+/* Ring counter */
+body.light-mode .counter-ring .ring-bg { stroke: rgba(0,0,0,.08); }
+
+/* Mini stat boxes (falls / waves) */
+body.light-mode [style*="rgba(233,69,96,.08)"] {
+  background: rgba(214,51,85,.08) !important;
+  border-color: rgba(214,51,85,.2) !important;
+}
+body.light-mode [style*="rgba(245,200,66,.08)"] {
+  background: rgba(217,119,6,.08) !important;
+  border-color: rgba(217,119,6,.2) !important;
+}
 </style>
 {% endblock %}
 
