@@ -1,0 +1,621 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ─── Design tokens (flat modern, one accent) ─────────────────────────────── */
+:root {
+  --surface-0: #0d1117;
+  --surface-1: #161b22;
+  --surface-2: #21262d;
+  --surface-3: #30363d;
+  --border:    #30363d;
+  --border-subtle: #21262d;
+  --accent:    #4ecca3;
+  --accent-bg: rgba(78,204,163,.08);
+  --text-pri:  #e6edf3;
+  --text-sec:  #8b949e;
+  --text-ter:  #484f58;
+  --danger:    #f85149;
+  --warn:      #d29922;
+  --blue:      #388bfd;
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
+}
+
+/* ─── Page shell ───────────────────────────────────────────────────────────── */
+.home-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ─── Welcome header ───────────────────────────────────────────────────────── */
+.home-welcome {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.home-welcome__greeting {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--text-ter);
+  margin-bottom: .4rem;
+}
+
+.home-welcome__name {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-pri);
+  margin-bottom: .5rem;
+  letter-spacing: -.02em;
+}
+
+.home-welcome__name span { color: var(--accent); }
+
+.home-welcome__desc {
+  font-size: .875rem;
+  color: var(--text-sec);
+  line-height: 1.6;
+  max-width: 480px;
+}
+
+.home-welcome__meta {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.meta-chip {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .73rem;
+  color: var(--text-sec);
+}
+
+.meta-chip i { font-size: .65rem; color: var(--text-ter); }
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .2rem .65rem;
+  border-radius: 20px;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.role-pill--admin    { background: rgba(212,167,44,.1);  color: #d4a72c; border: 1px solid rgba(212,167,44,.2); }
+.role-pill--sup      { background: rgba(56,139,253,.1);  color: #388bfd; border: 1px solid rgba(56,139,253,.2); }
+.role-pill--operator { background: rgba(78,204,163,.1);  color: #4ecca3; border: 1px solid rgba(78,204,163,.2); }
+
+/* ─── Section label ────────────────────────────────────────────────────────── */
+.section-label {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--text-ter);
+  margin-bottom: .9rem;
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── Navigation cards grid ────────────────────────────────────────────────── */
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: .75rem;
+  margin-bottom: 2.5rem;
+}
+
+.nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding: 1.1rem 1.2rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text-pri);
+  transition: border-color .15s, background .15s, transform .15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  transform: translateY(-1px);
+}
+
+/* Left accent strip */
+.nav-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--nc, var(--accent));
+  opacity: 0;
+  transition: opacity .15s;
+}
+.nav-card:hover::before { opacity: 1; }
+
+.nav-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.nav-card__icon {
+  width: 34px; height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .85rem;
+  color: var(--nc, var(--accent));
+  transition: border-color .15s, background .15s;
+}
+.nav-card:hover .nav-card__icon {
+  border-color: var(--nc, var(--accent));
+  background: var(--accent-bg);
+}
+
+.nav-card__badge {
+  font-size: .6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: .15rem .45rem;
+  border-radius: 4px;
+  background: var(--surface-3);
+  color: var(--text-ter);
+  border: 1px solid var(--border);
+}
+
+.nav-card__badge--live {
+  background: rgba(78,204,163,.1);
+  color: var(--accent);
+  border-color: rgba(78,204,163,.25);
+}
+
+.nav-card__badge--alert {
+  background: rgba(248,81,73,.1);
+  color: var(--danger);
+  border-color: rgba(248,81,73,.25);
+}
+
+.nav-card__title {
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--text-pri);
+  letter-spacing: -.01em;
+}
+
+.nav-card__desc {
+  font-size: .78rem;
+  color: var(--text-sec);
+  line-height: 1.55;
+  flex: 1;
+}
+
+.nav-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: .7rem;
+  color: var(--text-ter);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: .65rem;
+  margin-top: auto;
+}
+
+.nav-card__foot span { font-family: 'Courier New', monospace; font-size: .65rem; }
+
+.nav-card__arrow {
+  font-size: .72rem;
+  color: var(--nc, var(--accent));
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity .15s, transform .15s;
+}
+.nav-card:hover .nav-card__arrow { opacity: 1; transform: translateX(0); }
+
+/* Card color themes */
+.nc-green  { --nc: #4ecca3; }
+.nc-red    { --nc: #f85149; }
+.nc-yellow { --nc: #d29922; }
+.nc-blue   { --nc: #388bfd; }
+.nc-purple { --nc: #a371f7; }
+.nc-orange { --nc: #db6d28; }
+
+/* ─── Quick instructions block ─────────────────────────────────────────────── */
+.instructions {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.instructions__header {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .8rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.instructions__header-icon {
+  width: 26px; height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-bg);
+  border: 1px solid rgba(78,204,163,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  color: var(--accent);
+}
+
+.instructions__header-title {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-pri);
+}
+
+.instructions__body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0;
+}
+
+.instruction-step {
+  padding: 1rem 1.1rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: .45rem;
+}
+
+.instruction-step:nth-last-child(-n+3) { border-bottom: none; }
+.instruction-step:last-child { border-right: none; }
+
+@media (max-width: 700px) {
+  .instruction-step { border-right: none; }
+  .instruction-step:nth-last-child(-n+3) { border-bottom: 1px solid var(--border); }
+  .instruction-step:last-child { border-bottom: none; }
+}
+
+.instruction-step__num {
+  font-family: 'Courier New', monospace;
+  font-size: .65rem;
+  color: var(--text-ter);
+}
+
+.instruction-step__title {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-pri);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.instruction-step__title i {
+  font-size: .65rem;
+  color: var(--accent);
+}
+
+.instruction-step__text {
+  font-size: .74rem;
+  color: var(--text-sec);
+  line-height: 1.55;
+}
+
+/* ─── Notification banner ──────────────────────────────────────────────────── */
+.notif-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .7rem 1rem;
+  background: rgba(248,81,73,.06);
+  border: 1px solid rgba(248,81,73,.2);
+  border-radius: var(--radius);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.notif-banner__left {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-size: .82rem;
+  color: var(--text-sec);
+}
+
+.notif-banner__left i { color: var(--danger); font-size: .75rem; }
+.notif-banner__count  { font-weight: 700; color: var(--danger); }
+
+.notif-banner__link {
+  font-size: .75rem;
+  color: var(--danger);
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid rgba(248,81,73,.3);
+  padding: .28rem .7rem;
+  border-radius: var(--radius-sm);
+  transition: background .15s;
+  white-space: nowrap;
+}
+
+.notif-banner__link:hover { background: rgba(248,81,73,.08); }
+
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .home-shell { padding: 1.5rem 1rem 3rem; }
+  .nav-grid   { grid-template-columns: 1fr; }
+  .home-welcome__name { font-size: 1.3rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-shell">
+
+  <!-- ── Welcome ─────────────────────────────────────────────────────────── -->
+  <div class="home-welcome">
+    <div class="home-welcome__greeting">{% trans "Welcome back" %}</div>
+    <div class="home-welcome__name">
+      {{ user.first_name|default:user.username }}<span>.</span>
+    </div>
+    <div class="home-welcome__desc">
+      {% trans "Butterfly surveillance system. Select a module below to get started." %}
+    </div>
+    <div class="home-welcome__meta">
+      {% if user.profile.role == 'admin' or user.is_superuser %}
+        <span class="role-pill role-pill--admin"><i class="fas fa-crown"></i> {% trans "Administrator" %}</span>
+      {% elif user.profile.role == 'supervisor' %}
+        <span class="role-pill role-pill--sup"><i class="fas fa-user-shield"></i> {% trans "Supervisor" %}</span>
+      {% else %}
+        <span class="role-pill role-pill--operator"><i class="fas fa-user"></i> {% trans "Operator" %}</span>
+      {% endif %}
+      <span class="meta-chip"><i class="fas fa-id-badge"></i> {{ user.profile.badge_number }}</span>
+      <span class="meta-chip"><i class="fas fa-clock"></i> <span id="home-clock">--:--</span></span>
+    </div>
+  </div>
+
+  <!-- ── Unread alerts banner ────────────────────────────────────────────── -->
+  {% if unread_count %}
+  <div class="notif-banner">
+    <div class="notif-banner__left">
+      <i class="fas fa-bell"></i>
+      <span>{% trans "You have" %} <span class="notif-banner__count">{{ unread_count }}</span> {% trans "unread notification" %}{{ unread_count|pluralize }}</span>
+    </div>
+    <a href="{% url 'notifications_list' %}" class="notif-banner__link">
+      {% trans "View all" %} <i class="fas fa-arrow-right" style="font-size:.65rem;"></i>
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- ── Main navigation ─────────────────────────────────────────────────── -->
+  <div class="section-label">{% trans "Modules" %}</div>
+  <div class="nav-grid">
+
+    <!-- Dashboard -->
+    <a href="{% url 'dashboard' %}" class="nav-card nc-green">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-tv"></i></div>
+        <span class="nav-card__badge nav-card__badge--live">{% trans "Live" %}</span>
+      </div>
+      <div class="nav-card__title">{% trans "Dashboard" %}</div>
+      <div class="nav-card__desc">{% trans "Real-time activity feed, person counter, alarms and camera status at a glance." %}</div>
+      <div class="nav-card__foot">
+        <span>{% trans "surveillance" %} · {% trans "live" %}</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+
+    <!-- Cameras -->
+    <a href="{% url 'camera_dashboard' %}" class="nav-card nc-orange">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-camera"></i></div>
+        <span class="nav-card__badge" id="cam-badge-home">— online</span>
+      </div>
+      <div class="nav-card__title">{% trans "Cameras" %}</div>
+      <div class="nav-card__desc">{% trans "Manage connected cameras, view live streams and check status across all locations." %}</div>
+      <div class="nav-card__foot">
+        <span>{% trans "camera" %} · {% trans "control" %}</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+
+    <!-- Detection History -->
+    <a href="{% url 'detection_history' %}" class="nav-card nc-blue">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-history"></i></div>
+      </div>
+      <div class="nav-card__title">{% trans "Detection History" %}</div>
+      <div class="nav-card__desc">{% trans "Browse, filter and export all recorded detection events with snapshots." %}</div>
+      <div class="nav-card__foot">
+        <span>{% trans "events" %} · {% trans "log" %}</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+
+    <!-- Notifications -->
+    <a href="{% url 'notifications_list' %}" class="nav-card nc-purple">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-bell"></i></div>
+        {% if unread_count %}
+        <span class="nav-card__badge nav-card__badge--alert">{{ unread_count }} {% trans "new" %}</span>
+        {% endif %}
+      </div>
+      <div class="nav-card__title">{% trans "Notifications" %}</div>
+      <div class="nav-card__desc">{% trans "Assignments, detection alerts, verification results and system messages." %}</div>
+      <div class="nav-card__foot">
+        <span>{% trans "alerts" %} · {% trans "inbox" %}</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+
+    {% if user.profile.role == 'operator' %}
+    <!-- My Assignments -->
+    <a href="{% url 'operator_assignments' %}" class="nav-card nc-yellow">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-tasks"></i></div>
+      </div>
+      <div class="nav-card__title">{% trans "My Assignments" %}</div>
+      <div class="nav-card__desc">{% trans "View targets assigned to you, acknowledge tasks and submit field detections." %}</div>
+      <div class="nav-card__foot">
+        <span>{% trans "operator" %} · {% trans "queue" %}</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+    {% endif %}
+
+    {% if user.profile.role == 'admin' or user.profile.role == 'supervisor' or user.is_superuser %}
+    <!-- Target Management -->
+    <a href="{% url 'target_management' %}" class="nav-card nc-red">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-crosshairs"></i></div>
+      </div>
+      <div class="nav-card__title">{% trans "Targets" %}</div>
+      <div class="nav-card__desc">{% trans "Enroll, assign and track surveillance targets. Export full dossiers as PDF." %}</div>
+      <div class="nav-card__foot">
+        <span>{% trans "watchlist" %} · {% trans "db" %}</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+
+    <!-- Verifications -->
+    <a href="{% url 'pending_verifications' %}" class="nav-card nc-blue">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-shield-alt"></i></div>
+      </div>
+      <div class="nav-card__title">{% trans "Verifications" %}</div>
+      <div class="nav-card__desc">{% trans "Review operator-submitted detections. Approve or reject with chain-of-custody notes." %}</div>
+      <div class="nav-card__foot">
+        <span>{% trans "review" %} · {% trans "queue" %}</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+    {% endif %}
+
+    {% if user.profile.role == 'admin' or user.is_superuser %}
+    <!-- Accounts -->
+    <a href="{% url 'account_manage' %}" class="nav-card nc-purple">
+      <div class="nav-card__top">
+        <div class="nav-card__icon"><i class="fas fa-users-cog"></i></div>
+      </div>
+      <div class="nav-card__title">{% trans "Accounts" %}</div>
+      <div class="nav-card__desc">{% trans "Register personnel, assign roles and manage system access levels." %}</div>
+      <div class="nav-card__foot">
+        <span>{% trans "access" %} · {% trans "control" %}</span>
+        <i class="fas fa-arrow-right nav-card__arrow"></i>
+      </div>
+    </a>
+    {% endif %}
+
+  </div><!-- /nav-grid -->
+
+  <!-- ── Quick instructions ───────────────────────────────────────────────── -->
+  <div class="section-label">{% trans "How it works" %}</div>
+  <div class="instructions">
+    <div class="instructions__header">
+      <div class="instructions__header-icon"><i class="fas fa-info"></i></div>
+      <div class="instructions__header-title">{% trans "Operational workflow" %}</div>
+    </div>
+    <div class="instructions__body">
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">01</div>
+        <div class="instruction-step__title"><i class="fas fa-camera"></i> {% trans "Connect a camera" %}</div>
+        <div class="instruction-step__text">{% trans "Go to Cameras and register a webcam or RTSP stream. The engine starts automatically." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">02</div>
+        <div class="instruction-step__title"><i class="fas fa-user-plus"></i> {% trans "Enroll a target" %}</div>
+        <div class="instruction-step__text">{% trans "Supervisors upload a reference photo to the Targets module. Set an expiry if needed." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">03</div>
+        <div class="instruction-step__title"><i class="fas fa-tasks"></i> {% trans "Assign to operator" %}</div>
+        <div class="instruction-step__text">{% trans "From the target detail page, assign monitoring to an operator with optional instructions." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">04</div>
+        <div class="instruction-step__title"><i class="fas fa-bolt"></i> {% trans "Receive alerts" %}</div>
+        <div class="instruction-step__text">{% trans "When a match or alarm triggers, all connected dashboards receive a real-time notification." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">05</div>
+        <div class="instruction-step__title"><i class="fas fa-shield-alt"></i> {% trans "Verify detection" %}</div>
+        <div class="instruction-step__text">{% trans "Supervisors review the evidence snapshot and approve or reject with a note." %}</div>
+      </div>
+
+      <div class="instruction-step">
+        <div class="instruction-step__num">06</div>
+        <div class="instruction-step__title"><i class="fas fa-file-pdf"></i> {% trans "Export report" %}</div>
+        <div class="instruction-step__text">{% trans "Approved detections unlock a PDF report with full target info, metadata and photos." %}</div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /home-shell -->
+
+<script>
+/* ── Clock ── */
+function homeTick() {
+  const el = document.getElementById('home-clock');
+  if (el) el.textContent = new Date().toTimeString().slice(0,8);
+}
+homeTick();
+setInterval(homeTick, 1000);
+
+/* ── Camera online count ── */
+fetch('/cameras/status/')
+  .then(r => r.json())
+  .then(d => {
+    const cams   = d.cameras || [];
+    const online = cams.filter(c => c.status === 'online' && c.is_active).length;
+    const badge  = document.getElementById('cam-badge-home');
+    if (badge) {
+      badge.textContent = `${online} online`;
+      if (online > 0) {
+        badge.classList.add('nav-card__badge--live');
+      }
+    }
+  })
+  .catch(() => {});
+</script>
+{% endblock %}
