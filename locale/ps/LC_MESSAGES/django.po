@@ -1,0 +1,2155 @@
+# Butterfly System - Pashto Translation
+# Copyright (C) 2026
+msgid ""
+msgstr ""
+"Project-Id-Version: Butterfly 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-07 10:07+0430\n"
+"PO-Revision-Date: 2026-06-07 10:07+0430\n"
+"Last-Translator: Butterfly Team\n"
+"Language-Team: Pashto\n"
+"Language: ps\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\camera\templates\camera\camera_dashboard.html:2
+#: .\camera\templates\camera\camera_dashboard.html:227
+msgid "Camera Control"
+msgstr "د کیمرې کنټرول"
+
+#: .\camera\templates\camera\camera_dashboard.html:228
+msgid ""
+"Live status of all registered cameras — click any online camera to view."
+msgstr "د ټولو ثبت شویو کیمرو ژوندی حالت — د کتلو لپاره پر هر آنلاین کیمره کلیک وکړئ."
+
+#: .\camera\templates\camera\camera_dashboard.html:233
+msgid "Discover"
+msgstr "کشف کول"
+
+#: .\camera\templates\camera\camera_dashboard.html:236
+msgid "Add Camera"
+msgstr "کیمره اضافه کړئ"
+
+#: .\camera\templates\camera\camera_dashboard.html:245
+msgid "Grid View"
+msgstr "د جال لید"
+
+#: .\camera\templates\camera\camera_dashboard.html:248
+msgid "Map View"
+msgstr "د نقشې لید"
+
+#: .\camera\templates\camera\camera_dashboard.html:255
+msgid "Local Camera Discovery (Indices 0–5)"
+msgstr "د محلي کیمرو کشف (شاخصونه ۰–۵)"
+
+#: .\camera\templates\camera\camera_dashboard.html:258
+msgid "Scanning..."
+msgstr "سکین کیږي..."
+
+#: .\camera\templates\camera\camera_dashboard.html:277
+msgid "Connecting"
+msgstr "وصلیږي"
+
+#: .\camera\templates\camera\camera_dashboard.html:282
+#: .\camera\templates\camera\camera_dashboard.html:365
+msgid "Disabled"
+msgstr "غیر فعال"
+
+#: .\camera\templates\camera\camera_dashboard.html:282
+msgid "Offline"
+msgstr "آفلاین"
+
+#: .\camera\templates\camera\camera_dashboard.html:288
+msgid "Open Live View"
+msgstr "ژوندی لید خلاص کړئ"
+
+#: .\camera\templates\camera\camera_dashboard.html:349
+msgid "View"
+msgstr "کتل"
+
+#: .\camera\templates\camera\camera_dashboard.html:354
+msgid "Map"
+msgstr "نقشه"
+
+#: .\camera\templates\camera\camera_dashboard.html:365
+#: .\surveillance\templates\surveillance\detection_history.html:473
+msgid "Active"
+msgstr "فعال"
+
+#: .\camera\templates\camera\camera_dashboard.html:375
+msgid "No Cameras Registered"
+msgstr "هیڅ کیمره ثبت نه ده"
+
+#: .\camera\templates\camera\camera_dashboard.html:376
+msgid "Add a camera to get started."
+msgstr "د پیل لپاره یوه کیمره اضافه کړئ."
+
+#: .\camera\templates\camera\camera_dashboard.html:379
+msgid "Add First Camera"
+msgstr "لومړۍ کیمره اضافه کړئ"
+
+#: .\camera\templates\camera\camera_dashboard.html:397
+msgid "Some cameras have no map location set:"
+msgstr "ځینې کیمرو د نقشې موقعیت نه لري:"
+
+#: .\camera\templates\camera\camera_dashboard.html:400
+msgid "Edit each camera and use the map picker to pin its location."
+msgstr "هره کیمره سم کړئ او د موقعیت د ټاکلو لپاره د نقشې انتخابګر وکاروئ."
+
+#: .\camera\templates\camera\camera_register.html:4
+#: .\camera\templates\camera\camera_register.html:194
+msgid "Edit Camera"
+msgstr "کیمره سم کړئ"
+
+#: .\camera\templates\camera\camera_register.html:4
+#: .\camera\templates\camera\camera_register.html:364
+msgid "Register Camera"
+msgstr "کیمره ثبت کړئ"
+
+#: .\camera\templates\camera\camera_register.html:188
+msgid "Back to Camera Status"
+msgstr "د کیمرې حالت ته شاته"
+
+#: .\camera\templates\camera\camera_register.html:194
+msgid "Register New Camera"
+msgstr "نوې کیمره ثبت کړئ"
+
+#: .\camera\templates\camera\camera_register.html:210
+msgid "Camera Name"
+msgstr "د کیمرې نوم"
+
+#: .\camera\templates\camera\camera_register.html:229
+msgid "Camera Source"
+msgstr "د کیمرې سرچینه"
+
+#: .\camera\templates\camera\camera_register.html:235
+msgid "Local Device"
+msgstr "محلي وسیله"
+
+#: .\camera\templates\camera\camera_register.html:239
+msgid "Network / RTSP"
+msgstr "شبکه / RTSP"
+
+#: .\camera\templates\camera\camera_register.html:254
+msgid "Enter a device index (0, 1, 2…) or switch to Network/RTSP mode"
+msgstr "د وسیلې شاخص (۰، ۱، ۲...) دننه کړئ یا شبکه/RTSP حالت ته لاړ شئ"
+
+#: .\camera\templates\camera\camera_register.html:256
+msgid "built-in webcam"
+msgstr "جوړ شوی ویبکیم"
+
+#: .\camera\templates\camera\camera_register.html:257
+msgid "USB / external camera"
+msgstr "USB / بهرنۍ کیمره"
+
+#: .\camera\templates\camera\camera_register.html:264
+msgid "Physical Location"
+msgstr "فزیکي موقعیت"
+
+#: .\camera\templates\camera\camera_register.html:275
+msgid "This label appears on all detection alerts from this camera."
+msgstr "دا لیبل د دې کیمرې د ټولو کشف خبرتیاوو کې ښکاري."
+
+#: .\camera\templates\camera\camera_register.html:285
+msgid "Map Location (optional)"
+msgstr "د نقشې موقعیت (اختیاري)"
+
+#: .\camera\templates\camera\camera_register.html:289
+msgid "Location pinned"
+msgstr "موقعیت ټاکل شو"
+
+#: .\camera\templates\camera\camera_register.html:293
+msgid "Open Map"
+msgstr "نقشه خلاص کړئ"
+
+#: .\camera\templates\camera\camera_register.html:301
+msgid "Search for a place or address…"
+msgstr "ځای یا پته وپلټئ…"
+
+#: .\camera\templates\camera\camera_register.html:303
+#: .\surveillance\templates\surveillance\detection_history.html:327
+msgid "Search"
+msgstr "پلټنه"
+
+#: .\camera\templates\camera\camera_register.html:305
+msgid "Use my location"
+msgstr "زما موقعیت وکاروئ"
+
+#: .\camera\templates\camera\camera_register.html:324
+msgid "Clear"
+msgstr "پاک کول"
+
+#: .\camera\templates\camera\camera_register.html:330
+msgid "Click anywhere on the map to drop a pin. Drag the pin to adjust."
+msgstr "د پن د اچولو لپاره پر نقشه هر چیرې کلیک وکړئ. د تنظیم لپاره پن کش کړئ."
+
+#: .\camera\templates\camera\camera_register.html:338
+msgid "Description"
+msgstr "توضیح"
+
+#: .\camera\templates\camera\camera_register.html:343
+msgid "Optional notes about this camera…"
+msgstr "د دې کیمرې اختیاري یادونې…"
+
+#: .\camera\templates\camera\camera_register.html:351
+msgid "Camera Active"
+msgstr "کیمره فعاله"
+
+#: .\camera\templates\camera\camera_register.html:356
+msgid "Enable this camera and start it immediately after saving"
+msgstr "دا کیمره فعاله کړئ او د خوندي کولو وروسته سمدستي پیل یې کړئ"
+
+#: .\camera\templates\camera\camera_register.html:364 .\help.txt:9041
+#: .\surveillance\templates\surveillance\account_update.html:103
+msgid "Save Changes"
+msgstr "بدلونونه خوندي کړئ"
+
+#: .\camera\templates\camera\camera_register.html:366 .\help.txt:7724
+#: .\help.txt:9044 .\help.txt:9070 .\help.txt:13923 .\help.txt:13949
+#: .\surveillance\templates\registration\login.html:166
+#: .\surveillance\templates\surveillance\account_update.html:106
+#: .\surveillance\templates\surveillance\account_update.html:132
+#: .\surveillance\templates\surveillance\target_registration.html:164
+#: .\surveillance\templates\surveillance\target_registration.html:190
+msgid "Cancel"
+msgstr "لغوه"
+
+#: .\camera\templates\camera\camera_viewer.html:7
+msgid "Live View"
+msgstr "ژوندی لید"
+
+#: .\camera\templates\camera\camera_viewer.html:313
+msgid "Toggle fit/fill"
+msgstr "د فټ/فل بدلول"
+
+#: .\camera\templates\camera\camera_viewer.html:315
+msgid "Fit"
+msgstr "فټ"
+
+#: .\camera\templates\camera\camera_viewer.html:317
+msgid "Camera info"
+msgstr "د کیمرې معلومات"
+
+#: .\camera\templates\camera\camera_viewer.html:319
+msgid "Info"
+msgstr "معلومات"
+
+#: .\camera\templates\camera\camera_viewer.html:321
+msgid "Screenshot (S)"
+msgstr "سکرین شاټ (S)"
+
+#: .\camera\templates\camera\camera_viewer.html:323
+msgid "Snap"
+msgstr "انځور"
+
+#: .\camera\templates\camera\camera_viewer.html:325
+msgid "Fullscreen (F)"
+msgstr "بشپړ سکرین (F)"
+
+#: .\camera\templates\camera\camera_viewer.html:327
+msgid "Full"
+msgstr "بشپړ"
+
+#: .\camera\templates\camera\camera_viewer.html:330
+msgid "Close viewer"
+msgstr "لیدونکی وتړئ"
+
+#: .\camera\templates\camera\camera_viewer.html:332
+#: .\camera\templates\camera\camera_viewer.html:355
+#: .\camera\templates\camera\camera_viewer.html:432
+msgid "Exit"
+msgstr "وتل"
+
+#: .\camera\templates\camera\camera_viewer.html:343
+msgid "Toggle Fit/Fill"
+msgstr "د فټ/فل بدلول"
+
+#: .\camera\templates\camera\camera_viewer.html:346
+msgid "Camera Info"
+msgstr "د کیمرې معلومات"
+
+#: .\camera\templates\camera\camera_viewer.html:349
+#: .\camera\templates\camera\camera_viewer.html:430
+msgid "Screenshot"
+msgstr "سکرین شاټ"
+
+#: .\camera\templates\camera\camera_viewer.html:352
+#: .\camera\templates\camera\camera_viewer.html:429
+msgid "Fullscreen"
+msgstr "بشپړ سکرین"
+
+#: .\camera\templates\camera\camera_viewer.html:379
+msgid "Connecting…"
+msgstr "وصلیږي…"
+
+#: .\camera\templates\camera\camera_viewer.html:380
+msgid "Waiting for the first frame from"
+msgstr "د لومړي فریم انتظار له"
+
+#: .\camera\templates\camera\camera_viewer.html:382
+msgid "Retry"
+msgstr "بیا هڅه"
+
+#: .\camera\templates\camera\camera_viewer.html:386
+msgid "Press F for fullscreen · S for screenshot"
+msgstr "د بشپړ سکرین لپاره F فشار کړئ · د سکرین شاټ لپاره S"
+
+#: .\camera\templates\camera\camera_viewer.html:394
+#: .\surveillance\templates\surveillance\detection_history.html:403
+#: .\surveillance\templates\surveillance\detection_history.html:512
+#: .\surveillance\templates\surveillance\detection_history.html:556
+msgid "Camera"
+msgstr "کیمره"
+
+#: .\camera\templates\camera\camera_viewer.html:396
+msgid "Close"
+msgstr "وتړئ"
+
+#: .\camera\templates\camera\camera_viewer.html:398
+msgid "Name"
+msgstr "نوم"
+
+#: .\camera\templates\camera\camera_viewer.html:399
+msgid "Location"
+msgstr "موقعیت"
+
+#: .\camera\templates\camera\camera_viewer.html:400
+msgid "Source"
+msgstr "سرچینه"
+
+#: .\camera\templates\camera\camera_viewer.html:401
+msgid "Status"
+msgstr "حالت"
+
+#: .\camera\templates\camera\camera_viewer.html:410
+msgid "Last Seen"
+msgstr "وروستی ليدل شوی"
+
+#: .\camera\templates\camera\camera_viewer.html:413 .\help.txt:13633
+#: .\surveillance\templates\surveillance\target_management_details.html:153
+msgid "Notes"
+msgstr "یادونې"
+
+#: .\camera\templates\camera\camera_viewer.html:418
+msgid "Snapshots"
+msgstr "لحظوي انځورونه"
+
+#: .\camera\templates\camera\camera_viewer.html:421
+msgid "Press S or the camera button to capture"
+msgstr "د اخیستو لپاره S یا د کیمرې تڼۍ فشار کړئ"
+
+#: .\camera\templates\camera\camera_viewer.html:427
+msgid "Shortcuts"
+msgstr "لنډې لارې"
+
+#: .\camera\templates\camera\camera_viewer.html:431
+msgid "Info panel"
+msgstr "د معلوماتو پینل"
+
+#: .\camera\templates\camera\camera_viewer.html:442
+msgid "LIVE"
+msgstr "ژوندی"
+
+#: .\camera\templates\camera\camera_viewer.html:444
+msgid "CAM"
+msgstr "کیمره"
+
+#: .\camera\templates\camera\camera_viewer.html:450
+msgid "snapshots"
+msgstr "لحظوي انځورونه"
+
+#: .\help.txt:7426 .\help.txt:11535 .\surveillance\templates\base.html:56
+#: .\surveillance\templates\surveillance\home.html:435
+msgid "Dashboard"
+msgstr "ډاشبورډ"
+
+#: .\help.txt:7429 .\help.txt:11549 .\surveillance\templates\base.html:59
+#: .\surveillance\templates\surveillance\dashboard.html:540
+#: .\surveillance\templates\surveillance\dashboard.html:820
+#: .\surveillance\templates\surveillance\dashboard.html:926
+#: .\surveillance\templates\surveillance\home.html:449
+msgid "Cameras"
+msgstr "کیمرې"
+
+#: .\help.txt:7435 .\help.txt:11592 .\help.txt:12405
+#: .\surveillance\templates\base.html:65
+#: .\surveillance\templates\surveillance\home.html:492
+#: .\surveillance\templates\surveillance\operator_assignments.html:4
+#: .\surveillance\templates\surveillance\operator_assignments.html:9
+msgid "My Assignments"
+msgstr "زما دندې"
+
+#: .\help.txt:7441 .\help.txt:11607 .\surveillance\templates\base.html:71
+#: .\surveillance\templates\surveillance\dashboard.html:547
+#: .\surveillance\templates\surveillance\dashboard.html:834
+#: .\surveillance\templates\surveillance\home.html:507
+msgid "Targets"
+msgstr "اهداف"
+
+#: .\help.txt:7444 .\help.txt:11620 .\surveillance\templates\base.html:74
+#: .\surveillance\templates\surveillance\home.html:520
+msgid "Verifications"
+msgstr "تاییدونه"
+
+#: .\help.txt:7450 .\help.txt:11635 .\surveillance\templates\base.html:80
+#: .\surveillance\templates\surveillance\dashboard.html:844
+#: .\surveillance\templates\surveillance\home.html:535
+msgid "Accounts"
+msgstr "حسابونه"
+
+#: .\help.txt:7455 .\surveillance\templates\base.html:85
+#: .\surveillance\templates\surveillance\dashboard.html:543
+#: .\surveillance\templates\surveillance\dashboard.html:823
+msgid "History"
+msgstr "تاریخچه"
+
+#: .\help.txt:7567 .\help.txt:7699
+#: .\surveillance\templates\registration\login.html:9
+#: .\surveillance\templates\registration\login.html:141
+msgid "Authorize"
+msgstr "اجازه ورکول"
+
+#: .\help.txt:7703 .\surveillance\templates\registration\login.html:145
+msgid "Username or Email"
+msgstr "کارن نوم یا برېښنالیک"
+
+#: .\help.txt:7704 .\help.txt:8424
+#: .\surveillance\templates\registration\login.html:146
+#: .\surveillance\templates\registration\register.html:200
+msgid "Password"
+msgstr "پټنوم"
+
+#: .\help.txt:7705 .\surveillance\templates\registration\login.html:147
+msgid "Access System"
+msgstr "سیسټم ته ننوتل"
+
+#: .\help.txt:8232 .\surveillance\templates\registration\register.html:8
+msgid "AI System - Register"
+msgstr "د AI سیسټم - ثبت"
+
+#: .\help.txt:8303 .\surveillance\templates\registration\register.html:79
+msgid "System Status"
+msgstr "د سیسټم حالت"
+
+#: .\help.txt:8322 .\surveillance\templates\registration\register.html:98
+msgid "Register Personnel"
+msgstr "پرسونل ثبت کړئ"
+
+#: .\help.txt:8330 .\surveillance\templates\registration\register.html:106
+msgid "Username"
+msgstr "کارن نوم"
+
+#: .\help.txt:8338 .\surveillance\templates\registration\register.html:114
+msgid "Letters, digits and @/./+/-/_ only"
+msgstr "یوازې توري، شمیرې او @/./+/-/_ نښې"
+
+#: .\help.txt:8345 .\help.txt:8995 .\help.txt:13821
+#: .\surveillance\templates\registration\register.html:121
+#: .\surveillance\templates\surveillance\account_update.html:57
+#: .\surveillance\templates\surveillance\target_registration.html:62
+msgid "First Name"
+msgstr "لومړی نوم"
+
+#: .\help.txt:8354 .\help.txt:8999 .\help.txt:13825
+#: .\surveillance\templates\registration\register.html:130
+#: .\surveillance\templates\surveillance\account_update.html:61
+#: .\surveillance\templates\surveillance\target_registration.html:66
+msgid "Last Name"
+msgstr "تخلص"
+
+#: .\help.txt:8365 .\help.txt:9004
+#: .\surveillance\templates\registration\register.html:141
+#: .\surveillance\templates\surveillance\account_update.html:66
+msgid "Email"
+msgstr "برېښنالیک"
+
+#: .\help.txt:8377 .\surveillance\templates\registration\register.html:153
+msgid "Badge ID"
+msgstr "د نښان پیژندګلوی (ID)"
+
+#: .\help.txt:8385 .\surveillance\templates\registration\register.html:161
+msgid "Letters, numbers and hyphens (2–20 chars)"
+msgstr "توري، شمیرې او هایفن (۲–۲۰ کاراکتره)"
+
+#: .\help.txt:8391 .\surveillance\templates\registration\register.html:167
+msgid "Security Role"
+msgstr "امنیتي رول"
+
+#: .\help.txt:8401 .\surveillance\templates\registration\register.html:177
+msgid "Profile Image"
+msgstr "د پروفایل انځور"
+
+#: .\help.txt:8407 .\help.txt:8910 .\help.txt:9027
+#: .\surveillance\templates\registration\register.html:183
+#: .\surveillance\templates\surveillance\account_manage_details.html:96
+#: .\surveillance\templates\surveillance\account_update.html:89
+msgid "Emergency Contact"
+msgstr "بیړنۍ اړیکه"
+
+#: .\help.txt:8415 .\surveillance\templates\registration\register.html:191
+msgid "Afghanistan phone: +937XXXXXXXX, 00937XXXXXXXX or 07XXXXXXXX"
+msgstr "د افغانستان شمیره: +937XXXXXXXX، 00937XXXXXXXX یا 07XXXXXXXX"
+
+#: .\help.txt:8418 .\help.txt:9034 .\help.txt:13868
+#: .\surveillance\templates\registration\register.html:194
+#: .\surveillance\templates\surveillance\account_update.html:96
+#: .\surveillance\templates\surveillance\target_registration.html:109
+msgid "Format"
+msgstr "بڼه"
+
+#: .\help.txt:8433 .\surveillance\templates\registration\register.html:209
+msgid "Confirm Password"
+msgstr "پټنوم تایید کړئ"
+
+#: .\help.txt:8444 .\surveillance\templates\registration\register.html:220
+msgid "Register User"
+msgstr "کارن ثبت کړئ"
+
+#: .\help.txt:8448 .\help.txt:8929
+#: .\surveillance\templates\registration\register.html:224
+#: .\surveillance\templates\surveillance\account_manage_details.html:115
+msgid "Return"
+msgstr "شاته"
+
+#: .\help.txt:8472 .\surveillance\templates\registration\register.html:248
+msgid "Passwords do not match."
+msgstr "پټنومونه سره نه سمیږي."
+
+#: .\help.txt:8707
+#: .\surveillance\templates\surveillance\account_manage.html:225
+msgid "USER ARCHIVE"
+msgstr "د کاروونکو آرشیف"
+
+#: .\help.txt:8708
+#: .\surveillance\templates\surveillance\account_manage.html:226
+msgid "System Administration & Database Integrity"
+msgstr "د سیسټم اداره او د ډیټابیس بشپړتیا"
+
+#: .\help.txt:8713
+#: .\surveillance\templates\surveillance\account_manage.html:231
+msgid "Register New User"
+msgstr "نوی کارن ثبت کړئ"
+
+#: .\help.txt:8719
+#: .\surveillance\templates\surveillance\account_manage.html:237
+msgid "Search ID or Name..."
+msgstr "آی ډي یا نوم وپلټئ..."
+
+#: .\help.txt:8725
+#: .\surveillance\templates\surveillance\account_manage.html:243
+msgid "Recently Joined"
+msgstr "تازه یوځای شوي"
+
+#: .\help.txt:8726
+#: .\surveillance\templates\surveillance\account_manage.html:244
+msgid "Oldest Members"
+msgstr "پخواني غړي"
+
+#: .\help.txt:8727
+#: .\surveillance\templates\surveillance\account_manage.html:245
+msgid "Name (A-Z)"
+msgstr "نوم (الف-ی)"
+
+#: .\help.txt:8728
+#: .\surveillance\templates\surveillance\account_manage.html:246
+msgid "Name (Z-A)"
+msgstr "نوم (ی-الف)"
+
+#: .\help.txt:8729
+#: .\surveillance\templates\surveillance\account_manage.html:247
+msgid "Rank: Admins First"
+msgstr "درجه: مدیران لومړی"
+
+#: .\help.txt:8730
+#: .\surveillance\templates\surveillance\account_manage.html:248
+msgid "Rank: Observers First"
+msgstr "درجه: کتونکي لومړی"
+
+#: .\help.txt:8731
+#: .\surveillance\templates\surveillance\account_manage.html:249
+msgid "Role: Supervisors First"
+msgstr "رول: څارونکي لومړی"
+
+#: .\help.txt:8732
+#: .\surveillance\templates\surveillance\account_manage.html:250
+msgid "Role: Operators First"
+msgstr "رول: اپریټران لومړی"
+
+#: .\help.txt:8739
+#: .\surveillance\templates\surveillance\account_manage.html:257
+msgid "RESET"
+msgstr "بیا تنظیم"
+
+#: .\help.txt:8750
+#: .\surveillance\templates\surveillance\account_manage.html:268
+msgid "Admin"
+msgstr "مدیر"
+
+#: .\help.txt:8752 .\help.txt:11503
+#: .\surveillance\templates\surveillance\account_manage.html:270
+#: .\surveillance\templates\surveillance\home.html:403
+msgid "Supervisor"
+msgstr "سپروایزر"
+
+#: .\help.txt:8754 .\help.txt:11505
+#: .\surveillance\templates\surveillance\account_manage.html:272
+#: .\surveillance\templates\surveillance\home.html:405
+msgid "Operator"
+msgstr "اپریټر"
+
+#: .\help.txt:8765
+#: .\surveillance\templates\surveillance\account_manage.html:283
+msgid "NAME:"
+msgstr "نوم:"
+
+#: .\help.txt:8766
+#: .\surveillance\templates\surveillance\account_manage.html:284
+msgid "BADGE:"
+msgstr "نښان:"
+
+#: .\help.txt:8772
+#: .\surveillance\templates\surveillance\account_manage.html:290
+msgid "VIEW PROFILE"
+msgstr "پروفایل کتل"
+
+#: .\help.txt:8778
+#: .\surveillance\templates\surveillance\account_manage.html:296
+msgid ""
+"Are you sure you want to delete this user? This action cannot be undone."
+msgstr "ایا تاسو واقعیا غواړئ دا کارن حذف کړئ؟ دا کړنه بیرته نه ګرځي."
+
+#: .\help.txt:8786
+#: .\surveillance\templates\surveillance\account_manage.html:304
+msgid "No matching records found in the archive."
+msgstr "په آرشیف کې ورته ریکارډ ونه موندل شو."
+
+#: .\help.txt:8805
+#: .\surveillance\templates\surveillance\account_manage.html:323
+msgid "RETURN TO HUB"
+msgstr "مرکز ته ستنیدل"
+
+#: .\help.txt:8888
+#: .\surveillance\templates\surveillance\account_manage_details.html:74
+msgid "ON DUTY"
+msgstr "په دنده کې"
+
+#: .\help.txt:8888
+#: .\surveillance\templates\surveillance\account_manage_details.html:74
+msgid "OFF DUTY"
+msgstr "رخصت"
+
+#: .\help.txt:8895 .\help.txt:9018
+#: .\surveillance\templates\surveillance\account_manage_details.html:81
+#: .\surveillance\templates\surveillance\account_update.html:80
+msgid "Badge Number"
+msgstr "د نښان شمېره"
+
+#: .\help.txt:8900 .\help.txt:9022
+#: .\surveillance\templates\surveillance\account_manage_details.html:86
+#: .\surveillance\templates\surveillance\account_update.html:84
+msgid "Role"
+msgstr "رول"
+
+#: .\help.txt:8905
+#: .\surveillance\templates\surveillance\account_manage_details.html:91
+msgid "Email Address"
+msgstr "د برېښنالیک پته"
+
+#: .\help.txt:8916
+#: .\surveillance\templates\surveillance\account_manage_details.html:102
+msgid "Joined Date"
+msgstr "د یوځای کیدو نیټه"
+
+#: .\help.txt:8924
+#: .\surveillance\templates\surveillance\account_manage_details.html:110
+msgid "Edit Profile"
+msgstr "پروفایل سم کړئ"
+
+#: .\help.txt:8942 .\help.txt:8947
+#: .\surveillance\templates\surveillance\account_update.html:4
+#: .\surveillance\templates\surveillance\account_update.html:9
+msgid "Update Profile"
+msgstr "پروفایل تازه کړئ"
+
+#: .\help.txt:8951 .\help.txt:13542 .\help.txt:13772
+#: .\surveillance\templates\surveillance\account_update.html:13
+#: .\surveillance\templates\surveillance\target_management_details.html:67
+#: .\surveillance\templates\surveillance\target_registration.html:13
+msgid "Back"
+msgstr "شاته"
+
+#: .\help.txt:8963 .\surveillance\templates\surveillance\account_update.html:25
+msgid "Profile Picture"
+msgstr "د پروفایل انځور"
+
+#: .\help.txt:8976 .\help.txt:13798
+#: .\surveillance\templates\surveillance\account_update.html:38
+#: .\surveillance\templates\surveillance\target_registration.html:39
+msgid "Browse File"
+msgstr "فایل وپلټئ"
+
+#: .\help.txt:8979 .\help.txt:13801
+#: .\surveillance\templates\surveillance\account_update.html:41
+#: .\surveillance\templates\surveillance\target_registration.html:42
+msgid "Use Webcam"
+msgstr "ویبکیم وکاروئ"
+
+#: .\help.txt:8991 .\help.txt:13584 .\help.txt:13817
+#: .\surveillance\templates\surveillance\account_update.html:53
+#: .\surveillance\templates\surveillance\target_management_details.html:109
+#: .\surveillance\templates\surveillance\target_registration.html:58
+msgid "Personal Information"
+msgstr "شخصي معلومات"
+
+#: .\help.txt:9014 .\surveillance\templates\surveillance\account_update.html:76
+msgid "Security Profile"
+msgstr "امنیتي پروفایل"
+
+#: .\help.txt:9053
+#: .\surveillance\templates\surveillance\account_update.html:115
+msgid "Capture Profile Photo"
+msgstr "د پروفایل انځور واخلئ"
+
+#: .\help.txt:9060
+#: .\surveillance\templates\surveillance\account_update.html:122
+msgid "Drag on image to define crop area, then click Use Photo."
+msgstr "د کرپ ساحه ټاکلو لپاره پر انځور کش کړئ، بیا د عکس کارول کلیک کړئ."
+
+#: .\help.txt:9064 .\help.txt:13027 .\help.txt:13943
+#: .\surveillance\templates\surveillance\account_update.html:126
+#: .\surveillance\templates\surveillance\pending_verifications.html:468
+#: .\surveillance\templates\surveillance\target_registration.html:184
+msgid "Capture"
+msgstr "انځور واخلئ"
+
+#: .\help.txt:9067 .\help.txt:13946
+#: .\surveillance\templates\surveillance\account_update.html:129
+#: .\surveillance\templates\surveillance\target_registration.html:187
+msgid "Use Photo"
+msgstr "عکس وکاروئ"
+
+#: .\help.txt:9100 .\surveillance\templates\surveillance\dashboard.html:4
+msgid "Tactical Dashboard"
+msgstr "تاکتیکي ډاشبورډ"
+
+#: .\help.txt:10366 .\help.txt:10653 .\help.txt:11562
+#: .\surveillance\templates\surveillance\detection_history.html:4
+#: .\surveillance\templates\surveillance\detection_history.html:291
+#: .\surveillance\templates\surveillance\home.html:462
+msgid "Detection History"
+msgstr "د کشف تاریخچه"
+
+#: .\help.txt:10656
+#: .\surveillance\templates\surveillance\detection_history.html:294
+msgid "Showing detections from your assignments only."
+msgstr "یوازې ستاسو د دندو کشفونه ښودل کیږي."
+
+#: .\help.txt:10658
+#: .\surveillance\templates\surveillance\detection_history.html:296
+msgid "Showing detections for targets you uploaded."
+msgstr "ستاسو د اپلوډ شویو اهدافو کشفونه ښودل کیږي."
+
+#: .\help.txt:10660
+#: .\surveillance\templates\surveillance\detection_history.html:298
+msgid "All detection events across all cameras."
+msgstr "د ټولو کیمرو د ټولو کشف پیښو لیست."
+
+#: .\help.txt:10666 .\help.txt:12960 .\help.txt:13539
+#: .\surveillance\templates\surveillance\detection_history.html:304
+#: .\surveillance\templates\surveillance\pending_verifications.html:401
+#: .\surveillance\templates\surveillance\target_management_details.html:64
+msgid "Print"
+msgstr "چاپ"
+
+#: .\help.txt:11492 .\surveillance\templates\surveillance\home.html:392
+msgid "Welcome back"
+msgstr "ښه راغلاست"
+
+#: .\help.txt:11497 .\surveillance\templates\surveillance\home.html:397
+msgid "Butterfly surveillance system. Select a module below to get started."
+msgstr "باترفلای د څارنې سیسټم. د پیل لپاره لاندې یو ماډل وټاکئ."
+
+#: .\help.txt:11501 .\surveillance\templates\surveillance\home.html:401
+msgid "Administrator"
+msgstr "مدیر"
+
+#: .\help.txt:11526 .\surveillance\templates\surveillance\home.html:426
+msgid "Modules"
+msgstr "ماډلونه"
+
+#: .\help.txt:11536 .\surveillance\templates\surveillance\home.html:436
+msgid ""
+"Real-time activity feed, person counter, alarms and camera status at a "
+"glance."
+msgstr "د ریل ټایم فعالیت فیډ، د کسانو شمارنه، اخطارونه او د کیمرو حالت یوځای."
+
+#: .\help.txt:11550 .\surveillance\templates\surveillance\home.html:450
+msgid ""
+"Manage connected cameras, view live streams and check status across all "
+"locations."
+msgstr "وصل شوې کیمرې اداره کړئ، ژوندي سټریمونه وګورئ او د ټولو ځایونو حالت وګورئ."
+
+#: .\help.txt:11563 .\surveillance\templates\surveillance\home.html:463
+msgid "Browse, filter and export all recorded detection events with snapshots."
+msgstr "د انځورونو سره ټول ثبت شوي کشف پیښې وګورئ، فیلټر کړئ او صادر کړئ."
+
+#: .\help.txt:11578 .\help.txt:11730
+#: .\surveillance\templates\surveillance\dashboard.html:880
+#: .\surveillance\templates\surveillance\home.html:478
+#: .\surveillance\templates\surveillance\notifications.html:4
+msgid "Notifications"
+msgstr "خبرتیاوې"
+
+#: .\help.txt:11579 .\surveillance\templates\surveillance\home.html:479
+msgid ""
+"Assignments, detection alerts, verification results and system messages."
+msgstr "دندې، د کشف خبرتیاوې، د تایید پایلې او د سیسټم پیغامونه."
+
+#: .\help.txt:11593 .\surveillance\templates\surveillance\home.html:493
+msgid ""
+"View targets assigned to you, acknowledge tasks and submit field detections."
+msgstr "تاسو ته سپارل شوي اهداف وګورئ، دندې ومنئ او د ډګر کشفونه وسپارئ."
+
+#: .\help.txt:11608 .\surveillance\templates\surveillance\home.html:508
+msgid ""
+"Enroll, assign and track surveillance targets. Export full dossiers as PDF."
+msgstr "د څارنې اهداف ثبت، سپارل او تعقیب کړئ. بشپړ دوسیې PDF بڼه کې صادر کړئ."
+
+#: .\help.txt:11621 .\surveillance\templates\surveillance\home.html:521
+msgid ""
+"Review operator-submitted detections. Approve or reject with chain-of-"
+"custody notes."
+msgstr "د اپریټر لخوا وړاندې شوي کشفونه وګورئ. د حوالې یادونو سره تایید یا رد کړئ."
+
+#: .\help.txt:11636 .\surveillance\templates\surveillance\home.html:536
+msgid "Register personnel, assign roles and manage system access levels."
+msgstr "پرسونل ثبت کړئ، رولونه وسپارئ او د سیسټم د لاسرسي کچې اداره کړئ."
+
+#: .\help.txt:11647 .\surveillance\templates\surveillance\home.html:547
+msgid "How it works"
+msgstr "دا څنګه کار کوي"
+
+#: .\help.txt:11651 .\surveillance\templates\surveillance\home.html:551
+msgid "Operational workflow"
+msgstr "د عملیاتي کار جریان"
+
+#: .\help.txt:11657 .\surveillance\templates\surveillance\home.html:557
+msgid "Connect a camera"
+msgstr "کیمره وصل کړئ"
+
+#: .\help.txt:11658 .\surveillance\templates\surveillance\home.html:558
+msgid ""
+"Go to Cameras and register a webcam or RTSP stream. The engine starts "
+"automatically."
+msgstr "کیمرو ته لاړ شئ او ویبکیم یا RTSP سټریم ثبت کړئ. انجن به اتوماتیک پیل شي."
+
+#: .\help.txt:11663 .\surveillance\templates\surveillance\home.html:563
+msgid "Enroll a target"
+msgstr "هدف ثبت کړئ"
+
+#: .\help.txt:11664 .\surveillance\templates\surveillance\home.html:564
+msgid ""
+"Supervisors upload a reference photo to the Targets module. Set an expiry if "
+"needed."
+msgstr "سپروایزران د اهدافو ماډل ته د حوالې انځور اپلوډ کوي. که اړتیا وي د پای نیټه وټاکئ."
+
+#: .\help.txt:11669 .\surveillance\templates\surveillance\home.html:569
+msgid "Assign to operator"
+msgstr "اپریټر ته وسپارئ"
+
+#: .\help.txt:11670 .\surveillance\templates\surveillance\home.html:570
+msgid ""
+"From the target detail page, assign monitoring to an operator with optional "
+"instructions."
+msgstr "د هدف د جزیاتو پاڼې نه، د اختیاري لارښوونو سره اپریټر ته وسپارئ."
+
+#: .\help.txt:11675 .\surveillance\templates\surveillance\home.html:575
+msgid "Receive alerts"
+msgstr "خبرتیاوې ترلاسه کړئ"
+
+#: .\help.txt:11676 .\surveillance\templates\surveillance\home.html:576
+msgid ""
+"When a match or alarm triggers, all connected dashboards receive a real-time "
+"notification."
+msgstr "کله چې مطابقت یا اخطار ولګیږي، ټول وصل ډاشبورډونه ریل ټایم خبرتیا ترلاسه کوي."
+
+#: .\help.txt:11681 .\surveillance\templates\surveillance\home.html:581
+msgid "Verify detection"
+msgstr "کشف تایید کړئ"
+
+#: .\help.txt:11682 .\surveillance\templates\surveillance\home.html:582
+msgid ""
+"Supervisors review the evidence snapshot and approve or reject with a note."
+msgstr "سپروایزران د شواهدو انځور ګوري او د یادونې سره تایید یا رد کوي."
+
+#: .\help.txt:11687 .\surveillance\templates\surveillance\home.html:587
+msgid "Export report"
+msgstr "راپور صادر کړئ"
+
+#: .\help.txt:11688 .\surveillance\templates\surveillance\home.html:588
+msgid ""
+"Approved detections unlock a PDF report with full target info, metadata and "
+"photos."
+msgstr "تایید شوي کشفونه د بشپړ هدف معلوماتو، میټاډیټا او انځورونو سره PDF راپور خلاصوي."
+
+#: .\help.txt:12156
+#: .\surveillance\templates\surveillance\notifications.html:430
+msgid "Signal Intelligence Feed"
+msgstr "د سیګنل استخباراتي فیډ"
+
+#: .\help.txt:12157
+#: .\surveillance\templates\surveillance\notifications.html:431
+msgid "Notifi"
+msgstr "خبر"
+
+#: .\help.txt:12157
+#: .\surveillance\templates\surveillance\notifications.html:431
+msgid "cations"
+msgstr "تیاوې"
+
+#: .\help.txt:12163
+#: .\surveillance\templates\surveillance\notifications.html:437
+msgid "Mark all read"
+msgstr "ټول لوستل شوي ونښانئ"
+
+#: .\help.txt:12168
+#: .\surveillance\templates\surveillance\notifications.html:442
+msgid "Hub"
+msgstr "مرکز"
+
+#: .\help.txt:12179
+#: .\surveillance\templates\surveillance\notifications.html:453
+#: .\surveillance\views.py:978
+msgid "All"
+msgstr "ټول"
+
+#: .\help.txt:12201 .\surveillance\views.py:967
+msgid "Assignment"
+msgstr "دنده"
+
+#: .\help.txt:12202 .\surveillance\views.py:968
+msgid "Passed Back"
+msgstr "بیرته لیږل شوی"
+
+#: .\help.txt:12203 .\surveillance\views.py:969
+msgid "Detection"
+msgstr "کشف"
+
+#: .\help.txt:12204
+#: .\surveillance\templates\surveillance\detection_history.html:394
+#: .\surveillance\views.py:971
+msgid "Approved"
+msgstr "تایید شوی"
+
+#: .\help.txt:12205 .\help.txt:12526
+#: .\surveillance\templates\surveillance\detection_history.html:395
+#: .\surveillance\templates\surveillance\operator_assignments.html:130
+#: .\surveillance\views.py:972
+msgid "Rejected"
+msgstr "رد شوی"
+
+#: .\help.txt:12206
+#: .\surveillance\templates\surveillance\detection_history.html:390
+#: .\surveillance\templates\surveillance\detection_history.html:569
+#: .\surveillance\views.py:970
+msgid "Verification"
+msgstr "تایید"
+
+#: .\help.txt:12207 .\surveillance\views.py:973
+msgid "System"
+msgstr "سیسټم"
+
+#: .\help.txt:12222
+#: .\surveillance\templates\surveillance\notifications.html:479
+msgid "Search notifications…"
+msgstr "خبرتیاوې وپلټئ…"
+
+#: .\help.txt:12228
+#: .\surveillance\templates\surveillance\notifications.html:485
+msgid "shown"
+msgstr "ښودل شوي"
+
+#: .\help.txt:12290
+#: .\surveillance\templates\surveillance\notifications.html:547
+msgid "View Assignment"
+msgstr "دنده کتل"
+
+#: .\help.txt:12297 .\help.txt:12516
+#: .\surveillance\templates\surveillance\notifications.html:554
+#: .\surveillance\templates\surveillance\operator_assignments.html:120
+msgid "Export PDF"
+msgstr "PDF صادر کړئ"
+
+#: .\help.txt:12302 .\surveillance\templates\surveillance\dashboard.html:831
+#: .\surveillance\templates\surveillance\notifications.html:559
+msgid "Verify"
+msgstr "تایید کړئ"
+
+#: .\help.txt:12317
+#: .\surveillance\templates\surveillance\notifications.html:574
+msgid "No notifications match your search."
+msgstr "ستاسو د لټون سره سمه خبرتیا نشته."
+
+#: .\help.txt:12329
+#: .\surveillance\templates\surveillance\notifications.html:586
+msgid "Signal Clear"
+msgstr "سیګنال روښانه دی"
+
+#: .\help.txt:12330
+#: .\surveillance\templates\surveillance\notifications.html:587
+msgid "You have no notifications. Check back after field operations."
+msgstr "تاسو هیڅ خبرتیا نلرئ. د ډګر عملیاتو وروسته بیا وګورئ."
+
+#: .\help.txt:12407
+#: .\surveillance\templates\surveillance\operator_assignments.html:11
+msgid ""
+"Targets assigned to you. Only your assigned targets are scanned by the "
+"system."
+msgstr "تاسو ته سپارل شوي اهداف. یوازې ستاسو سپارل شوي اهداف د سیسټم لخوا سکین کیږي."
+
+#: .\help.txt:12450
+#: .\surveillance\templates\surveillance\operator_assignments.html:54
+msgid "Acknowledge"
+msgstr "منل"
+
+#: .\help.txt:12455
+#: .\surveillance\templates\surveillance\operator_assignments.html:59
+msgid "Pass this target back to the uploader?"
+msgstr "ایا دا هدف بیرته اپلوډر ته وسپارل شي؟"
+
+#: .\help.txt:12456
+#: .\surveillance\templates\surveillance\operator_assignments.html:60
+msgid "Pass Back"
+msgstr "اپلوډر ته بېرته لېږل"
+
+#: .\help.txt:12475
+#: .\surveillance\templates\surveillance\operator_assignments.html:79
+msgid "Detection Events"
+msgstr "د کشف پیښې"
+
+#: .\help.txt:12520
+#: .\surveillance\templates\surveillance\operator_assignments.html:124
+msgid "Awaiting admin review"
+msgstr "د مدیر د بیاکتنې انتظار"
+
+#: .\help.txt:12537
+#: .\surveillance\templates\surveillance\operator_assignments.html:141
+msgid "No detections recorded for this assignment yet."
+msgstr "تر اوسه د دې دندې لپاره هیڅ کشف نه دی ثبت شوی."
+
+#: .\help.txt:12550
+#: .\surveillance\templates\surveillance\operator_assignments.html:154
+msgid "No Assignments"
+msgstr "هیڅ دنده نشته"
+
+#: .\help.txt:12551
+#: .\surveillance\templates\surveillance\operator_assignments.html:155
+msgid ""
+"You have no active target assignments. Contact your supervisor or admin."
+msgstr "تاسو هیڅ فعاله د هدف دنده نلرئ. له خپل سپروایزر یا مدیر سره اړیکه ونیسئ."
+
+#: .\help.txt:12952
+#: .\surveillance\templates\surveillance\pending_verifications.html:4
+#: .\surveillance\templates\surveillance\pending_verifications.html:393
+msgid "Pending Verifications"
+msgstr "د تایید انتظار لرونکي"
+
+#: .\help.txt:12955
+#: .\surveillance\templates\surveillance\pending_verifications.html:396
+msgid ""
+"Review detection events reported by operators. Approve or reject with notes."
+msgstr "د اپریټرانو لخوا راپور شوي کشف پیښې وګورئ. د یادونو سره تایید یا رد کړئ."
+
+#: .\help.txt:12972 .\surveillance\templates\surveillance\home.html:465
+#: .\surveillance\templates\surveillance\pending_verifications.html:413
+msgid "events"
+msgstr "پیښې"
+
+#: .\help.txt:12979
+#: .\surveillance\templates\surveillance\pending_verifications.html:420
+msgid "Sort"
+msgstr "ترتیب"
+
+#: .\help.txt:12981
+#: .\surveillance\templates\surveillance\pending_verifications.html:422
+msgid "Newest First"
+msgstr "تازه لومړی"
+
+#: .\help.txt:12982
+#: .\surveillance\templates\surveillance\pending_verifications.html:423
+msgid "Oldest First"
+msgstr "پخواني لومړی"
+
+#: .\help.txt:12983
+#: .\surveillance\templates\surveillance\pending_verifications.html:424
+msgid "Target Name A→Z"
+msgstr "د هدف نوم الف→ی"
+
+#: .\help.txt:12984
+#: .\surveillance\templates\surveillance\pending_verifications.html:425
+msgid "Target Name Z→A"
+msgstr "د هدف نوم ی→الف"
+
+#: .\help.txt:12985
+#: .\surveillance\templates\surveillance\pending_verifications.html:426
+msgid "Camera A→Z"
+msgstr "کیمره الف→ی"
+
+#: .\help.txt:12986
+#: .\surveillance\templates\surveillance\pending_verifications.html:427
+msgid "Event Type A→Z"
+msgstr "د پیښې ډول الف→ی"
+
+#: .\help.txt:12994
+#: .\surveillance\templates\surveillance\pending_verifications.html:435
+msgid "Search target, camera…"
+msgstr "هدف، کیمره وپلټئ…"
+
+#: .\help.txt:13033
+#: .\surveillance\templates\surveillance\pending_verifications.html:474
+msgid "No Snapshot"
+msgstr "انځور نشته"
+
+#: .\help.txt:13041
+#: .\surveillance\templates\surveillance\pending_verifications.html:482
+msgid "Ref"
+msgstr "حوالې"
+
+#: .\help.txt:13044
+#: .\surveillance\templates\surveillance\pending_verifications.html:485
+msgid "Reference"
+msgstr "حواله"
+
+#: .\help.txt:13073
+#: .\surveillance\templates\surveillance\pending_verifications.html:514
+msgid "in frame"
+msgstr "د چوکاټ کې"
+
+#: .\help.txt:13078 .\help.txt:13699
+#: .\surveillance\templates\surveillance\pending_verifications.html:519
+#: .\surveillance\templates\surveillance\target_management_details.html:219
+msgid "By"
+msgstr "د لخوا"
+
+#: .\help.txt:13080
+#: .\surveillance\templates\surveillance\pending_verifications.html:521
+msgid "Engine detected"
+msgstr "انجن کشف کړل"
+
+#: .\help.txt:13089
+#: .\surveillance\templates\surveillance\pending_verifications.html:530
+msgid "Verification note (optional)…"
+msgstr "د تایید یادونه (اختیاري)…"
+
+#: .\help.txt:13094
+#: .\surveillance\templates\surveillance\pending_verifications.html:535
+msgid "Approve"
+msgstr "تایید"
+
+#: .\help.txt:13098
+#: .\surveillance\templates\surveillance\pending_verifications.html:539
+msgid "Reject"
+msgstr "رد"
+
+#: .\help.txt:13108
+#: .\surveillance\templates\surveillance\detection_history.html:570
+#: .\surveillance\templates\surveillance\pending_verifications.html:549
+msgid "Export"
+msgstr "صادرول"
+
+#: .\help.txt:13111
+#: .\surveillance\templates\surveillance\pending_verifications.html:552
+msgid "Detection PDF"
+msgstr "د کشف PDF"
+
+#: .\help.txt:13116
+#: .\surveillance\templates\surveillance\pending_verifications.html:557
+msgid "Full Dossier"
+msgstr "بشپړ دوسیه"
+
+#: .\help.txt:13127
+#: .\surveillance\templates\surveillance\pending_verifications.html:568
+msgid "No events match your search."
+msgstr "ستاسو د لټون سره سمه پیښه نشته."
+
+#: .\help.txt:13133
+#: .\surveillance\templates\surveillance\pending_verifications.html:574
+msgid "Pagination"
+msgstr "د پاڼو ترتیب"
+
+#: .\help.txt:13141
+#: .\surveillance\templates\surveillance\pending_verifications.html:582
+msgid "All Clear"
+msgstr "ټول روښانه"
+
+#: .\help.txt:13142
+#: .\surveillance\templates\surveillance\pending_verifications.html:583
+msgid "No detection events are pending verification."
+msgstr "هیڅ د کشف پیښه د تایید انتظار نه لري."
+
+#: .\help.txt:13314 .\help.txt:13386
+#: .\surveillance\templates\surveillance\target_management.html:4
+#: .\surveillance\templates\surveillance\target_management.html:76
+msgid "Watchlist Database"
+msgstr "د څارنې لیست ډیټابیس"
+
+#: .\help.txt:13387
+#: .\surveillance\templates\surveillance\target_management.html:77
+msgid "Manage and view all surveillance targets."
+msgstr "ټول د څارنې اهداف اداره او وګورئ."
+
+#: .\help.txt:13399
+#: .\surveillance\templates\surveillance\target_management.html:89
+msgid "Database Actions"
+msgstr "د ډیټابیس کړنې"
+
+#: .\help.txt:13401
+#: .\surveillance\templates\surveillance\target_management.html:91
+msgid "Enroll New Subject"
+msgstr "نوی شخص ثبت کړئ"
+
+#: .\help.txt:13404
+#: .\surveillance\templates\surveillance\target_management.html:94
+msgid "Initialize full biometric enrollment for new surveillance targets."
+msgstr "د نوي څارنې اهدافو لپاره بشپړ بایومتریک نوم لیکنه پیل کړئ."
+
+#: .\help.txt:13411
+#: .\surveillance\templates\surveillance\target_management.html:101
+msgid "Total Targets"
+msgstr "ټول اهداف"
+
+#: .\help.txt:13419
+#: .\surveillance\templates\surveillance\target_management.html:109
+msgid "Authorized Personnel Watchlist"
+msgstr "د مجاز پرسونل د څارنې لیست"
+
+#: .\help.txt:13424
+#: .\surveillance\templates\surveillance\target_management.html:114
+msgid "IMAGE"
+msgstr "انځور"
+
+#: .\help.txt:13425
+#: .\surveillance\templates\surveillance\target_management.html:115
+msgid "NAME & ID"
+msgstr "نوم او آی ډي"
+
+#: .\help.txt:13426
+#: .\surveillance\templates\surveillance\target_management.html:116
+msgid "EXPIRATION"
+msgstr "نیټه ختمیدل"
+
+#: .\help.txt:13427
+#: .\surveillance\templates\surveillance\target_management.html:117
+msgid "STATUS"
+msgstr "حالت"
+
+#: .\help.txt:13428
+#: .\surveillance\templates\surveillance\target_management.html:118
+msgid "ACTIONS"
+msgstr "کړنې"
+
+#: .\help.txt:13449
+#: .\surveillance\templates\surveillance\target_management.html:139
+msgid "WATCHED"
+msgstr "تر څارنې لاندې"
+
+#: .\help.txt:13452
+#: .\surveillance\templates\surveillance\target_management.html:142
+msgid "DETAILS"
+msgstr "جزیات"
+
+#: .\help.txt:13460
+#: .\surveillance\templates\surveillance\target_management.html:150
+msgid "Database Empty"
+msgstr "ډیټابیس خالي دی"
+
+#: .\help.txt:13532
+#: .\surveillance\templates\surveillance\target_management_details.html:57
+msgid "Target Dossier & Assignment Management"
+msgstr "د هدف دوسیه او د دندو اداره"
+
+#: .\help.txt:13536
+#: .\surveillance\templates\surveillance\target_management_details.html:61
+msgid "Full Dossier PDF"
+msgstr "بشپړ دوسیه PDF"
+
+#: .\help.txt:13570
+#: .\surveillance\templates\surveillance\target_management_details.html:95
+msgid "FOUND"
+msgstr "موندل شوی"
+
+#: .\help.txt:13570 .\surveillance\templates\surveillance\dashboard.html:718
+#: .\surveillance\templates\surveillance\target_management_details.html:95
+msgid "ACTIVE"
+msgstr "فعال"
+
+#: .\help.txt:13574
+#: .\surveillance\templates\surveillance\target_management_details.html:99
+msgid "Expires"
+msgstr "د پای ته رسیدو وخت"
+
+#: .\help.txt:13604
+#: .\surveillance\templates\surveillance\target_management_details.html:124
+msgid "Father"
+msgstr "د پلار نوم"
+
+#: .\help.txt:13608 .\help.txt:13834
+#: .\surveillance\templates\surveillance\target_management_details.html:128
+#: .\surveillance\templates\surveillance\target_registration.html:75
+msgid "Age"
+msgstr "عمر"
+
+#: .\help.txt:13612 .\help.txt:13841
+#: .\surveillance\templates\surveillance\target_management_details.html:132
+#: .\surveillance\templates\surveillance\target_registration.html:82
+msgid "Gender"
+msgstr "جنسیت"
+
+#: .\help.txt:13616
+#: .\surveillance\templates\surveillance\target_management_details.html:136
+msgid "Tazkira"
+msgstr "تذکره"
+
+#: .\help.txt:13620
+#: .\surveillance\templates\surveillance\target_management_details.html:140
+msgid "Phone"
+msgstr "تلیفون"
+
+#: .\help.txt:13624 .\help.txt:13873
+#: .\surveillance\templates\surveillance\target_management_details.html:144
+#: .\surveillance\templates\surveillance\target_registration.html:114
+msgid "Address"
+msgstr "پته"
+
+#: .\help.txt:13628
+#: .\surveillance\templates\surveillance\target_management_details.html:148
+msgid "Crime"
+msgstr "جرم"
+
+#: .\help.txt:13649
+#: .\surveillance\templates\surveillance\target_management_details.html:169
+msgid "Assign to Operator"
+msgstr "اپریټر ته د هدف سپارل"
+
+#: .\help.txt:13655
+#: .\surveillance\templates\surveillance\target_management_details.html:175
+msgid "Select Operator"
+msgstr "اپریټر وټاکئ"
+
+#: .\help.txt:13657
+#: .\surveillance\templates\surveillance\target_management_details.html:177
+msgid "Choose operator"
+msgstr "اپریټر انتخاب کړئ"
+
+#: .\help.txt:13667
+#: .\surveillance\templates\surveillance\target_management_details.html:187
+msgid "Assignment Note"
+msgstr "د سپارلو یادونه"
+
+#: .\help.txt:13667
+#: .\surveillance\templates\surveillance\target_management_details.html:187
+msgid "optional"
+msgstr "اختیاري"
+
+#: .\help.txt:13669
+#: .\surveillance\templates\surveillance\target_management_details.html:189
+msgid "Instructions for the operator..."
+msgstr "اپریټر ته لارښوونې..."
+
+#: .\help.txt:13672
+#: .\surveillance\templates\surveillance\target_management_details.html:192
+msgid "Assign Target"
+msgstr "هدف وسپارئ"
+
+#: .\help.txt:13682
+#: .\surveillance\templates\surveillance\target_management_details.html:202
+msgid "Assignment History"
+msgstr "د سپارلو تاریخچه"
+
+#: .\help.txt:13714
+#: .\surveillance\templates\surveillance\target_management_details.html:234
+msgid "Detections"
+msgstr "کشفونه"
+
+#: .\help.txt:13736
+#: .\surveillance\templates\surveillance\target_management_details.html:256
+msgid "Operator passed back this assignment. You can re-assign or close it."
+msgstr "اپریټر دا دنده بیرته لیږلې ده. تاسو کولی شئ دوباره وسپارئ یا وتړئ."
+
+#: .\help.txt:13746
+#: .\surveillance\templates\surveillance\target_management_details.html:266
+msgid "No assignments yet."
+msgstr "تر اوسه هیڅ دنده نشته."
+
+#: .\help.txt:13768 .\help.txt:13920
+#: .\surveillance\templates\surveillance\target_registration.html:4
+#: .\surveillance\templates\surveillance\target_registration.html:9
+#: .\surveillance\templates\surveillance\target_registration.html:161
+msgid "Register Target"
+msgstr "هدف ثبت کړئ"
+
+#: .\help.txt:13769
+#: .\surveillance\templates\surveillance\target_registration.html:10
+msgid "Enroll a new surveillance target into the system."
+msgstr "سیسټم ته د نوي څارنې هدف ثبت کړئ."
+
+#: .\help.txt:13784
+#: .\surveillance\templates\surveillance\target_registration.html:25
+msgid "Subject Photo"
+msgstr "د شخص انځور"
+
+#: .\help.txt:13804
+#: .\surveillance\templates\surveillance\target_registration.html:45
+msgid "Drag on image to crop after capture"
+msgstr "د اخیستو وروسته د کرپ لپاره پر انځور کش کړئ"
+
+#: .\help.txt:13829
+#: .\surveillance\templates\surveillance\target_registration.html:70
+msgid "Father's Name"
+msgstr "د پلار نوم"
+
+#: .\help.txt:13845
+#: .\surveillance\templates\surveillance\target_registration.html:86
+msgid "Marital Status"
+msgstr "تأهل حالت"
+
+#: .\help.txt:13849
+#: .\surveillance\templates\surveillance\target_registration.html:90
+msgid "Place of Birth"
+msgstr "د زیږیدو ځای"
+
+#: .\help.txt:13853
+#: .\surveillance\templates\surveillance\target_registration.html:94
+msgid "Occupation"
+msgstr "مسلک"
+
+#: .\help.txt:13857
+#: .\surveillance\templates\surveillance\target_registration.html:98
+msgid "Tazkira Number"
+msgstr "تذکره / آی ډي شمېره"
+
+#: .\help.txt:13862
+#: .\surveillance\templates\surveillance\target_registration.html:103
+msgid "Phone Number"
+msgstr "د تلیفون شمېره"
+
+#: .\help.txt:13882
+#: .\surveillance\templates\surveillance\target_registration.html:123
+msgid "Case Information"
+msgstr "د قضیې معلومات"
+
+#: .\help.txt:13885
+#: .\surveillance\templates\surveillance\target_registration.html:126
+msgid "Crime / Charge"
+msgstr "جرم / تور"
+
+#: .\help.txt:13889
+#: .\surveillance\templates\surveillance\target_registration.html:130
+msgid "Description / Notes"
+msgstr "توضیح / یادونې"
+
+#: .\help.txt:13898
+#: .\surveillance\templates\surveillance\target_registration.html:139
+msgid "Monitoring Duration"
+msgstr "د نظارت موده"
+
+#: .\help.txt:13901
+#: .\surveillance\templates\surveillance\target_registration.html:142
+msgid "Active Duration"
+msgstr "د فعالیت موده"
+
+#: .\help.txt:13903
+#: .\surveillance\templates\surveillance\target_registration.html:144
+msgid "Indefinite (no expiry)"
+msgstr "بې موده (پرته له پای نیټې)"
+
+#: .\help.txt:13904
+#: .\surveillance\templates\surveillance\target_registration.html:145
+msgid "Hour"
+msgstr "ساعت"
+
+#: .\help.txt:13905
+#: .\surveillance\templates\surveillance\target_registration.html:146
+msgid "Hours"
+msgstr "ساعتونه"
+
+#: .\help.txt:13906
+#: .\surveillance\templates\surveillance\target_registration.html:147
+msgid "Day"
+msgstr "ورځ"
+
+#: .\help.txt:13907
+#: .\surveillance\templates\surveillance\target_registration.html:148
+msgid "Days"
+msgstr "ورځې"
+
+#: .\help.txt:13908
+#: .\surveillance\templates\surveillance\target_registration.html:149
+msgid "Custom Date"
+msgstr "خپله نیټه"
+
+#: .\help.txt:13912
+#: .\surveillance\templates\surveillance\target_registration.html:153
+msgid "Custom Expiry Date & Time"
+msgstr "د پای ته رسیدو خپله نیټه او وخت"
+
+#: .\help.txt:13932
+#: .\surveillance\templates\surveillance\target_registration.html:173
+msgid "Capture Subject Photo"
+msgstr "د شخص انځور واخلئ"
+
+#: .\help.txt:13939
+#: .\surveillance\templates\surveillance\target_registration.html:180
+msgid ""
+"After capturing, drag on the image to define a crop area, then click Use "
+"Photo."
+msgstr "د اخیستو وروسته د کرپ ساحه ټاکلو لپاره پر انځور کش کړئ، بیا د عکس کارول کلیک کړئ."
+
+#: .\surveillance\templates\base.html:140
+#: .\surveillance\templates\registration\password_reset_form.html:127
+msgid "Login"
+msgstr "ننوتل"
+
+#: .\surveillance\templates\registration\password_reset_complete.html:6
+#: .\surveillance\templates\registration\password_reset_complete.html:82
+msgid "Password Reset Successful"
+msgstr "پټنوم بریالیتوب سره بیا تنظیم شو"
+
+#: .\surveillance\templates\registration\password_reset_complete.html:84
+msgid "Your password has been changed. You can now"
+msgstr "ستاسو پټنوم بدل شو. اوس تاسو کولی شئ"
+
+#: .\surveillance\templates\registration\password_reset_complete.html:84
+msgid "log in"
+msgstr "ننوزئ"
+
+#: .\surveillance\templates\registration\password_reset_confirm.html:7
+#: .\surveillance\templates\registration\password_reset_confirm.html:86
+msgid "Set New Password"
+msgstr "نوی پټنوم وټاکئ"
+
+#: .\surveillance\templates\registration\password_reset_confirm.html:98
+msgid "Change Password"
+msgstr "پټنوم بدل کړئ"
+
+#: .\surveillance\templates\registration\password_reset_done.html:6
+#: .\surveillance\templates\registration\password_reset_done.html:85
+msgid "Email Sent"
+msgstr "برېښنالیک واستول شو"
+
+#: .\surveillance\templates\registration\password_reset_done.html:86
+msgid "If the email exists in our system, a reset link has been sent."
+msgstr "که چیرې برېښنالیک زمونږ سیسټم کې وي، د بیا تنظیم لینک واستول شو."
+
+#: .\surveillance\templates\registration\password_reset_done.html:87
+#: .\surveillance\templates\registration\password_reset_done.html:88
+msgid "Back to Login"
+msgstr "ننوتلو ته شاته"
+
+#: .\surveillance\templates\registration\password_reset_form.html:6
+#: .\surveillance\templates\registration\password_reset_form.html:88
+msgid "Reset Password"
+msgstr "پټنوم بیا تنظیم کړئ"
+
+#: .\surveillance\templates\registration\password_reset_form.html:97
+#: .\surveillance\templates\registration\password_reset_form.html:112
+msgid "Enter your email"
+msgstr "خپل برېښنالیک دننه کړئ"
+
+#: .\surveillance\templates\registration\password_reset_form.html:115
+msgid "Please enter a valid email address."
+msgstr "مهرباني وکړئ یو سم برېښنالیک پته دننه کړئ."
+
+#: .\surveillance\templates\registration\password_reset_form.html:121
+#: .\surveillance\templates\registration\password_reset_form.html:123
+msgid "Send Reset Email"
+msgstr "د بیا تنظیم برېښنالیک واستوئ"
+
+#: .\surveillance\templates\registration\password_reset_form.html:129
+msgid "Create New Account"
+msgstr "نوی حساب جوړ کړئ"
+
+#: .\surveillance\templates\surveillance\account_manage.html:4
+msgid "Butterfly - Access Control"
+msgstr "باترفلای - د لاسرسي کنټرول"
+
+#: .\surveillance\templates\surveillance\dashboard.html:532
+msgid "BUTTERFLY / TACTICAL DASHBOARD"
+msgstr "باترفلای / تاکتیکي ډاشبورډ"
+
+#: .\surveillance\templates\surveillance\dashboard.html:559
+msgid "online"
+msgstr "آنلاین"
+
+#: .\surveillance\templates\surveillance\dashboard.html:560
+msgid "Cameras Active"
+msgstr "فعالې کیمرې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:561
+msgid "of"
+msgstr "له"
+
+#: .\surveillance\templates\surveillance\dashboard.html:561
+#: .\surveillance\templates\surveillance\detection_history.html:682
+msgid "total"
+msgstr "ټول"
+
+#: .\surveillance\templates\surveillance\dashboard.html:568
+msgid "Persons Detected"
+msgstr "کشف شوي کسان"
+
+#: .\surveillance\templates\surveillance\dashboard.html:569
+#: .\surveillance\templates\surveillance\home.html:438
+msgid "live"
+msgstr "ژوندی"
+
+#: .\surveillance\templates\surveillance\dashboard.html:576
+msgid "Watchlist Targets"
+msgstr "د څارنې لیست اهداف"
+
+#: .\surveillance\templates\surveillance\dashboard.html:583
+msgid "Pending Verify"
+msgstr "د تایید انتظار"
+
+#: .\surveillance\templates\surveillance\dashboard.html:585
+msgid "needs review"
+msgstr "بیاکتنه ته اړتیا ده"
+
+#: .\surveillance\templates\surveillance\dashboard.html:593
+msgid "Today's Events"
+msgstr "د نن ورځې پیښې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:600
+msgid "Unread Alerts"
+msgstr "نه لوستل شوې خبرتیاوې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:602
+msgid "unread"
+msgstr "نه لوستل شوې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:620
+msgid "Live Activity Feed"
+msgstr "د ژوندي فعالیت فیډ"
+
+#: .\surveillance\templates\surveillance\dashboard.html:648
+msgid "Awaiting live events…"
+msgstr "د ژوندیو پیښو انتظار…"
+
+#: .\surveillance\templates\surveillance\dashboard.html:656
+msgid "Detection Breakdown"
+msgstr "د کشف تحلیل"
+
+#: .\surveillance\templates\surveillance\dashboard.html:659
+msgid "By Event Type"
+msgstr "د پیښې ډول له مخې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:717
+msgid "Live Vision"
+msgstr "ژوندی لید"
+
+#: .\surveillance\templates\surveillance\dashboard.html:730
+msgid "persons in frame"
+msgstr "د چوکاټ کې کسان"
+
+#: .\surveillance\templates\surveillance\dashboard.html:737
+msgid "Today's Spark"
+msgstr "د نن ورځې فعالیت"
+
+#: .\surveillance\templates\surveillance\dashboard.html:762
+msgid "Connected Cameras"
+msgstr "وصل شوې کیمرې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:763
+msgid "manage"
+msgstr "اداره"
+
+#: .\surveillance\templates\surveillance\dashboard.html:767
+msgid "Loading cameras…"
+msgstr "کیمرې لوډیږي…"
+
+#: .\surveillance\templates\surveillance\dashboard.html:775
+msgid "Verification Queue"
+msgstr "د تایید کتار"
+
+#: .\surveillance\templates\surveillance\dashboard.html:777
+msgid "review all"
+msgstr "ټول وګورئ"
+
+#: .\surveillance\templates\surveillance\dashboard.html:795
+msgid "PENDING"
+msgstr "انتظار"
+
+#: .\surveillance\templates\surveillance\dashboard.html:802
+msgid "Queue clear"
+msgstr "کتار خالي دی"
+
+#: .\surveillance\templates\surveillance\dashboard.html:815
+msgid "Quick Actions"
+msgstr "چټکې کړنې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:826
+msgid "Alerts"
+msgstr "خبرتیاوې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:839
+msgid "My Tasks"
+msgstr "زما دندې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:854
+msgid "Recent Assignments"
+msgstr "وروستنۍ دندې"
+
+#: .\surveillance\templates\surveillance\dashboard.html:872
+msgid "No assignments"
+msgstr "هیڅ دنده نشته"
+
+#: .\surveillance\templates\surveillance\dashboard.html:899
+msgid "No new alerts"
+msgstr "هیڅ نوې خبرتیا نشته"
+
+#: .\surveillance\templates\surveillance\dashboard.html:907
+msgid "System Health"
+msgstr "د سیسټم روغتیا"
+
+#: .\surveillance\templates\surveillance\dashboard.html:913
+#: .\surveillance\templates\surveillance\dashboard.html:918
+msgid "OK"
+msgstr "سم دی"
+
+#: .\surveillance\templates\surveillance\dashboard.html:921
+msgid "Engine"
+msgstr "انجن"
+
+#: .\surveillance\templates\surveillance\dashboard.html:942
+msgid "System Uptime"
+msgstr "د سیسټم د فعالیت وخت"
+
+#: .\surveillance\templates\surveillance\detection_history.html:311
+msgid "Filters &amp; Sort"
+msgstr "فیلټرونه او ترتیب"
+
+#: .\surveillance\templates\surveillance\detection_history.html:321
+msgid "Filters"
+msgstr "فیلټرونه"
+
+#: .\surveillance\templates\surveillance\detection_history.html:322
+msgid "Reset all"
+msgstr "ټول بیا تنظیم کړئ"
+
+#: .\surveillance\templates\surveillance\detection_history.html:334
+msgid "Event Type"
+msgstr "د پیښې ډول"
+
+#: .\surveillance\templates\surveillance\detection_history.html:341
+msgid "All Events"
+msgstr "ټولې پیښې"
+
+#: .\surveillance\templates\surveillance\detection_history.html:349
+msgid "Fall Detected"
+msgstr "سقوط کشف شو"
+
+#: .\surveillance\templates\surveillance\detection_history.html:357
+#: .\surveillance\templates\surveillance\detection_history.html:466
+msgid "Hand Waving"
+msgstr "د لاس خوځول"
+
+#: .\surveillance\templates\surveillance\detection_history.html:365
+msgid "Normal"
+msgstr "عادي"
+
+#: .\surveillance\templates\surveillance\detection_history.html:375
+msgid "Target Match"
+msgstr "د هدف مطابقت"
+
+#: .\surveillance\templates\surveillance\detection_history.html:377
+msgid "All events"
+msgstr "ټولې پیښې"
+
+#: .\surveillance\templates\surveillance\detection_history.html:380
+msgid "Target captured"
+msgstr "هدف ونیول شو"
+
+#: .\surveillance\templates\surveillance\detection_history.html:383
+msgid "No target match"
+msgstr "هیڅ د هدف مطابقت نشته"
+
+#: .\surveillance\templates\surveillance\detection_history.html:393
+#: .\surveillance\templates\surveillance\detection_history.html:649
+msgid "Pending"
+msgstr "انتظار"
+
+#: .\surveillance\templates\surveillance\detection_history.html:396
+msgid "Unreviewed"
+msgstr "نه کتل شوی"
+
+#: .\surveillance\templates\surveillance\detection_history.html:405
+msgid "All cameras"
+msgstr "ټولې کیمرې"
+
+#: .\surveillance\templates\surveillance\detection_history.html:417
+msgid "Date Range"
+msgstr "د نیټې سلسله"
+
+#: .\surveillance\templates\surveillance\detection_history.html:428
+msgid "Sort By"
+msgstr "ترتیب له مخې"
+
+#: .\surveillance\templates\surveillance\detection_history.html:430
+msgid "Newest first"
+msgstr "تازه لومړی"
+
+#: .\surveillance\templates\surveillance\detection_history.html:431
+msgid "Oldest first"
+msgstr "پخواني لومړی"
+
+#: .\surveillance\templates\surveillance\detection_history.html:432
+msgid "Event type A→Z"
+msgstr "د پیښې ډول الف→ی"
+
+#: .\surveillance\templates\surveillance\detection_history.html:433
+msgid "Event type Z→A"
+msgstr "د پیښې ډول ی→الف"
+
+#: .\surveillance\templates\surveillance\detection_history.html:434
+msgid "Most people first"
+msgstr "ډیر کسان لومړی"
+
+#: .\surveillance\templates\surveillance\detection_history.html:435
+msgid "Fewest people first"
+msgstr "لږ کسان لومړی"
+
+#: .\surveillance\templates\surveillance\detection_history.html:436
+msgid "Verification status"
+msgstr "د تایید حالت"
+
+#: .\surveillance\templates\surveillance\detection_history.html:441
+msgid "Apply Filters"
+msgstr "فیلټرونه پلي کړئ"
+
+#: .\surveillance\templates\surveillance\detection_history.html:454
+msgid "Total Events"
+msgstr "ټولې پیښې"
+
+#: .\surveillance\templates\surveillance\detection_history.html:458
+msgid "Targets Matched"
+msgstr "مطابقت لرونکي اهداف"
+
+#: .\surveillance\templates\surveillance\detection_history.html:462
+msgid "Falls Detected"
+msgstr "کشف شوي سقوطونه"
+
+#: .\surveillance\templates\surveillance\detection_history.html:496
+msgid "Target matched"
+msgstr "هدف مطابقت وموند"
+
+#: .\surveillance\templates\surveillance\detection_history.html:496
+msgid "No target"
+msgstr "هیڅ هدف نشته"
+
+#: .\surveillance\templates\surveillance\detection_history.html:549
+msgid "Timestamp"
+msgstr "وخت"
+
+#: .\surveillance\templates\surveillance\detection_history.html:554
+msgid "Snapshot"
+msgstr "لحظوی انځور"
+
+#: .\surveillance\templates\surveillance\detection_history.html:555
+#: .\surveillance\templates\surveillance\target_management_details.html:4
+msgid "Target"
+msgstr "هدف"
+
+#: .\surveillance\templates\surveillance\detection_history.html:558
+msgid "Event"
+msgstr "پیښه"
+
+#: .\surveillance\templates\surveillance\detection_history.html:563
+msgid "Person count"
+msgstr "د کسانو شمیر"
+
+#: .\surveillance\templates\surveillance\detection_history.html:645
+#: .\surveillance\templates\surveillance\target_management_details.html:245
+msgid "PDF"
+msgstr "PDF"
+
+#: .\surveillance\templates\surveillance\detection_history.html:661
+msgid "No events match the current filters."
+msgstr "د اوسني فیلټرونو سره سمه پیښه نشته."
+
+#: .\surveillance\templates\surveillance\detection_history.html:665
+msgid "Clear all filters"
+msgstr "ټول فیلټرونه پاک کړئ"
+
+#: .\surveillance\templates\surveillance\detection_history.html:685
+msgid "Next ›"
+msgstr "بله ›"
+
+#: .\surveillance\templates\surveillance\home.html:417
+msgid "You have"
+msgstr "تاسو لرئ"
+
+#: .\surveillance\templates\surveillance\home.html:417
+msgid "unread notification"
+msgstr "نه لوستل شوې خبرتیا"
+
+#: .\surveillance\templates\surveillance\home.html:420
+msgid "View all"
+msgstr "ټول وګورئ"
+
+#: .\surveillance\templates\surveillance\home.html:433
+msgid "Live"
+msgstr "ژوندی"
+
+#: .\surveillance\templates\surveillance\home.html:438
+msgid "surveillance"
+msgstr "څارنه"
+
+#: .\surveillance\templates\surveillance\home.html:452
+msgid "camera"
+msgstr "کیمره"
+
+#: .\surveillance\templates\surveillance\home.html:452
+#: .\surveillance\templates\surveillance\home.html:538
+msgid "control"
+msgstr "کنټرول"
+
+#: .\surveillance\templates\surveillance\home.html:465
+msgid "log"
+msgstr "ثبت"
+
+#: .\surveillance\templates\surveillance\home.html:475
+msgid "new"
+msgstr "نوی"
+
+#: .\surveillance\templates\surveillance\home.html:481
+msgid "alerts"
+msgstr "خبرتیاوې"
+
+#: .\surveillance\templates\surveillance\home.html:481
+msgid "inbox"
+msgstr "د راتلونکو بکس"
+
+#: .\surveillance\templates\surveillance\home.html:495
+msgid "operator"
+msgstr "اپریټر"
+
+#: .\surveillance\templates\surveillance\home.html:495
+#: .\surveillance\templates\surveillance\home.html:523
+msgid "queue"
+msgstr "کتار"
+
+#: .\surveillance\templates\surveillance\home.html:510
+msgid "watchlist"
+msgstr "د څارنې لیست"
+
+#: .\surveillance\templates\surveillance\home.html:510
+msgid "db"
+msgstr "ډیټابیس"
+
+#: .\surveillance\templates\surveillance\home.html:523
+msgid "review"
+msgstr "بیاکتنه"
+
+#: .\surveillance\templates\surveillance\home.html:538
+msgid "access"
+msgstr "لاسرسی"
+
+#: .\surveillance\views.py:1277
+msgid "Profile updated successfully."
+msgstr "پروفایل په بریالیتوب سره تازه شو."
+
+#~ msgid "Confirm"
+#~ msgstr "تایید"
+
+#~ msgid "Logout"
+#~ msgstr "وتل"
+
+#~ msgid "SYSTEM STATUS"
+#~ msgstr "د سیسټم حالت"
+
+#~ msgid "USERNAME OR EMAIL"
+#~ msgstr "کارن نوم یا برېښنالیک"
+
+#~ msgid "PASSWORD"
+#~ msgstr "پټنوم"
+
+#~ msgid "CLEARANCE:"
+#~ msgstr "امنیتي اجازه:"
+
+#~ msgid "Editing"
+#~ msgstr "سمول"
+
+#~ msgid "SYSTEM CONTROL"
+#~ msgstr "د سیسټم کنټرول"
+
+#~ msgid "Surveillance Hub"
+#~ msgstr "د څارنې مرکز"
+
+#~ msgid ""
+#~ "Database and Subject enrollment has been moved to the Management Portal."
+#~ msgstr "د ډیټابیس او د اشخاصو ثبت د مدیریت پورټل ته لیږدول شوی."
+
+#~ msgid "Optical Sensor Feed"
+#~ msgstr "د نوري سنسر جریان"
+
+#~ msgid "Identity Confirmation"
+#~ msgstr "د هویت تایید"
+
+#~ msgid "CRITICAL"
+#~ msgstr "بحراني"
+
+#~ msgid "FALL DETECTED"
+#~ msgstr "سقوط کشف شو"
+
+#~ msgid "GREETING"
+#~ msgstr "سلام"
+
+#~ msgid "CONFIRMED"
+#~ msgstr "تایید شوی"
+
+#~ msgid "System Integrity & Recent Detections"
+#~ msgstr "د سیسټم بشپړتیا او وروستي کشفونه"
+
+#~ msgid "UPTIME"
+#~ msgstr "د فعالیت وخت"
+
+#~ msgid "LATENCY"
+#~ msgstr "ځنډ"
+
+#~ msgid "ENCRYPTION"
+#~ msgstr "کوډګذاري"
+
+#~ msgid "Recently Detected Persons"
+#~ msgstr "وروستي کشف شوي کسان"
+
+#~ msgid "No confirmed identities yet."
+#~ msgstr "تر اوسه هیڅ تایید شوی هویت نشته."
+
+#~ msgid "DISCONNECTED"
+#~ msgstr "قطع شوی"
+
+#~ msgid "Count"
+#~ msgstr "شمېر"
+
+#~ msgid "Matched Target"
+#~ msgstr "مطابقت لرونکی هدف"
+
+#~ msgid "FALL"
+#~ msgstr "سقوط"
+
+#~ msgid "WAVE"
+#~ msgstr "لاس خوځول"
+
+#~ msgid "Page"
+#~ msgstr "پاڼه"
+
+#~ msgid "SYSTEM HUB"
+#~ msgstr "د سیسټم مرکز"
+
+#~ msgid "Authorized Personnel Only - Neural Link Active"
+#~ msgstr "یوازې مجاز پرسونل - عصبي اړیکه فعاله ده"
+
+#~ msgid ""
+#~ "Initialize live vision stream, occupancy counting, and gesture "
+#~ "recognition protocols."
+#~ msgstr "د ژوندۍ ویډیو جریان، د اشغال شمېرنه او د حرکت پېژندنې پروتوکولونه فعال کړئ."
+
+#~ msgid "Database"
+#~ msgstr "ډیټابیس"
+
+#~ msgid ""
+#~ "Access the User Archive, manage access levels, and enroll new personnel "
+#~ "into the system."
+#~ msgstr "د کاروونکو آرشیف ته لاسرسی، د لاسرسي کچې اداره کول، او په سیسټم کې د نوي پرسونل ثبتول."
+
+#~ msgid "Assigned by"
+#~ msgstr "د لخوا سپارل شوی"
+
+#~ msgid "No targets currently assigned to you."
+#~ msgstr "دا مهال تاسو ته هیڅ هدف نه دی سپارل شوی."
+
+#~ msgid "Back to Watchlist"
+#~ msgstr "بېرته د څارنې لیست ته"
+
+#~ msgid "Enrolled By"
+#~ msgstr "د لخوا ثبت شوی"
+
+#~ msgid "Biometric & Personal Records"
+#~ msgstr "بایومتریک او شخصي ریکارډونه"
+
+#~ msgid "Authorization Created"
+#~ msgstr "اجازه جوړه شوه"
+
+#~ msgid "Current Address"
+#~ msgstr "اوسنی پته"
+
+#~ msgid "Criminal Incident Log"
+#~ msgstr "د جرمی پیښو لاګ"
+
+#~ msgid "Primary Offense"
+#~ msgstr "اصلي جرم"
+
+#~ msgid "Detailed Description"
+#~ msgstr "بشپړ تفصیل"
+
+#~ msgid "Note / Instructions"
+#~ msgstr "یادونه / لارښوونې"
+
+#~ msgid "e.g. Monitor gate 3, report immediately on sighting"
+#~ msgstr "مثلاً: ۳ دروازه وڅارئ، د لیدلو په صورت کې سمدستي خبر ورکړئ"
+
+#~ msgid "Assign"
+#~ msgstr "سپارل"
+
+#~ msgid "No operators are currently registered in the system."
+#~ msgstr "په سیسټم کې دا مهال هیڅ اپریټر نه دی ثبت شوی."
+
+#~ msgid "by"
+#~ msgstr "د لخوا"
+
+#~ msgid "New Subject Enrollment"
+#~ msgstr "د نوي شخص نوم لیکنه"
+
+#~ msgid "Subject Enrollment System"
+#~ msgstr "د اشخاصو د ثبت سیسټم"
+
+#~ msgid "1. Core Biometrics"
+#~ msgstr "۱. اساسي بایومتریک"
+
+#~ msgid "2. Personal Profile"
+#~ msgstr "۲. شخصي پروفایل"
+
+#~ msgid "3. Identification & Contact"
+#~ msgstr "۳. پیژندګلوی او اړیکه"
+
+#~ msgid "4. Criminal Record & TTL"
+#~ msgstr "۴. جرمي ریکارډ او TTL"
+
+#~ msgid "Authorization Window"
+#~ msgstr "د اجازې کړکۍ"
+
+#~ msgid "Permanent Access"
+#~ msgstr "دایمي لاسرسی"
+
+#~ msgid "Abort"
+#~ msgstr "لغوه کول"
+
+#~ msgid "Initialize Subject Enrollment"
+#~ msgstr "د شخص نوم لیکنه پیل کړئ"
+
+#~ msgid "FIRST NAME"
+#~ msgstr "لومړی نوم"
+
+#~ msgid "LAST NAME"
+#~ msgstr "تخلص"
+
+#~ msgid "EMAIL ADDRESS"
+#~ msgstr "د برېښنالیک پته"
+
+#~ msgid "CONFIRM"
+#~ msgstr "تأیید"
+
+#~ msgid "ADMINISTRATOR"
+#~ msgstr "مدیر"
