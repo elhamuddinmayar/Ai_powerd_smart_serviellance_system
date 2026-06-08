@@ -1,0 +1,399 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" 
+      dir="{% if LANGUAGE_CODE == 'fa' or LANGUAGE_CODE == 'ps' %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Authorize" %} — Butterfly</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4ecca3;
+            --secondary: #e94560;
+            --bg-deep: #1a1a2e;
+            --glass: rgba(22, 33, 62, 0.85);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: radial-gradient(circle at center, #16213e 0%, #1a1a2e 100%);
+            color: white; 
+            min-height: 100vh;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px;
+        }
+
+        /* Login Card */
+        .login-card { 
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-radius: 24px; 
+            padding: 40px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%; 
+            max-width: 420px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        h1 { 
+            color: var(--primary); 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            font-size: 1.75rem; 
+            margin-bottom: 25px; 
+        }
+
+        input { 
+            width: 100%; 
+            padding: 14px 18px; 
+            background: rgba(26, 26, 46, 0.8); 
+            border: 2px solid transparent; 
+            border-radius: 12px; 
+            color: white; 
+            margin-bottom: 20px;
+            transition: var(--transition);
+            outline: none;
+            text-align: inherit;
+        }
+
+        input:focus { border-color: var(--primary); background: #1a1a2e; }
+
+        .btn-cyber { 
+            width: 100%; 
+            padding: 15px; 
+            background: var(--primary); 
+            border: none; 
+            border-radius: 12px; 
+            color: #1a1a2e; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            transition: var(--transition);
+        }
+
+        .btn-cyber:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(78, 204, 163, 0.3); }
+
+        /* ══ LANGUAGE SWITCHER STYLING ══ */
+        .lang-container {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .lang-container i { color: var(--primary); font-size: 0.9rem; }
+
+        .b-lang {
+            background: #1a1a2e;
+            color: #4ecca3;
+            border: 1px solid rgba(78, 204, 163, 0.4);
+            border-radius: 8px;
+<<<<<<< HEAD
+            padding: 6px 30px 6px 12px;
+=======
+            padding: 6px 30px 6px 12px; /* Extra right padding for custom arrow */
+>>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+<<<<<<< HEAD
+=======
+            /* Custom Arrow Icon */
+>>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ecca3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 14px;
+        }
+
+<<<<<<< HEAD
+        .b-lang option {
+            background-color: #1a1a2e !important;
+            color: #ffffff !important;
+=======
+        /* Fixing the "White Box" issue in dropdowns */
+        .b-lang option {
+            background-color: #1a1a2e !important; /* Force dark background */
+            color: #ffffff !important;           /* Force white text */
+>>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
+            padding: 12px;
+        }
+
+        .b-lang:hover { border-color: var(--primary); }
+
+        .links { margin-top: 20px; }
+        .links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.85rem; transition: 0.3s; }
+        .links a:hover { color: var(--secondary); }
+
+<<<<<<< HEAD
+=======
+        /* RTL support for the custom arrow */
+>>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
+        [dir="rtl"] .b-lang {
+            padding: 6px 12px 6px 30px;
+            background-position: left 8px center;
+        }
+<<<<<<< HEAD
+
+        /* ══ TOAST MESSAGES ══ */
+        .msg-container {
+            position: fixed;
+            top: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+            width: calc(100vw - 40px);
+        }
+
+        [dir="ltr"] .msg-container { right: 20px; }
+        [dir="rtl"] .msg-container { left: 20px; }
+
+        .msg-toast {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 0.85rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,.6);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: toastSlideIn .3s ease;
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .msg-toast.error   { border-left: 4px solid #e94560; }
+        .msg-toast.success { border-left: 4px solid #4ecca3; }
+        .msg-toast.warning { border-left: 4px solid #f39c12; }
+        .msg-toast.info    { border-left: 4px solid #3498db; }
+
+        .msg-toast__icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .msg-toast.error   .msg-toast__icon { color: #e94560; }
+        .msg-toast.success .msg-toast__icon { color: #4ecca3; }
+        .msg-toast.warning .msg-toast__icon { color: #f39c12; }
+        .msg-toast.info    .msg-toast__icon { color: #3498db; }
+
+        .msg-toast__body { flex: 1; }
+        .msg-toast__label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 3px;
+        }
+        .msg-toast.error   .msg-toast__label { color: #e94560; }
+        .msg-toast.success .msg-toast__label { color: #4ecca3; }
+        .msg-toast.warning .msg-toast__label { color: #f39c12; }
+        .msg-toast.info    .msg-toast__label { color: #3498db; }
+
+        .msg-toast__text { color: #ddd; line-height: 1.4; }
+
+        .msg-toast__close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,.3);
+            cursor: pointer;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            padding: 0;
+            line-height: 1;
+            transition: color .2s;
+        }
+        .msg-toast__close:hover { color: rgba(255,255,255,.7); }
+
+        @keyframes toastSlideIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        [dir="rtl"] @keyframes toastSlideIn {
+            from { opacity: 0; transform: translateX(-40px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* shake animation on the card when there's an error */
+        .login-card.shake {
+            animation: shake .4s ease;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%      { transform: translateX(-8px); }
+            40%      { transform: translateX(8px); }
+            60%      { transform: translateX(-5px); }
+            80%      { transform: translateX(5px); }
+        }
+
+        /* highlight inputs red on error */
+        .input-error {
+            border-color: #e94560 !important;
+            background: rgba(233,69,96,.07) !important;
+        }
+=======
+>>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
+    </style>
+</head>
+<body>
+
+<<<<<<< HEAD
+    <!-- ══ DJANGO MESSAGES ══ -->
+    {% if messages %}
+    <div class="msg-container" id="msgContainer">
+        {% for message in messages %}
+        <div class="msg-toast {% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}"
+             id="toast-{{ forloop.counter }}">
+            <div class="msg-toast__icon">
+                {% if 'error' in message.tags %}
+                    <i class="fas fa-times-circle"></i>
+                {% elif 'success' in message.tags %}
+                    <i class="fas fa-check-circle"></i>
+                {% elif 'warning' in message.tags %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                {% else %}
+                    <i class="fas fa-info-circle"></i>
+                {% endif %}
+            </div>
+            <div class="msg-toast__body">
+                <span class="msg-toast__label">
+                    {% if 'error' in message.tags %}{% trans "Access Denied" %}
+                    {% elif 'success' in message.tags %}{% trans "Success" %}
+                    {% elif 'warning' in message.tags %}{% trans "Warning" %}
+                    {% else %}{% trans "Notice" %}{% endif %}
+                </span>
+                <div class="msg-toast__text">{{ message }}</div>
+            </div>
+            <button class="msg-toast__close" onclick="dismissToast('toast-{{ forloop.counter }}')">✕</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="login-card" id="loginCard">
+        <h1>{% trans "Authorize" %}</h1>
+        
+        <form method="post" id="loginForm">
+            {% csrf_token %}
+            <input type="text" name="identifier" id="inputIdentifier"
+                   autocomplete="username"
+                   placeholder="{% trans 'Username or Email' %}" required>
+            <input type="password" name="password" id="inputPassword"
+                   autocomplete="current-password"
+                   placeholder="{% trans 'Password' %}" required>
+=======
+    <div class="login-card">
+        <h1>{% trans "Authorize" %}</h1>
+        
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="identifier" autocomplete="username" placeholder="{% trans 'Username or Email' %}" required>
+            <input type="password" name="password" autocomplete="current-password" placeholder="{% trans 'Password' %}" required>
+>>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
+            <button type="submit" class="btn-cyber">{% trans "Access System" %}</button>
+        </form>
+
+        <!-- ══ LANGUAGE SELECTION ══ -->
+        <div class="lang-container">
+            <i class="fas fa-globe"></i>
+            <select class="b-lang" onchange="switchLang(this.value)" aria-label="Language">
+                {% get_available_languages as LANGUAGES %}
+                {% for lang in LANGUAGES %}
+                    <option value="{{ lang.0 }}" 
+                            style="background-color: #1a1a2e; color: white;" 
+                            {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
+                        {{ lang.1 }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="links">
+            <a href="{% url 'home' %}">{% trans "Cancel" %}</a>
+        </div>
+    </div>
+
+    <script>
+<<<<<<< HEAD
+    /* ── Language switcher ── */
+    function switchLang(code) {
+        let url = "{% url 'set_lang' lang_code='placeholder' %}".replace('placeholder', code);
+=======
+    function switchLang(code) {
+        let url = "{% url 'set_lang' lang_code='placeholder' %}".replace('placeholder', code);
+        
+>>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
+        fetch(url, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/x-www-form-urlencoded', 
+                'X-CSRFToken': '{{ csrf_token }}' 
+            },
+            body: 'language=' + encodeURIComponent(code) + '&next=' + encodeURIComponent(location.pathname)
+<<<<<<< HEAD
+        }).then(() => location.reload());
+    }
+
+    /* ── Dismiss a toast ── */
+    function dismissToast(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.transition = 'opacity .4s, transform .4s';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(40px)';
+        setTimeout(() => el.remove(), 400);
+    }
+
+    /* ── Auto-dismiss toasts after 5s ── */
+    setTimeout(() => {
+        document.querySelectorAll('.msg-toast').forEach((el, i) => {
+            setTimeout(() => dismissToast(el.id), i * 150);
+        });
+    }, 5000);
+
+    /* ── If there are error messages, shake the card and highlight inputs ── */
+    {% if messages %}
+    {% for message in messages %}
+    {% if 'error' in message.tags %}
+    (function() {
+        const card = document.getElementById('loginCard');
+        const pw   = document.getElementById('inputPassword');
+        const id   = document.getElementById('inputIdentifier');
+        card.classList.add('shake');
+        pw.classList.add('input-error');
+        id.classList.add('input-error');
+        card.addEventListener('animationend', () => card.classList.remove('shake'), { once: true });
+        // Remove red border when user starts typing again
+        [pw, id].forEach(inp => inp.addEventListener('input', () => {
+            pw.classList.remove('input-error');
+            id.classList.remove('input-error');
+        }, { once: true }));
+    })();
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+=======
+        }).then(() => {
+            location.reload();
+        });
+    }
+>>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
+    </script>
+
+</body>
+</html>
