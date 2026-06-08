@@ -102,36 +102,21 @@
             color: #4ecca3;
             border: 1px solid rgba(78, 204, 163, 0.4);
             border-radius: 8px;
-<<<<<<< HEAD
             padding: 6px 30px 6px 12px;
-=======
-            padding: 6px 30px 6px 12px; /* Extra right padding for custom arrow */
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
             font-size: 0.85rem;
             cursor: pointer;
             outline: none;
             appearance: none;
             -webkit-appearance: none;
-<<<<<<< HEAD
-=======
-            /* Custom Arrow Icon */
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ecca3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 8px center;
             background-size: 14px;
         }
 
-<<<<<<< HEAD
         .b-lang option {
             background-color: #1a1a2e !important;
             color: #ffffff !important;
-=======
-        /* Fixing the "White Box" issue in dropdowns */
-        .b-lang option {
-            background-color: #1a1a2e !important; /* Force dark background */
-            color: #ffffff !important;           /* Force white text */
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
             padding: 12px;
         }
 
@@ -141,15 +126,10 @@
         .links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.85rem; transition: 0.3s; }
         .links a:hover { color: var(--secondary); }
 
-<<<<<<< HEAD
-=======
-        /* RTL support for the custom arrow */
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
         [dir="rtl"] .b-lang {
             padding: 6px 12px 6px 30px;
             background-position: left 8px center;
         }
-<<<<<<< HEAD
 
         /* ══ TOAST MESSAGES ══ */
         .msg-container {
@@ -246,13 +226,10 @@
             border-color: #e94560 !important;
             background: rgba(233,69,96,.07) !important;
         }
-=======
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
     </style>
 </head>
 <body>
 
-<<<<<<< HEAD
     <!-- ══ DJANGO MESSAGES ══ -->
     {% if messages %}
     <div class="msg-container" id="msgContainer">
@@ -296,15 +273,6 @@
             <input type="password" name="password" id="inputPassword"
                    autocomplete="current-password"
                    placeholder="{% trans 'Password' %}" required>
-=======
-    <div class="login-card">
-        <h1>{% trans "Authorize" %}</h1>
-        
-        <form method="post">
-            {% csrf_token %}
-            <input type="text" name="identifier" autocomplete="username" placeholder="{% trans 'Username or Email' %}" required>
-            <input type="password" name="password" autocomplete="current-password" placeholder="{% trans 'Password' %}" required>
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
             <button type="submit" class="btn-cyber">{% trans "Access System" %}</button>
         </form>
 
@@ -329,15 +297,9 @@
     </div>
 
     <script>
-<<<<<<< HEAD
     /* ── Language switcher ── */
     function switchLang(code) {
         let url = "{% url 'set_lang' lang_code='placeholder' %}".replace('placeholder', code);
-=======
-    function switchLang(code) {
-        let url = "{% url 'set_lang' lang_code='placeholder' %}".replace('placeholder', code);
-        
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
         fetch(url, {
             method: 'POST',
             headers: { 
@@ -345,7 +307,6 @@
                 'X-CSRFToken': '{{ csrf_token }}' 
             },
             body: 'language=' + encodeURIComponent(code) + '&next=' + encodeURIComponent(location.pathname)
-<<<<<<< HEAD
         }).then(() => location.reload());
     }
 
@@ -387,12 +348,6 @@
     {% endif %}
     {% endfor %}
     {% endif %}
-=======
-        }).then(() => {
-            location.reload();
-        });
-    }
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
     </script>
 
 </body>
