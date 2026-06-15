@@ -15,7 +15,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   CONTROLS BAR  (sort + search + count)
+   CONTROLS BAR
    ═══════════════════════════════════════════════════════ */
 .verif-controls {
   display: flex;
@@ -37,9 +37,7 @@
 }
 .verif-count strong { color: var(--accent); }
 
-.ctrl-sep {
-  flex: 1;               /* push sort + search to the right */
-}
+.ctrl-sep { flex: 1; }
 
 .ctrl-search-wrap {
   position: relative;
@@ -65,10 +63,7 @@
   width: 200px;
   transition: border-color .18s, width .25s;
 }
-.ctrl-search:focus {
-  border-color: var(--accent);
-  width: 260px;
-}
+.ctrl-search:focus { border-color: var(--accent); width: 260px; }
 .ctrl-search::placeholder { color: #3a4a5a; }
 
 .sort-group {
@@ -101,7 +96,6 @@
 .sort-select:focus { border-color: var(--accent); }
 .sort-select option { background: #121929; }
 
-/* Mobile: stack controls */
 @media (max-width: 640px) {
   .verif-controls { flex-direction: column; align-items: stretch; }
   .ctrl-sep { display: none; }
@@ -119,9 +113,7 @@
   grid-template-columns: repeat(auto-fill, minmax(min(660px, 100%), 1fr));
   gap: 1.3rem;
 }
-@media (max-width: 720px) {
-  .verif-grid { grid-template-columns: 1fr; }
-}
+@media (max-width: 720px) { .verif-grid { grid-template-columns: 1fr; } }
 
 .verif-card {
   background: var(--card, #121929);
@@ -138,7 +130,7 @@
   transform: translateY(-2px);
 }
 
-/* ── Card header ── */
+/* Card header */
 .vc-header {
   background: linear-gradient(135deg, rgba(15,52,96,.7) 0%, rgba(10,14,26,.5) 100%);
   padding: .7rem 1rem;
@@ -178,18 +170,16 @@
   flex-shrink: 0;
 }
 
-/* ── Card body ── */
+/* Card body */
 .vc-body {
   display: flex;
   gap: 1rem;
   padding: 1rem;
   flex: 1;
 }
-@media (max-width: 480px) {
-  .vc-body { flex-direction: column; gap: .8rem; }
-}
+@media (max-width: 480px) { .vc-body { flex-direction: column; gap: .8rem; } }
 
-/* Photos column */
+/* Photos */
 .vc-photos {
   display: flex;
   flex-direction: column;
@@ -207,6 +197,7 @@
 .vc-photo:hover { border-color: var(--accent); }
 .vc-photo-snap { width: 130px; height: 120px; }
 .vc-photo-ref  { width: 56px;  height: 56px;  border-radius: 50%; }
+
 .vc-no-snap {
   width: 130px; height: 120px;
   background: rgba(0,0,0,.35);
@@ -229,7 +220,7 @@
   .vc-photo-snap { width: 90px; height: 80px; }
 }
 
-/* Info + actions column */
+/* Info + actions */
 .vc-info {
   flex: 1;
   display: flex;
@@ -237,12 +228,7 @@
   gap: .65rem;
   min-width: 0;
 }
-
-.vc-meta {
-  display: flex;
-  flex-direction: column;
-  gap: .28rem;
-}
+.vc-meta { display: flex; flex-direction: column; gap: .28rem; }
 .vc-meta-row {
   display: flex;
   align-items: center;
@@ -250,12 +236,7 @@
   font-size: .8rem;
   color: var(--text-muted);
 }
-.vc-meta-row i {
-  color: var(--accent);
-  font-size: .7rem;
-  width: 14px;
-  flex-shrink: 0;
-}
+.vc-meta-row i { color: var(--accent); font-size: .7rem; width: 14px; flex-shrink: 0; }
 .vc-meta-row strong { color: var(--text-dim); }
 
 /* Verify form */
@@ -283,13 +264,9 @@
 .vc-note:focus { border-color: var(--accent); }
 .vc-note::placeholder { color: #3a4a5a; }
 
-.vc-actions {
-  display: flex;
-  gap: .5rem;
-  flex-wrap: wrap;
-}
+.vc-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 
-/* Export strip at bottom of card */
+/* Export strip */
 .vc-exports {
   padding: .6rem 1rem;
   border-top: 1px solid rgba(255,255,255,.06);
@@ -319,7 +296,6 @@
   flex-wrap: wrap;
   padding: .5rem 0 1rem;
 }
-
 .pg-btn {
   display: inline-flex;
   align-items: center;
@@ -340,7 +316,6 @@
 .pg-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(78,204,163,.07); }
 .pg-btn.active { background: rgba(78,204,163,.12); border-color: rgba(78,204,163,.4); color: var(--accent); font-weight: 700; cursor: default; }
 .pg-btn.disabled { opacity: .35; pointer-events: none; cursor: default; }
-
 .pg-info {
   font-size: .75rem;
   color: var(--text-muted);
@@ -349,7 +324,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   EMPTY STATE
+   EMPTY / NO-RESULTS
    ═══════════════════════════════════════════════════════ */
 .verif-empty {
   text-align: center;
@@ -360,9 +335,6 @@
 .verif-empty i { font-size: 3.5rem; opacity: .18; margin-bottom: 1rem; display: block; color: var(--accent); }
 .verif-empty h2 { font-size: 1.15rem; color: var(--text-dim); margin-bottom: .5rem; }
 
-/* ═══════════════════════════════════════════════════════
-   NO-RESULTS BANNER (JS filter)
-   ═══════════════════════════════════════════════════════ */
 .no-results-banner {
   display: none;
   grid-column: 1 / -1;
@@ -373,12 +345,96 @@
 }
 .no-results-banner i { font-size: 2rem; display: block; margin-bottom: .5rem; opacity: .25; }
 
-/* ═══════════════════════════════════════════════════════
-   RESPONSIVE TWEAKS
-   ═══════════════════════════════════════════════════════ */
 @media (max-width: 400px) {
   .vc-header { padding: .55rem .75rem; }
   .vc-body   { padding: .75rem; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   ═══════════════════════════════════════════════════════ */
+
+/* Controls bar */
+body.light-mode .verif-controls {
+  background: rgba(0,0,0,.03);
+  border-color: rgba(0,0,0,.08);
+}
+
+/* Search input */
+body.light-mode .ctrl-search {
+  background: #ffffff;
+  border-color: rgba(0,0,0,.1);
+  color: #1a2332;
+}
+body.light-mode .ctrl-search:focus { border-color: #0ea87a; }
+body.light-mode .ctrl-search::placeholder { color: #9ba8b5; }
+
+/* Sort select */
+body.light-mode .sort-select {
+  background: #ffffff;
+  border-color: rgba(0,0,0,.1);
+  color: #1a2332;
+}
+body.light-mode .sort-select:focus { border-color: #0ea87a; }
+body.light-mode .sort-select option { background: #ffffff; color: #1a2332; }
+
+/* Verification cards */
+body.light-mode .verif-card {
+  background: #ffffff;
+  border-color: rgba(0,0,0,.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+body.light-mode .verif-card:hover {
+  border-color: rgba(14,168,122,.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+}
+
+/* Card header — swap dark gradient for a neutral light one */
+body.light-mode .vc-header {
+  background: linear-gradient(135deg, rgba(14,168,122,.07) 0%, rgba(240,244,248,.8) 100%);
+  border-bottom-color: rgba(0,0,0,.07);
+}
+body.light-mode .vc-target-name { color: #1a2332; }
+
+/* Photo borders */
+body.light-mode .vc-photo { border-color: rgba(0,0,0,.1); }
+
+/* No-snapshot placeholder */
+body.light-mode .vc-no-snap {
+  background: rgba(0,0,0,.04);
+  border-color: rgba(0,0,0,.12);
+}
+
+/* Verify textarea */
+body.light-mode .vc-note {
+  background: #f8fafc;
+  border-color: rgba(0,0,0,.1);
+  color: #1a2332;
+}
+body.light-mode .vc-note:focus { border-color: #0ea87a; }
+body.light-mode .vc-note::placeholder { color: #9ba8b5; }
+
+/* Export strip */
+body.light-mode .vc-exports {
+  background: rgba(0,0,0,.02);
+  border-top-color: rgba(0,0,0,.07);
+}
+
+/* Pagination buttons */
+body.light-mode .pg-btn {
+  background: #ffffff;
+  border-color: rgba(0,0,0,.1);
+  color: #6b7a8d;
+}
+body.light-mode .pg-btn:hover {
+  border-color: #0ea87a;
+  color: #0ea87a;
+  background: rgba(14,168,122,.06);
+}
+body.light-mode .pg-btn.active {
+  background: rgba(14,168,122,.1);
+  border-color: rgba(14,168,122,.4);
+  color: #0a7a58;
 }
 </style>
 {% endblock %}
@@ -405,17 +461,13 @@
 
   {% if events %}
 
-  <!-- ── Controls: search + sort ── -->
+  <!-- ── Controls ── -->
   <div class="verif-controls" id="verifControls">
-
     <span class="verif-count">
       <strong id="visibleCount">{{ events|length }}</strong>
       / {{ events|length }} {% trans "events" %}
     </span>
-
     <span class="ctrl-sep"></span>
-
-    <!-- Sort -->
     <div class="sort-group">
       <span class="sort-label">{% trans "Sort" %}:</span>
       <select class="sort-select" id="sortSelect" onchange="applySort()">
@@ -427,8 +479,6 @@
         <option value="event_asc">{% trans "Event Type A→Z" %}</option>
       </select>
     </div>
-
-    <!-- Search -->
     <div class="ctrl-search-wrap">
       <i class="fas fa-search"></i>
       <input type="text" class="ctrl-search" id="verifSearch"
@@ -448,7 +498,6 @@
          data-action="{{ event.action|lower }}"
          data-page="1">
 
-      <!-- Card header -->
       <div class="vc-header">
         <div class="vc-header-left">
           <span class="vc-event-id">#{{ event.pk }}</span>
@@ -457,10 +506,8 @@
         <span class="vc-ts">{{ event.timestamp|date:"Y-m-d H:i" }}</span>
       </div>
 
-      <!-- Card body -->
       <div class="vc-body">
 
-        <!-- Photos -->
         <div class="vc-photos">
           {% if event.frame_snapshot %}
             <img class="vc-photo vc-photo-snap"
@@ -487,9 +534,7 @@
           {% endif %}
         </div>
 
-        <!-- Info + actions -->
         <div class="vc-info">
-
           <div class="vc-meta">
             <div class="vc-meta-row">
               <i class="fas fa-video"></i>
@@ -523,7 +568,6 @@
             </div>
           </div>
 
-          <!-- Verify form -->
           <form class="vc-form" method="post" action="{% url 'verify_detection' event.pk %}">
             {% csrf_token %}
             <textarea name="note" class="vc-note"
@@ -541,10 +585,9 @@
             </div>
           </form>
 
-        </div><!-- /vc-info -->
-      </div><!-- /vc-body -->
+        </div>
+      </div>
 
-      <!-- Export strip -->
       <div class="vc-exports">
         <span class="vc-exports-lbl"><i class="fas fa-file-pdf"></i> {% trans "Export" %}:</span>
         <a href="{% url 'export_detection_pdf' event.pk %}"
@@ -559,21 +602,17 @@
         {% endif %}
       </div>
 
-    </div><!-- /verif-card -->
+    </div>
     {% endfor %}
 
-    <!-- No results (JS-only) -->
     <div class="no-results-banner" id="noResultsBanner">
       <i class="fas fa-search"></i>
       {% trans "No events match your search." %}
     </div>
 
-  </div><!-- /verif-grid -->
-
-  <!-- ── Pagination ── -->
-  <div class="verif-pagination" id="verifPagination" aria-label="{% trans 'Pagination' %}">
-    <!-- rendered by JS -->
   </div>
+
+  <div class="verif-pagination" id="verifPagination" aria-label="{% trans 'Pagination' %}"></div>
 
   {% else %}
 
@@ -585,36 +624,25 @@
 
   {% endif %}
 
-</div><!-- /verif-page -->
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-/* ═══════════════════════════════════════════════════════
-   Client-side sort + search + pagination for the
-   pending_verifications.html template.
-
-   All processing happens on the already-rendered cards so
-   there are no extra server round-trips for basic UX.
-═══════════════════════════════════════════════════════ */
-
-const PER_PAGE   = 9;     // cards per page — tweak as needed
+const PER_PAGE    = 9;
 let   currentPage = 1;
 
-// Collect all cards once
 const allCards = () =>
   Array.from(document.querySelectorAll('#verifGrid .verif-card'));
 
-/* ── Helper: text content of a card for searching ── */
 function cardText(card) {
   return (
-    (card.dataset.name    || '') + ' ' +
-    (card.dataset.camera  || '') + ' ' +
-    (card.dataset.action  || '')
+    (card.dataset.name   || '') + ' ' +
+    (card.dataset.camera || '') + ' ' +
+    (card.dataset.action || '')
   );
 }
 
-/* ── Apply search filter → returns visible cards ── */
 function applyFilters() {
   currentPage = 1;
   const q = document.getElementById('verifSearch').value.trim().toLowerCase();
@@ -630,58 +658,47 @@ function applyFilters() {
     visible === 0 ? 'block' : 'none';
 
   updateCount();
-  applySort();          // sort re-renders pagination too
+  applySort();
 }
 
-/* ── Sort visible cards in place ── */
 function applySort() {
   const grid  = document.getElementById('verifGrid');
   const order = document.getElementById('sortSelect').value;
-
   const visible = allCards().filter(c => c.style.display !== 'none');
 
   visible.sort((a, b) => {
     switch (order) {
-      case 'oldest':    return +a.dataset.ts   - +b.dataset.ts;
-      case 'name_asc':  return a.dataset.name.localeCompare(b.dataset.name);
-      case 'name_desc': return b.dataset.name.localeCompare(a.dataset.name);
-      case 'camera_asc':return (a.dataset.camera||'').localeCompare(b.dataset.camera||'');
-      case 'event_asc': return a.dataset.action.localeCompare(b.dataset.action);
-      default:          return +b.dataset.ts   - +a.dataset.ts; // newest
+      case 'oldest':     return +a.dataset.ts  - +b.dataset.ts;
+      case 'name_asc':   return a.dataset.name.localeCompare(b.dataset.name);
+      case 'name_desc':  return b.dataset.name.localeCompare(a.dataset.name);
+      case 'camera_asc': return (a.dataset.camera||'').localeCompare(b.dataset.camera||'');
+      case 'event_asc':  return a.dataset.action.localeCompare(b.dataset.action);
+      default:           return +b.dataset.ts  - +a.dataset.ts;
     }
   });
 
-  // Re-insert sorted (only visible — hidden stay hidden)
   visible.forEach(card => grid.appendChild(card));
-
   renderPagination(visible);
 }
 
-/* ── Pagination renderer ── */
 function renderPagination(visible) {
   const total = visible.length;
   const pages = Math.ceil(total / PER_PAGE) || 1;
   if (currentPage > pages) currentPage = pages;
 
-  // Show / hide cards for current page
   visible.forEach((card, i) => {
     const pageOfCard = Math.floor(i / PER_PAGE) + 1;
     card.style.display = (pageOfCard === currentPage) ? '' : 'none';
   });
 
-  // Build pagination HTML
   const wrap = document.getElementById('verifPagination');
   if (pages <= 1) { wrap.innerHTML = ''; return; }
 
   let html = '';
-
-  // Prev
   html += `<button class="pg-btn${currentPage===1?' disabled':''}"
                    onclick="goPage(${currentPage-1})" aria-label="Previous">‹</button>`;
 
-  // Page numbers (show up to 7 buttons with ellipsis)
-  const buttons = buildPageNumbers(currentPage, pages);
-  buttons.forEach(p => {
+  buildPageNumbers(currentPage, pages).forEach(p => {
     if (p === '…') {
       html += `<span class="pg-info">…</span>`;
     } else {
@@ -690,11 +707,9 @@ function renderPagination(visible) {
     }
   });
 
-  // Next
   html += `<button class="pg-btn${currentPage===pages?' disabled':''}"
                    onclick="goPage(${currentPage+1})" aria-label="Next">›</button>`;
 
-  // Info
   const start = (currentPage-1)*PER_PAGE + 1;
   const end   = Math.min(currentPage*PER_PAGE, total);
   html += `<span class="pg-info">${start}–${end} / ${total}</span>`;
@@ -704,43 +719,28 @@ function renderPagination(visible) {
 
 function buildPageNumbers(cur, total) {
   if (total <= 7) return Array.from({length:total},(_,i)=>i+1);
-  const pages = [];
-  if (cur <= 4) {
-    pages.push(1,2,3,4,5,'…',total);
-  } else if (cur >= total-3) {
-    pages.push(1,'…',total-4,total-3,total-2,total-1,total);
-  } else {
-    pages.push(1,'…',cur-1,cur,cur+1,'…',total);
-  }
-  return pages;
+  if (cur <= 4)       return [1,2,3,4,5,'…',total];
+  if (cur >= total-3) return [1,'…',total-4,total-3,total-2,total-1,total];
+  return [1,'…',cur-1,cur,cur+1,'…',total];
 }
 
 function goPage(p) {
-  const visible = allCards().filter(c => {
-    // Check if card matches search (not hidden by filter)
-    const q = document.getElementById('verifSearch').value.trim().toLowerCase();
-    if (!q) return true;
-    return cardText(c).includes(q);
-  });
+  const q = document.getElementById('verifSearch').value.trim().toLowerCase();
+  const visible = allCards().filter(c => !q || cardText(c).includes(q));
   const pages = Math.ceil(visible.length / PER_PAGE) || 1;
   if (p < 1 || p > pages) return;
   currentPage = p;
   renderPagination(visible);
-  // Smooth scroll back to grid top
   document.getElementById('verifGrid')
     .scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-/* ── Update "N / total events" counter ── */
 function updateCount() {
   const visible = allCards().filter(c => c.style.display !== 'none').length;
   const el = document.getElementById('visibleCount');
   if (el) el.textContent = visible;
 }
 
-/* ── Init on load ── */
-document.addEventListener('DOMContentLoaded', () => {
-  applySort();  // sets initial pagination without any filter
-});
+document.addEventListener('DOMContentLoaded', () => { applySort(); });
 </script>
 {% endblock %}

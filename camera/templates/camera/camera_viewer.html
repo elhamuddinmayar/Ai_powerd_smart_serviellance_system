@@ -1,5 +1,5 @@
 {% load static %}
-<!DOCTYPE html>
+{% load i18n %}
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -21,6 +21,18 @@
       --mono:    'Share Tech Mono', 'Courier New', monospace;
     }
 
+    /* ── Light mode token overrides ── */
+    body.light-mode {
+      --bg:      #f0f4f8;
+      --panel:   #ffffff;
+      --border:  rgba(0,0,0,.10);
+      --accent:  #0ea87a;
+      --danger:  #d63355;
+      --warn:    #b45309;
+      --text:    #1a2332;
+      --muted:   #4a5568;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -32,6 +44,7 @@
       flex-direction: column;
       overflow: hidden;
       user-select: none;
+      transition: background .2s, color .2s;
     }
 
     /* ── Top bar ── */
@@ -46,6 +59,7 @@
       flex-shrink: 0;
       z-index: 10;
       overflow: hidden;
+      transition: background .2s, border-color .2s;
     }
     .topbar__brand {
       font-family: var(--mono);
@@ -55,6 +69,8 @@
       flex-shrink: 0;
     }
     .topbar__sep   { width: 1px; height: 22px; background: rgba(255,255,255,.1); flex-shrink: 0; }
+    body.light-mode .topbar__sep { background: rgba(0,0,0,.1); }
+
     .topbar__cam-name {
       font-size: .9rem;
       font-weight: 700;
@@ -75,6 +91,10 @@
     .status-pill.online  { background: rgba(46,204,113,.1); border-color: rgba(46,204,113,.3); color: #2ecc71; }
     .status-pill.offline { background: rgba(231,76,60,.1);  border-color: rgba(231,76,60,.3);  color: #e74c3c; }
     .status-pill.unknown { background: rgba(243,156,18,.1); border-color: rgba(243,156,18,.3); color: #f39c12; }
+    body.light-mode .status-pill.online  { background: rgba(14,168,122,.1); border-color: rgba(14,168,122,.3); color: #0a9e6e; }
+    body.light-mode .status-pill.offline { background: rgba(214,51,85,.1);  border-color: rgba(214,51,85,.3);  color: #c0392b; }
+    body.light-mode .status-pill.unknown { background: rgba(180,130,20,.1); border-color: rgba(180,130,20,.3); color: #92580a; }
+
     .status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
     .status-pill.online .status-dot  { animation: pulse-dot 1.4s infinite; }
     .status-pill.unknown .status-dot { animation: pulse-dot 2s infinite; }
@@ -94,9 +114,21 @@
       font-size: .75rem; display: flex; align-items: center; gap: 6px; transition: all .15s;
       white-space: nowrap;
     }
+    body.light-mode .tb-btn {
+      background: rgba(0,0,0,.04);
+      border-color: rgba(0,0,0,.10);
+    }
     .tb-btn:hover         { border-color: var(--accent); color: var(--accent); }
     .tb-btn.danger:hover  { border-color: var(--danger); color: var(--danger); }
     .tb-btn.active        { border-color: var(--accent); color: var(--accent); background: rgba(78,204,163,.08); }
+    body.light-mode .tb-btn.active { background: rgba(14,168,122,.08); }
+
+    /* Theme toggle button */
+    .tb-btn--theme { margin-left: 4px; }
+    .icon-dark  { display: inline-block; }
+    .icon-light { display: none; }
+    body.light-mode .icon-dark  { display: none; }
+    body.light-mode .icon-light { display: inline-block; }
 
     /* Mobile overflow menu */
     .topbar__mobile-menu {
@@ -115,6 +147,10 @@
       display: flex;
       align-items: center;
     }
+    body.light-mode .topbar__mobile-menu-btn {
+      background: rgba(0,0,0,.04);
+      border-color: rgba(0,0,0,.10);
+    }
     .topbar__mobile-menu-btn:hover { border-color: var(--accent); color: var(--accent); }
     .topbar__dropdown {
       display: none;
@@ -131,6 +167,9 @@
       gap: 4px;
       box-shadow: 0 8px 24px rgba(0,0,0,.5);
     }
+    body.light-mode .topbar__dropdown {
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    }
     .topbar__dropdown.open { display: flex; }
     .topbar__dropdown .tb-btn {
       width: 100%;
@@ -144,6 +183,9 @@
       flex: 1; display: flex; align-items: center; justify-content: center;
       background: #000; position: relative; overflow: hidden;
     }
+    /* Keep feed area black even in light mode — it's a video canvas */
+    body.light-mode .feed-wrap { background: #111; }
+
     .feed-wrap img#live-feed {
       max-width: 100%; max-height: 100%; object-fit: contain; display: block;
       transition: transform .2s;
@@ -159,7 +201,7 @@
     .offline-overlay.visible { display: flex; }
     .offline-overlay i  { font-size: 3.5rem; color: var(--danger); opacity: .7; }
     .offline-overlay h2 { font-size: 1.1rem; color: var(--danger); }
-    .offline-overlay p  { font-size: .82rem; color: var(--muted); max-width: 280px; }
+    .offline-overlay p  { font-size: .82rem; color: #94a3b8; max-width: 280px; }
 
     /* Scanning line */
     .scanline { position: absolute; top: 0; left: 0; right: 0; height: 2px;
@@ -169,6 +211,7 @@
 
     /* Corner brackets */
     .corner { position: absolute; width: 22px; height: 22px; border-color: rgba(78,204,163,.5); border-style: solid; border-width: 0; pointer-events: none; }
+    body.light-mode .corner { border-color: rgba(14,168,122,.5); }
     .corner.tl { top: 12px; left: 12px;   border-top-width: 2px; border-left-width: 2px; }
     .corner.tr { top: 12px; right: 12px;  border-top-width: 2px; border-right-width: 2px; }
     .corner.bl { bottom: 12px; left: 12px;  border-bottom-width: 2px; border-left-width: 2px; }
@@ -177,11 +220,12 @@
     /* HUD */
     .hud { position: absolute; top: 10px; left: 10px; font-family: var(--mono);
       font-size: .65rem; color: rgba(78,204,163,.7); line-height: 1.6; pointer-events: none; }
+    body.light-mode .hud { color: rgba(14,168,122,.85); }
 
     /* Bottom status bar */
     .statusbar {
       background: var(--panel);
-      border-top: 1px solid rgba(255,255,255,.06);
+      border-top: 1px solid var(--border);
       height: 32px;
       display: flex;
       align-items: center;
@@ -192,26 +236,38 @@
       font-family: var(--mono);
       flex-shrink: 0;
       overflow: hidden;
+      transition: background .2s, border-color .2s;
     }
     .statusbar span { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
     .statusbar .sep { width: 1px; height: 14px; background: rgba(255,255,255,.07); flex-shrink: 0; }
+    body.light-mode .statusbar .sep { background: rgba(0,0,0,.10); }
 
     /* Right info panel */
     .info-panel { width: 0; background: var(--panel); border-left: 1px solid var(--border);
-      overflow: hidden; transition: width .25s ease; display: flex; flex-direction: column; flex-shrink: 0; }
+      overflow: hidden; transition: width .25s ease, background .2s, border-color .2s; display: flex; flex-direction: column; flex-shrink: 0; }
     .info-panel.open { width: 240px; }
     .info-panel-inner { width: 240px; padding: 16px; display: flex; flex-direction: column;
       gap: 14px; overflow-y: auto; height: 100%; }
     .info-section-title { font-size: .62rem; text-transform: uppercase; letter-spacing: .12em;
-      color: var(--muted); border-bottom: 1px solid rgba(255,255,255,.06); padding-bottom: 6px; margin-bottom: 4px; }
+      color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 4px; }
     .info-row { display: flex; flex-direction: column; gap: 2px; font-size: .78rem; }
     .info-row label { color: var(--muted); font-size: .68rem; text-transform: uppercase; }
     .info-row span  { color: var(--text); word-break: break-all; }
     .snap-strip { display: flex; flex-direction: column; gap: 6px; }
-    .snap-item { border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,.06); cursor: pointer; transition: border-color .15s; }
+    .snap-item { border-radius: 5px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; transition: border-color .15s; }
     .snap-item:hover { border-color: var(--accent); }
     .snap-item img   { width: 100%; display: block; }
     .snap-item span  { font-size: .62rem; color: var(--muted); padding: 3px 6px; display: block; }
+
+    /* Shortcut kbd keys */
+    .shortcut-kbd {
+      background: rgba(255,255,255,.08);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    body.light-mode .shortcut-kbd {
+      background: rgba(0,0,0,.08);
+    }
 
     /* Screenshot flash */
     .flash { position: fixed; inset: 0; background: #fff; opacity: 0;
@@ -224,65 +280,57 @@
 
     /* FPS meter in HUD */
     #hud-fps { color: rgba(78,204,163,.5); }
+    body.light-mode #hud-fps { color: rgba(14,168,122,.6); }
 
     /* ══ RESPONSIVE BREAKPOINTS ══════════════════════════════════════════ */
 
-    /* Tablet — hide brand & location text, condense status pill */
     @media (max-width: 900px) {
       .topbar__brand { display: none; }
       .topbar__sep:first-of-type { display: none; }
       .topbar__loc { display: none; }
       .topbar__sep.sep-loc { display: none; }
-
-      .topbar__btns .tb-btn span.btn-label { display: none; } /* icon-only on tablet */
+      .topbar__btns .tb-btn span.btn-label { display: none; }
       .tb-btn { padding: 6px 8px; }
     }
 
-    /* Mobile — collapse most controls into overflow menu */
     @media (max-width: 600px) {
       .topbar { padding: 0 10px; gap: 8px; height: 48px; }
-
-      /* Hide desktop button group */
       .topbar__btns { display: none; }
-
-      /* Show mobile overflow menu */
       .topbar__mobile-menu { display: flex; align-items: center; }
-
       .topbar__cam-name { font-size: .82rem; }
-
       .status-pill { padding: 3px 7px; font-size: .66rem; }
-      .status-pill span:not(.status-dot) { display: none; } /* dot only on tiny screens */
-
-      /* Bottom statusbar: show only the most important items */
+      .status-pill span:not(.status-dot) { display: none; }
       .statusbar .hide-mobile { display: none; }
       .statusbar .sep.hide-mobile { display: none; }
       .statusbar { padding: 0 10px; gap: 8px; }
-
-      /* HUD: smaller text */
       .hud { font-size: .58rem; }
       .hud #hud-fps { display: none; }
-
-      /* Info panel: full width overlay on mobile */
       .info-panel.open {
         position: absolute;
         inset: 0;
         width: 100% !important;
         z-index: 50;
       }
-
-      /* Corners: hide on very small */
       .corner { display: none; }
-
-      /* Offline overlay padding */
       .offline-overlay i { font-size: 2.5rem; }
       .offline-overlay h2 { font-size: 1rem; }
     }
 
-    /* Very small phones */
     @media (max-width: 380px) {
       .topbar__cam-name { font-size: .75rem; }
       .statusbar { font-size: .6rem; gap: 6px; }
     }
+  </style>
+
+  <script>
+    /* Apply saved theme before paint to avoid flash */
+    (function() {
+      var theme = localStorage.getItem('bf-theme') || 'dark';
+      if (theme === 'light') document.documentElement.classList.add('pre-light');
+    })();
+  </script>
+  <style>
+    html.pre-light body { background: #f0f4f8 !important; }
   </style>
 </head>
 <body>
@@ -327,6 +375,12 @@
       <span class="btn-label">{% trans "Full" %}</span>
     </button>
     <div class="topbar__sep"></div>
+    <!-- Theme toggle -->
+    <button class="tb-btn tb-btn--theme" id="btn-theme" onclick="toggleTheme()" title="{% trans "Toggle theme" %}">
+      <i class="fas fa-moon icon-dark"></i>
+      <i class="fas fa-sun icon-light"></i>
+    </button>
+    <div class="topbar__sep"></div>
     <button class="tb-btn danger" onclick="exitViewer()" title="{% trans "Close viewer" %}">
       <i class="fas fa-times"></i>
       <span class="btn-label">{% trans "Exit" %}</span>
@@ -349,7 +403,11 @@
         <i class="fas fa-camera"></i> {% trans "Screenshot" %}
       </button>
       <button class="tb-btn" onclick="toggleFullscreen(); toggleMobileMenu()">
-        <i class="fas fa-expand"></i> {% trans "Fullscreen" %}  
+        <i class="fas fa-expand"></i> {% trans "Fullscreen" %}
+      </button>
+      <button class="tb-btn" onclick="toggleTheme(); toggleMobileMenu()">
+        <i class="fas fa-moon icon-dark"></i>
+        <i class="fas fa-sun icon-light"></i> {% trans "Toggle Theme" %}
       </button>
       <button class="tb-btn danger" onclick="exitViewer()">
         <i class="fas fa-times"></i> {% trans "Exit" %}
@@ -392,7 +450,6 @@
       <div>
         <div class="info-section-title" style="display:flex;justify-content:space-between;align-items:center;">
           {% trans "Camera" %}
-          <!-- Close button for mobile overlay -->
           <button onclick="toggleInfoPanel()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;" title="{% trans "Close" %}">✕</button>
         </div>
         <div class="info-row"><label>{% trans "Name" %}</label><span>{{ cam.name }}</span></div>
@@ -426,10 +483,11 @@
       <div>
         <div class="info-section-title">{% trans "Shortcuts" %}</div>
         <div style="font-size:.7rem;color:var(--muted);line-height:1.9;">
-          <div><kbd style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;">F</kbd> {% trans "Fullscreen" %}</div>
-          <div><kbd style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;">S</kbd> {% trans "Screenshot" %}</div>
-          <div><kbd style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;">I</kbd> {% trans "Info panel" %}</div>
-          <div><kbd style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;">Esc</kbd> {% trans "Exit" %}</div>
+          <div><kbd class="shortcut-kbd">F</kbd> {% trans "Fullscreen" %}</div>
+          <div><kbd class="shortcut-kbd">S</kbd> {% trans "Screenshot" %}</div>
+          <div><kbd class="shortcut-kbd">I</kbd> {% trans "Info panel" %}</div>
+          <div><kbd class="shortcut-kbd">T</kbd> {% trans "Toggle theme" %}</div>
+          <div><kbd class="shortcut-kbd">Esc</kbd> {% trans "Exit" %}</div>
         </div>
       </div>
     </div>
@@ -453,6 +511,18 @@
 <div class="flash" id="flash"></div>
 
 <script>
+/* ── Theme system (synced with butterfly.js via localStorage) ── */
+(function() {
+  var saved = localStorage.getItem('bf-theme') || 'dark';
+  if (saved === 'light') document.body.classList.add('light-mode');
+})();
+
+function toggleTheme() {
+  var isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('bf-theme', isLight ? 'light' : 'dark');
+}
+
+/* ── Camera poller ── */
 class CameraPoller {
   constructor(cameraId, imgEl, fps = 25) {
     this.cameraId   = cameraId;
@@ -619,7 +689,6 @@ function exitViewer() {
 function toggleMobileMenu() {
   document.getElementById('mobileDropdown').classList.toggle('open');
 }
-// Close mobile menu when clicking outside
 document.addEventListener('click', function(e) {
   const menu = document.getElementById('mobileDropdown');
   const btn  = document.getElementById('mobileMenuBtn');
@@ -660,6 +729,7 @@ document.addEventListener('keydown', (e) => {
     case 'f': case 'F': toggleFullscreen(); break;
     case 's': case 'S': takeSnapshot();     break;
     case 'i': case 'I': toggleInfoPanel();  break;
+    case 't': case 'T': toggleTheme();      break;
     case 'Escape': exitViewer(); break;
   }
 });

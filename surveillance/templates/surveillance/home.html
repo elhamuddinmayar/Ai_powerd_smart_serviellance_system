@@ -5,14 +5,14 @@
 
 {% block extra_css %}
 <style>
-/* ─── Design tokens (flat modern, one accent) ─────────────────────────────── */
+/* ─── Design tokens ─────────────────────────────────────────────────────────── */
 :root {
   --surface-0: #0d1117;
   --surface-1: #161b22;
   --surface-2: #21262d;
   --surface-3: #30363d;
-  --border:    #30363d;
-  --border-subtle: #21262d;
+  --border:         #30363d;
+  --border-subtle:  #21262d;
   --accent:    #4ecca3;
   --accent-bg: rgba(78,204,163,.08);
   --text-pri:  #e6edf3;
@@ -26,7 +26,29 @@
   --radius-lg: 14px;
 }
 
-/* ─── Page shell ───────────────────────────────────────────────────────────── */
+/* ─── Light mode token overrides ─────────────────────────────────────────────
+   Redefine every surface/text/border token so all components that already use
+   them flip automatically. Only a handful of hardcoded rgba() values need
+   extra rules below.
+─────────────────────────────────────────────────────────────────────────────── */
+body.light-mode {
+  --surface-0:     #f0f4f8;
+  --surface-1:     #ffffff;
+  --surface-2:     #f6f8fa;
+  --surface-3:     #eaeef2;
+  --border:        rgba(0,0,0,.09);
+  --border-subtle: rgba(0,0,0,.05);
+  --accent:        #0ea87a;
+  --accent-bg:     rgba(14,168,122,.08);
+  --text-pri:      #1a2332;
+  --text-sec:      #4a5568;
+  --text-ter:      #8a96a3;
+  --danger:        #d63355;
+  --warn:          #b45309;
+  --blue:          #2563eb;
+}
+
+/* ─── Page shell ─────────────────────────────────────────────────────────────── */
 .home-shell {
   max-width: 960px;
   margin: 0 auto;
@@ -34,13 +56,12 @@
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
-/* ─── Welcome header ───────────────────────────────────────────────────────── */
+/* ─── Welcome header ─────────────────────────────────────────────────────────── */
 .home-welcome {
   margin-bottom: 2.5rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid var(--border);
 }
-
 .home-welcome__greeting {
   font-size: .75rem;
   text-transform: uppercase;
@@ -48,7 +69,6 @@
   color: var(--text-ter);
   margin-bottom: .4rem;
 }
-
 .home-welcome__name {
   font-size: 1.65rem;
   font-weight: 700;
@@ -56,16 +76,13 @@
   margin-bottom: .5rem;
   letter-spacing: -.02em;
 }
-
 .home-welcome__name span { color: var(--accent); }
-
 .home-welcome__desc {
   font-size: .875rem;
   color: var(--text-sec);
   line-height: 1.6;
   max-width: 480px;
 }
-
 .home-welcome__meta {
   display: flex;
   align-items: center;
@@ -73,7 +90,6 @@
   margin-top: 1rem;
   flex-wrap: wrap;
 }
-
 .meta-chip {
   display: flex;
   align-items: center;
@@ -81,9 +97,9 @@
   font-size: .73rem;
   color: var(--text-sec);
 }
-
 .meta-chip i { font-size: .65rem; color: var(--text-ter); }
 
+/* ─── Role pills ─────────────────────────────────────────────────────────────── */
 .role-pill {
   display: inline-flex;
   align-items: center;
@@ -95,12 +111,16 @@
   letter-spacing: .04em;
   text-transform: uppercase;
 }
-
 .role-pill--admin    { background: rgba(212,167,44,.1);  color: #d4a72c; border: 1px solid rgba(212,167,44,.2); }
 .role-pill--sup      { background: rgba(56,139,253,.1);  color: #388bfd; border: 1px solid rgba(56,139,253,.2); }
 .role-pill--operator { background: rgba(78,204,163,.1);  color: #4ecca3; border: 1px solid rgba(78,204,163,.2); }
 
-/* ─── Section label ────────────────────────────────────────────────────────── */
+/* Light mode: darken pill text so it's readable on white */
+body.light-mode .role-pill--admin    { color: #92580a; background: rgba(180,130,20,.1);  border-color: rgba(180,130,20,.25); }
+body.light-mode .role-pill--sup      { color: #1e40af; background: rgba(37,99,235,.1);   border-color: rgba(37,99,235,.25);  }
+body.light-mode .role-pill--operator { color: #0a7a58; background: rgba(14,168,122,.1);  border-color: rgba(14,168,122,.25); }
+
+/* ─── Section label ──────────────────────────────────────────────────────────── */
 .section-label {
   font-size: .68rem;
   text-transform: uppercase;
@@ -111,7 +131,6 @@
   align-items: center;
   gap: .65rem;
 }
-
 .section-label::after {
   content: '';
   flex: 1;
@@ -119,7 +138,7 @@
   background: var(--border);
 }
 
-/* ─── Navigation cards grid ────────────────────────────────────────────────── */
+/* ─── Navigation cards grid ──────────────────────────────────────────────────── */
 .nav-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -141,11 +160,16 @@
   position: relative;
   overflow: hidden;
 }
-
 .nav-card:hover {
-  border-color: var(--accent);
+  border-color: var(--nc, var(--accent));
   background: var(--surface-2);
   transform: translateY(-1px);
+}
+body.light-mode .nav-card {
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+body.light-mode .nav-card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,.09);
 }
 
 /* Left accent strip */
@@ -194,18 +218,21 @@
   color: var(--text-ter);
   border: 1px solid var(--border);
 }
-
 .nav-card__badge--live {
   background: rgba(78,204,163,.1);
   color: var(--accent);
   border-color: rgba(78,204,163,.25);
 }
-
 .nav-card__badge--alert {
   background: rgba(248,81,73,.1);
   color: var(--danger);
   border-color: rgba(248,81,73,.25);
 }
+
+/* Light mode badge adjustments — token flip handles most,
+   but the rgba() backgrounds need explicit darkened text */
+body.light-mode .nav-card__badge--live  { color: #0a7a58; }
+body.light-mode .nav-card__badge--alert { color: #991b2e; }
 
 .nav-card__title {
   font-size: .95rem;
@@ -213,14 +240,12 @@
   color: var(--text-pri);
   letter-spacing: -.01em;
 }
-
 .nav-card__desc {
   font-size: .78rem;
   color: var(--text-sec);
   line-height: 1.55;
   flex: 1;
 }
-
 .nav-card__foot {
   display: flex;
   align-items: center;
@@ -231,9 +256,7 @@
   padding-top: .65rem;
   margin-top: auto;
 }
-
 .nav-card__foot span { font-family: 'Courier New', monospace; font-size: .65rem; }
-
 .nav-card__arrow {
   font-size: .72rem;
   color: var(--nc, var(--accent));
@@ -251,12 +274,24 @@
 .nc-purple { --nc: #a371f7; }
 .nc-orange { --nc: #db6d28; }
 
-/* ─── Quick instructions block ─────────────────────────────────────────────── */
+/* Light mode: use slightly deeper tones so colored icons/arrows
+   stay readable against white card backgrounds */
+body.light-mode .nc-green  { --nc: #0a9e6e; }
+body.light-mode .nc-red    { --nc: #c0392b; }
+body.light-mode .nc-yellow { --nc: #92580a; }
+body.light-mode .nc-blue   { --nc: #1d4ed8; }
+body.light-mode .nc-purple { --nc: #6d28d9; }
+body.light-mode .nc-orange { --nc: #b45309; }
+
+/* ─── Instructions block ─────────────────────────────────────────────────────── */
 .instructions {
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+}
+body.light-mode .instructions {
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 
 .instructions__header {
@@ -267,7 +302,6 @@
   border-bottom: 1px solid var(--border);
   background: var(--surface-2);
 }
-
 .instructions__header-icon {
   width: 26px; height: 26px;
   border-radius: var(--radius-sm);
@@ -279,7 +313,9 @@
   font-size: .7rem;
   color: var(--accent);
 }
-
+body.light-mode .instructions__header-icon {
+  border-color: rgba(14,168,122,.25);
+}
 .instructions__header-title {
   font-size: .8rem;
   font-weight: 600;
@@ -291,7 +327,6 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0;
 }
-
 .instruction-step {
   padding: 1rem 1.1rem;
   border-right: 1px solid var(--border);
@@ -300,7 +335,6 @@
   flex-direction: column;
   gap: .45rem;
 }
-
 .instruction-step:nth-last-child(-n+3) { border-bottom: none; }
 .instruction-step:last-child { border-right: none; }
 
@@ -315,7 +349,6 @@
   font-size: .65rem;
   color: var(--text-ter);
 }
-
 .instruction-step__title {
   font-size: .8rem;
   font-weight: 600;
@@ -324,19 +357,14 @@
   align-items: center;
   gap: .4rem;
 }
-
-.instruction-step__title i {
-  font-size: .65rem;
-  color: var(--accent);
-}
-
+.instruction-step__title i { font-size: .65rem; color: var(--accent); }
 .instruction-step__text {
   font-size: .74rem;
   color: var(--text-sec);
   line-height: 1.55;
 }
 
-/* ─── Notification banner ──────────────────────────────────────────────────── */
+/* ─── Notification banner ────────────────────────────────────────────────────── */
 .notif-banner {
   display: flex;
   align-items: center;
@@ -349,6 +377,10 @@
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
+body.light-mode .notif-banner {
+  background: rgba(214,51,85,.05);
+  border-color: rgba(214,51,85,.2);
+}
 
 .notif-banner__left {
   display: flex;
@@ -357,7 +389,6 @@
   font-size: .82rem;
   color: var(--text-sec);
 }
-
 .notif-banner__left i { color: var(--danger); font-size: .75rem; }
 .notif-banner__count  { font-weight: 700; color: var(--danger); }
 
@@ -372,10 +403,15 @@
   transition: background .15s;
   white-space: nowrap;
 }
-
 .notif-banner__link:hover { background: rgba(248,81,73,.08); }
+body.light-mode .notif-banner__link {
+  border-color: rgba(214,51,85,.3);
+}
+body.light-mode .notif-banner__link:hover {
+  background: rgba(214,51,85,.08);
+}
 
-/* ─── Responsive ───────────────────────────────────────────────────────────── */
+/* ─── Responsive ─────────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .home-shell { padding: 1.5rem 1rem 3rem; }
   .nav-grid   { grid-template-columns: 1fr; }
@@ -387,7 +423,7 @@
 {% block content %}
 <div class="home-shell">
 
-  <!-- ── Welcome ─────────────────────────────────────────────────────────── -->
+  <!-- ── Welcome ──────────────────────────────────────────────────────────── -->
   <div class="home-welcome">
     <div class="home-welcome__greeting">{% trans "Welcome back" %}</div>
     <div class="home-welcome__name">
@@ -409,7 +445,7 @@
     </div>
   </div>
 
-  <!-- ── Unread alerts banner ────────────────────────────────────────────── -->
+  <!-- ── Unread alerts banner ─────────────────────────────────────────────── -->
   {% if unread_count %}
   <div class="notif-banner">
     <div class="notif-banner__left">
@@ -422,11 +458,10 @@
   </div>
   {% endif %}
 
-  <!-- ── Main navigation ─────────────────────────────────────────────────── -->
+  <!-- ── Main navigation ──────────────────────────────────────────────────── -->
   <div class="section-label">{% trans "Modules" %}</div>
   <div class="nav-grid">
 
-    <!-- Dashboard -->
     <a href="{% url 'dashboard' %}" class="nav-card nc-green">
       <div class="nav-card__top">
         <div class="nav-card__icon"><i class="fas fa-tv"></i></div>
@@ -440,7 +475,6 @@
       </div>
     </a>
 
-    <!-- Cameras -->
     <a href="{% url 'camera_dashboard' %}" class="nav-card nc-orange">
       <div class="nav-card__top">
         <div class="nav-card__icon"><i class="fas fa-camera"></i></div>
@@ -454,7 +488,6 @@
       </div>
     </a>
 
-    <!-- Detection History -->
     <a href="{% url 'detection_history' %}" class="nav-card nc-blue">
       <div class="nav-card__top">
         <div class="nav-card__icon"><i class="fas fa-history"></i></div>
@@ -467,7 +500,6 @@
       </div>
     </a>
 
-    <!-- Notifications -->
     <a href="{% url 'notifications_list' %}" class="nav-card nc-purple">
       <div class="nav-card__top">
         <div class="nav-card__icon"><i class="fas fa-bell"></i></div>
@@ -484,7 +516,6 @@
     </a>
 
     {% if user.profile.role == 'operator' %}
-    <!-- My Assignments -->
     <a href="{% url 'operator_assignments' %}" class="nav-card nc-yellow">
       <div class="nav-card__top">
         <div class="nav-card__icon"><i class="fas fa-tasks"></i></div>
@@ -499,7 +530,6 @@
     {% endif %}
 
     {% if user.profile.role == 'admin' or user.profile.role == 'supervisor' or user.is_superuser %}
-    <!-- Target Management -->
     <a href="{% url 'target_management' %}" class="nav-card nc-red">
       <div class="nav-card__top">
         <div class="nav-card__icon"><i class="fas fa-crosshairs"></i></div>
@@ -512,7 +542,6 @@
       </div>
     </a>
 
-    <!-- Verifications -->
     <a href="{% url 'pending_verifications' %}" class="nav-card nc-blue">
       <div class="nav-card__top">
         <div class="nav-card__icon"><i class="fas fa-shield-alt"></i></div>
@@ -527,7 +556,6 @@
     {% endif %}
 
     {% if user.profile.role == 'admin' or user.is_superuser %}
-    <!-- Accounts -->
     <a href="{% url 'account_manage' %}" class="nav-card nc-purple">
       <div class="nav-card__top">
         <div class="nav-card__icon"><i class="fas fa-users-cog"></i></div>
@@ -541,9 +569,9 @@
     </a>
     {% endif %}
 
-  </div><!-- /nav-grid -->
+  </div>
 
-  <!-- ── Quick instructions ───────────────────────────────────────────────── -->
+  <!-- ── Quick instructions ────────────────────────────────────────────────── -->
   <div class="section-label">{% trans "How it works" %}</div>
   <div class="instructions">
     <div class="instructions__header">
@@ -591,10 +619,9 @@
     </div>
   </div>
 
-</div><!-- /home-shell -->
+</div>
 
 <script>
-/* ── Clock ── */
 function homeTick() {
   const el = document.getElementById('home-clock');
   if (el) el.textContent = new Date().toTimeString().slice(0,8);
@@ -602,7 +629,6 @@ function homeTick() {
 homeTick();
 setInterval(homeTick, 1000);
 
-/* ── Camera online count ── */
 fetch('/cameras/status/')
   .then(r => r.json())
   .then(d => {
@@ -611,9 +637,7 @@ fetch('/cameras/status/')
     const badge  = document.getElementById('cam-badge-home');
     if (badge) {
       badge.textContent = `${online} online`;
-      if (online > 0) {
-        badge.classList.add('nav-card__badge--live');
-      }
+      if (online > 0) badge.classList.add('nav-card__badge--live');
     }
   })
   .catch(() => {});

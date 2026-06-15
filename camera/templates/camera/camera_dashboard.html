@@ -8,165 +8,282 @@
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       crossorigin="">
 <style>
-/* ── View tabs ────────────────────────────────────────────────────────────── */
+/* ── Design tokens (dark) ── */
+:root {
+  --surface-0: #0d1117;
+  --surface-1: #161b22;
+  --surface-2: #21262d;
+  --surface-3: #30363d;
+  --border:         #30363d;
+  --border-subtle:  #21262d;
+  --accent:    #4ecca3;
+  --accent-bg: rgba(78,204,163,.10);
+  --accent-border: rgba(78,204,163,.28);
+  --text-pri:  #e6edf3;
+  --text-sec:  #8b949e;
+  --text-ter:  #484f58;
+  --danger:    #f85149;
+  --warn:      #d29922;
+  --blue:      #388bfd;
+  --online-color:  #2ecc71;
+  --offline-color: #e74c3c;
+  --unknown-color: #f39c12;
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
+}
+
+/* ── Light mode overrides ── */
+body.light-mode {
+  --surface-0:     #f0f4f8;
+  --surface-1:     #ffffff;
+  --surface-2:     #f6f8fa;
+  --surface-3:     #eaeef2;
+  --border:        rgba(0,0,0,.09);
+  --border-subtle: rgba(0,0,0,.05);
+  --accent:        #0ea87a;
+  --accent-bg:     rgba(14,168,122,.08);
+  --accent-border: rgba(14,168,122,.30);
+  --text-pri:      #1a2332;
+  --text-sec:      #4a5568;
+  --text-ter:      #8a96a3;
+  --danger:        #d63355;
+  --warn:          #b45309;
+  --blue:          #2563eb;
+  --online-color:  #15803d;
+  --offline-color: #c0392b;
+  --unknown-color: #92580a;
+}
+
+/* ── View tabs ── */
 .view-tabs {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 1.4rem;
-    background: rgba(0,0,0,.2);
-    padding: 5px;
-    border-radius: 10px;
-    width: fit-content;
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1.4rem;
+  background: var(--surface-2);
+  padding: 5px;
+  border-radius: var(--radius);
+  width: fit-content;
+  border: 1px solid var(--border);
 }
 .view-tab {
-    padding: 7px 18px;
-    border-radius: 7px;
-    border: none;
-    cursor: pointer;
-    font-size: .8rem;
-    font-weight: 600;
-    font-family: inherit;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all .18s;
-    background: transparent;
-    color: #666;
-    letter-spacing: .03em;
+  padding: 7px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: .8rem;
+  font-weight: 600;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .18s;
+  background: transparent;
+  color: var(--text-ter);
+  letter-spacing: .03em;
 }
 .view-tab.active {
-    background: rgba(78,204,163,.12);
-    color: #4ecca3;
-    border: 1px solid rgba(78,204,163,.25);
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent-border);
 }
-.view-tab:not(.active):hover { background: rgba(255,255,255,.05); color: #aaa; }
+.view-tab:not(.active):hover {
+  background: var(--surface-3);
+  color: var(--text-sec);
+}
 
-/* ── Map container ────────────────────────────────────────────────────────── */
+/* ── Map container ── */
 #map-view { display: none; }
 #map-view.active { display: block; }
 #camera-map {
-    width: 100%;
-    height: 560px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,.08);
-    background: #0a0e1a;
-    z-index: 0;
+  width: 100%;
+  height: 560px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-0);
+  z-index: 0;
 }
 
-/* Leaflet popup custom theme */
+/* Leaflet popup — themed */
 .leaflet-popup-content-wrapper {
-    background: #16213e !important;
-    border: 1px solid rgba(78,204,163,.3) !important;
-    border-radius: 10px !important;
-    color: #eee !important;
-    box-shadow: 0 8px 30px rgba(0,0,0,.6) !important;
+  background: var(--surface-1) !important;
+  border: 1px solid var(--accent-border) !important;
+  border-radius: var(--radius) !important;
+  color: var(--text-pri) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,.35) !important;
 }
-.leaflet-popup-tip { background: #16213e !important; }
+.leaflet-popup-tip { background: var(--surface-1) !important; }
 .leaflet-popup-content { margin: 0 !important; padding: 0 !important; }
-.cam-popup {
-    min-width: 220px;
-    font-family: 'Segoe UI', sans-serif;
-}
+
+.cam-popup { min-width: 220px; font-family: 'Segoe UI', sans-serif; }
 .cam-popup-header {
-    background: linear-gradient(135deg,#0f3460,#16213e);
-    padding: 10px 14px;
-    border-radius: 9px 9px 0 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.cam-popup-header .dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-.cam-popup-header .dot.online  { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
-.cam-popup-header .dot.offline { background: #e74c3c; }
-.cam-popup-header .dot.unknown { background: #f39c12; }
-.cam-popup-name  { font-size: .88rem; font-weight: 700; color: #fff; }
+.cam-popup-header .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.cam-popup-header .dot.online  { background: var(--online-color);  box-shadow: 0 0 8px var(--online-color); }
+.cam-popup-header .dot.offline { background: var(--offline-color); }
+.cam-popup-header .dot.unknown { background: var(--unknown-color); }
+.cam-popup-name { font-size: .88rem; font-weight: 700; color: var(--text-pri); }
+
 .cam-popup-body  { padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; }
-.cam-popup-row   { display: flex; align-items: center; gap: 6px; font-size: .76rem; color: #aaa; }
-.cam-popup-row i { color: #4ecca3; font-size: .7rem; width: 13px; }
+.cam-popup-row   { display: flex; align-items: center; gap: 6px; font-size: .76rem; color: var(--text-sec); }
+.cam-popup-row i { color: var(--accent); font-size: .7rem; width: 13px; }
+
 .cam-popup-actions { padding: 0 14px 12px; display: flex; gap: 6px; }
 .cam-popup-btn {
-    flex: 1; padding: 7px; border-radius: 6px;
-    font-size: .72rem; font-weight: 700;
-    text-decoration: none; text-align: center;
-    text-transform: uppercase; letter-spacing: .04em;
-    transition: all .15s; border: 1px solid transparent;
+  flex: 1; padding: 7px; border-radius: var(--radius-sm);
+  font-size: .72rem; font-weight: 700;
+  text-decoration: none; text-align: center;
+  text-transform: uppercase; letter-spacing: .04em;
+  transition: all .15s; border: 1px solid transparent;
 }
 .cam-popup-btn--view {
-    background: rgba(78,204,163,.12);
-    color: #4ecca3;
-    border-color: rgba(78,204,163,.3);
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent-border);
 }
-.cam-popup-btn--view:hover { background: rgba(78,204,163,.22); }
+.cam-popup-btn--view:hover { filter: brightness(1.1); }
 .cam-popup-btn--disabled {
-    background: rgba(255,255,255,.04);
-    color: #555;
-    border-color: rgba(255,255,255,.07);
-    cursor: default;
-    pointer-events: none;
+  background: var(--surface-2);
+  color: var(--text-ter);
+  border-color: var(--border);
+  cursor: default;
+  pointer-events: none;
+}
+
+.cam-popup-edit-btn {
+  flex: none;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  color: var(--text-sec);
+  border-radius: var(--radius-sm);
+  font-size: .72rem;
+  text-align: center;
+  text-decoration: none;
+}
+.cam-popup-edit-btn:hover { border-color: var(--text-sec); color: var(--text-pri); }
+
+/* Code in popup */
+.cam-popup-code {
+  font-size: .7rem;
+  background: var(--surface-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  color: var(--text-sec);
 }
 
 /* Map no-coord notice */
 .map-no-coords {
-    background: rgba(243,156,18,.08);
-    border: 1px solid rgba(243,156,18,.25);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: .8rem;
-    color: #f39c12;
-    margin-top: 10px;
-    display: none;
+  background: rgba(210,153,34,.08);
+  border: 1px solid rgba(210,153,34,.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: .8rem;
+  color: var(--warn);
+  margin-top: 10px;
+  display: none;
 }
-.map-no-coords.visible { display: flex; align-items: center; gap: 8px; }
-.no-coord-list { font-size: .75rem; color: #f39c12; opacity: .85; margin-top: 3px; }
+body.light-mode .map-no-coords {
+  background: rgba(180,83,9,.06);
+  border-color: rgba(180,83,9,.2);
+}
+.map-no-coords.visible { display: flex; align-items: flex-start; gap: 8px; }
+.no-coord-list { font-size: .75rem; color: var(--warn); opacity: .85; margin-top: 3px; }
 
-/* ── Grid view (existing styles preserved) ─────────────────────────────── */
+/* ── Page header ── */
 .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
 .page-header-right { display:flex; gap:.7rem; align-items:center; }
-.page-title { font-size:1.8rem; display:flex; align-items:center; gap:.6rem; margin:0; }
-.page-subtitle { color:#888; margin-top:.3rem; font-size:.9rem; }
+.page-title { font-size:1.8rem; display:flex; align-items:center; gap:.6rem; margin:0; color: var(--text-pri); }
+.page-subtitle { color: var(--text-sec); margin-top:.3rem; font-size:.9rem; }
 
-.btn { padding:.45rem 1rem; border-radius:7px; border:none; cursor:pointer;
+/* ── Buttons ── */
+.btn { padding:.45rem 1rem; border-radius:var(--radius-sm); border:none; cursor:pointer;
        font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:.4rem;
-       text-decoration:none; transition:opacity .15s; }
+       text-decoration:none; transition:opacity .15s, filter .15s; font-family: inherit; }
 .btn:hover { opacity:.85; }
-.btn-discover { background:rgba(52,152,219,.2); color:#3498db; }
-.btn-register { background:#3498db; color:#fff; }
+.btn-discover {
+  background: rgba(56,139,253,.15);
+  color: var(--blue);
+  border: 1px solid rgba(56,139,253,.25);
+}
+body.light-mode .btn-discover {
+  background: rgba(37,99,235,.1);
+  color: var(--blue);
+  border-color: rgba(37,99,235,.25);
+}
+.btn-register { background: var(--blue); color: #fff; }
 
-.discover-panel { background:var(--card-bg,#1a1a2e); border:1px solid rgba(52,152,219,.3);
-  border-radius:10px; padding:1rem; margin-bottom:1.5rem; }
+/* ── Discovery panel ── */
+.discover-panel {
+  background: var(--surface-1);
+  border: 1px solid rgba(56,139,253,.3);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+body.light-mode .discover-panel { box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+
 .discover-header { display:flex; justify-content:space-between; align-items:center;
-  font-weight:600; color:#3498db; margin-bottom:.8rem; }
-.discover-header button { background:none; border:none; cursor:pointer; color:#888; font-size:1rem; }
+  font-weight:600; color: var(--blue); margin-bottom:.8rem; }
+.discover-header button { background:none; border:none; cursor:pointer; color: var(--text-sec); font-size:1rem; }
+.discover-header button:hover { color: var(--text-pri); }
+
 .discover-results { display:flex; flex-wrap:wrap; gap:.6rem; }
-.disc-item { padding:.4rem .9rem; border-radius:6px; font-size:.83rem; font-weight:600;
+.disc-item { padding:.4rem .9rem; border-radius:var(--radius-sm); font-size:.83rem; font-weight:600;
              display:flex; align-items:center; gap:.4rem; }
-.disc-item.found    { background:rgba(46,204,113,.15); color:#2ecc71; }
-.disc-item.notfound { background:rgba(255,255,255,.05); color:#666; }
+.disc-item.found    { background:rgba(46,204,113,.12); color: var(--online-color); }
+.disc-item.notfound { background: var(--surface-2); color: var(--text-ter); border: 1px solid var(--border); }
 
-.cam-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.2rem; }
+/* ── Camera grid ── */
+.cam-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.2rem;
+}
 
-.cam-card { background:var(--card-bg,#1a1a2e); border:1px solid rgba(255,255,255,.07);
-  border-radius:14px; overflow:hidden; transition:box-shadow .2s,border-color .2s,transform .2s;
-  display:flex; flex-direction:column; }
-.cam-card:hover { box-shadow:0 6px 28px rgba(0,0,0,.35); transform:translateY(-2px); }
-.cam-card--online { border-color:rgba(46,204,113,.25); }
-.cam-card--online:hover { box-shadow:0 6px 28px rgba(46,204,113,.1); }
+.cam-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow .2s, border-color .2s, transform .2s;
+  display: flex;
+  flex-direction: column;
+}
+body.light-mode .cam-card { box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.cam-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,.18); transform: translateY(-2px); }
+body.light-mode .cam-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,.10); }
+.cam-card--online { border-color: rgba(46,204,113,.25); }
+.cam-card--online:hover { box-shadow: 0 6px 28px rgba(46,204,113,.08); }
 
+/* ── Camera preview ── */
 .cam-preview-wrap { position:relative; width:100%; height:160px; background:#000; overflow:hidden; cursor:pointer; }
 .cam-thumb { width:100%; height:100%; object-fit:cover; display:block; transition:opacity .3s; }
-.cam-thumb-placeholder { width:100%; height:100%; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:.5rem; background:#0a0e1a; color:rgba(255,255,255,.2); }
+.cam-thumb-placeholder {
+  width:100%; height:100%; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:.5rem;
+  background: var(--surface-0);
+  color: var(--text-ter);
+}
 .cam-thumb-placeholder i    { font-size:2.5rem; }
 .cam-thumb-placeholder span { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; }
 
-.cam-preview-overlay { position:absolute; inset:0; background:rgba(78,204,163,.15);
-  backdrop-filter:blur(2px); display:flex; flex-direction:column; align-items:center;
-  justify-content:center; gap:.5rem; opacity:0; transition:opacity .2s; color:#4ecca3;
-  font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; }
+.cam-preview-overlay {
+  position:absolute; inset:0;
+  background: rgba(78,204,163,.12);
+  backdrop-filter:blur(2px);
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:.5rem; opacity:0; transition:opacity .2s;
+  color: var(--accent);
+  font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em;
+}
 .cam-preview-overlay i { font-size:1.8rem; }
 .cam-preview-wrap:hover .cam-preview-overlay { opacity:1; }
 
@@ -178,47 +295,64 @@
 @keyframes pulse-green  { 0%,100%{box-shadow:0 0 4px #2ecc71} 50%{box-shadow:0 0 14px #2ecc71} }
 @keyframes pulse-orange { 0%,100%{box-shadow:0 0 4px #f39c12} 50%{box-shadow:0 0 14px #f39c12} }
 
+/* ── Camera card info ── */
 .cam-info     { padding:.9rem 1rem; display:flex; flex-direction:column; gap:.55rem; flex:1; }
 .cam-card-top { display:flex; align-items:flex-start; gap:.7rem; }
 .cam-title-block { flex:1; }
-.cam-name { font-size:.95rem; font-weight:700; color:#eee; }
-.cam-loc  { font-size:.75rem; color:#888; margin-top:.15rem; display:flex; align-items:center; gap:.3rem; }
+.cam-name { font-size:.95rem; font-weight:700; color: var(--text-pri); }
+.cam-loc  { font-size:.75rem; color: var(--text-sec); margin-top:.15rem; display:flex; align-items:center; gap:.3rem; }
+
 .cam-menu { display:flex; gap:.3rem; flex-shrink:0; }
-.cam-action { color:#666; padding:.3rem; border-radius:4px; transition:color .15s; font-size:.82rem; }
-.cam-action:hover { color:#eee; }
-.cam-action.cam-del:hover { color:#e74c3c; }
-.cam-source { display:flex; align-items:center; gap:.5rem; font-size:.77rem; color:#777; }
-.cam-source code { background:rgba(255,255,255,.06); padding:.1rem .4rem; border-radius:4px; font-size:.75rem; }
+.cam-action { color: var(--text-ter); padding:.3rem; border-radius:4px; transition:color .15s; font-size:.82rem; }
+.cam-action:hover { color: var(--text-pri); }
+.cam-action.cam-del:hover { color: var(--danger); }
+
+.cam-source { display:flex; align-items:center; gap:.5rem; font-size:.77rem; color: var(--text-sec); }
+.cam-source code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding:.1rem .4rem; border-radius:4px; font-size:.75rem;
+  color: var(--text-sec);
+}
+
 .cam-status-row { display:flex; align-items:center; gap:.7rem; }
 .status-badge { padding:.18rem .65rem; border-radius:4px; font-size:.72rem; font-weight:700; }
-.status-badge.online  { background:rgba(46,204,113,.15); color:#2ecc71; }
-.status-badge.offline { background:rgba(231,76,60,.15);  color:#e74c3c; }
-.status-badge.unknown { background:rgba(243,156,18,.15); color:#f39c12; }
-.cam-time { font-size:.72rem; color:#666; }
-.cam-offline-time { font-size:.72rem; color:#e74c3c; }
+.status-badge.online  { background:rgba(46,204,113,.13); color: var(--online-color); }
+.status-badge.offline { background:rgba(231,76,60,.13);  color: var(--offline-color); }
+.status-badge.unknown { background:rgba(243,156,18,.13); color: var(--unknown-color); }
+.cam-time         { font-size:.72rem; color: var(--text-ter); }
+.cam-offline-time { font-size:.72rem; color: var(--danger); }
 
-.cam-footer { border-top:1px solid rgba(255,255,255,.05); padding-top:.65rem; display:flex; flex-direction:column; gap:.55rem; }
+.cam-footer { border-top:1px solid var(--border-subtle); padding-top:.65rem; display:flex; flex-direction:column; gap:.55rem; }
 .cam-quick-actions { display:flex; gap:.5rem; }
-.quick-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:.35rem;
-  padding:.35rem .6rem; border-radius:6px; font-size:.74rem; font-weight:600;
-  text-decoration:none; border:1px solid rgba(255,255,255,.08); color:#888; transition:all .15s; }
-.quick-btn:hover { border-color:#aaa; color:#eee; }
-.quick-btn--accent { border-color:rgba(78,204,163,.3); color:#4ecca3; }
-.quick-btn--accent:hover { background:rgba(78,204,163,.1); border-color:#4ecca3; }
+.quick-btn {
+  flex:1; display:flex; align-items:center; justify-content:center; gap:.35rem;
+  padding:.35rem .6rem; border-radius:var(--radius-sm); font-size:.74rem; font-weight:600;
+  text-decoration:none; border:1px solid var(--border); color: var(--text-sec);
+  transition:all .15s; background: transparent; font-family: inherit; cursor: pointer;
+}
+.quick-btn:hover { border-color: var(--text-sec); color: var(--text-pri); }
+.quick-btn--accent { border-color: var(--accent-border); color: var(--accent); }
+.quick-btn--accent:hover { background: var(--accent-bg); border-color: var(--accent); }
 
+/* ── Toggle switch ── */
 .toggle-switch { display:flex; align-items:center; gap:.55rem; cursor:pointer; user-select:none; }
 .toggle-switch input { display:none; }
-.toggle-track { width:36px; height:18px; background:rgba(255,255,255,.1); border-radius:20px;
-  position:relative; transition:background .2s; flex-shrink:0; }
+.toggle-track { width:36px; height:18px; background: var(--surface-3); border-radius:20px;
+  position:relative; transition:background .2s; flex-shrink:0; border: 1px solid var(--border); }
 .toggle-thumb { position:absolute; top:2px; left:2px; width:14px; height:14px;
-  background:#eee; border-radius:50%; transition:transform .2s; }
-.toggle-switch input:checked ~ .toggle-track { background:#2ecc71; }
-.toggle-switch input:checked ~ .toggle-track .toggle-thumb { transform:translateX(18px); }
-.toggle-label { font-size:.8rem; color:#aaa; }
+  background: var(--text-sec); border-radius:50%; transition:transform .2s; }
+.toggle-switch input:checked ~ .toggle-track { background:#2ecc71; border-color:#2ecc71; }
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb { transform:translateX(18px); background:#fff; }
+.toggle-label { font-size:.8rem; color: var(--text-sec); }
 
-.empty-state { grid-column:1/-1; text-align:center; padding:4rem 2rem; color:#888; }
-.empty-state i { font-size:3.5rem; margin-bottom:1rem; display:block; color:#334; }
-.empty-state h2 { font-size:1.4rem; color:#aaa; margin-bottom:.4rem; }
+/* ── Empty state ── */
+.empty-state { grid-column:1/-1; text-align:center; padding:4rem 2rem; color: var(--text-sec); }
+.empty-state i { font-size:3.5rem; margin-bottom:1rem; display:block; color: var(--text-ter); }
+.empty-state h2 { font-size:1.4rem; color: var(--text-sec); margin-bottom:.4rem; }
+
+/* ── Map pin location indicator on card ── */
+.map-pin-indicator { color: var(--accent); font-size:.65rem; margin-left:4px; }
 </style>
 {% endblock %}
 
@@ -240,7 +374,7 @@
   {% endif %}
 </div>
 
-<!-- ── View tabs ────────────────────────────────────────────────────────────── -->
+<!-- ── View tabs ── -->
 <div class="view-tabs" id="viewTabs">
   <button class="view-tab active" id="tab-grid" onclick="switchView('grid')">
     <i class="fas fa-th-large"></i> {% trans "Grid View" %}
@@ -250,7 +384,7 @@
   </button>
 </div>
 
-<!-- Discovery result panel -->
+<!-- Discovery panel -->
 <div id="discoverPanel" class="discover-panel" style="display:none;">
   <div class="discover-header">
     <span><i class="fas fa-search"></i> {% trans "Local Camera Discovery (Indices 0–5)" %}</span>
@@ -259,7 +393,7 @@
   <div id="discoverResults" class="discover-results">{% trans "Scanning..." %}</div>
 </div>
 
-<!-- ══ GRID VIEW ════════════════════════════════════════════════════════════ -->
+<!-- ══ GRID VIEW ══ -->
 <div id="grid-view">
   <div class="cam-grid" id="camGrid">
     {% for cam in cameras %}
@@ -297,7 +431,7 @@
             <div class="cam-loc">
               <i class="fas fa-map-marker-alt"></i> {{ cam.location }}
               {% if cam.latitude and cam.longitude %}
-                <span style="color:#4ecca3;font-size:.65rem;margin-left:4px;" title="Location pinned on map">
+                <span class="map-pin-indicator" title="Location pinned on map">
                   <i class="fas fa-map-pin"></i>
                 </span>
               {% endif %}
@@ -332,13 +466,13 @@
             {{ cam.status|upper }}
           </span>
           <span class="cam-time" id="time-{{ cam.id }}">
-            {% if cam.last_seen_at %}Last seen: {{ cam.last_seen_at|date:"H:i:s" }}{% endif %}
+            {% if cam.last_seen_at %}{% trans "Last seen" %}: {{ cam.last_seen_at|date:"H:i:s" }}{% endif %}
           </span>
         </div>
 
         {% if cam.went_offline_at %}
         <div class="cam-offline-time" id="offline-{{ cam.id }}">
-          {% trans "Offline since" % }: {{ cam.went_offline_at|date:"Y-m-d H:i:s" }}
+          {% trans "Offline since" %}: {{ cam.went_offline_at|date:"Y-m-d H:i:s" }}
         </div>
         {% endif %}
 
@@ -363,7 +497,7 @@
                    onchange="toggleCamera({{ cam.id }}, this)">
             <span class="toggle-track"><span class="toggle-thumb"></span></span>
             <span class="toggle-label" id="toggle-label-{{ cam.id }}">
-              {% if cam.is_active %}{% trans "Active" %}{% else %} {% trans "Disabled" %}{% endif %}
+              {% if cam.is_active %}{% trans "Active" %}{% else %}{% trans "Disabled" %}{% endif %}
             </span>
           </label>
         </div>
@@ -376,7 +510,7 @@
       <h2>{% trans "No Cameras Registered" %}</h2>
       <p>{% trans "Add a camera to get started." %}</p>
       {% if is_admin %}
-      <a href="{% url 'camera_register' %}" class="btn btn-register" style="margin-top:1rem;">
+      <a href="{% url 'camera_register' %}" class="btn btn-register" style="margin-top:1rem;display:inline-flex;">
         <i class="fas fa-plus"></i> {% trans "Add First Camera" %}
       </a>
       {% endif %}
@@ -385,15 +519,11 @@
   </div>
 </div>
 
-<!-- ══ MAP VIEW ═════════════════════════════════════════════════════════════ -->
+<!-- ══ MAP VIEW ══ -->
 <div id="map-view">
-
-  <!-- Map canvas -->
   <div id="camera-map"></div>
-
-  <!-- Warning: cameras without coordinates -->
   <div class="map-no-coords" id="noCoordsNotice">
-    <i class="fas fa-exclamation-triangle"></i>
+    <i class="fas fa-exclamation-triangle" style="flex-shrink:0;margin-top:2px;"></i>
     <div>
       <strong>{% trans "Some cameras have no map location set:" %}</strong>
       <div class="no-coord-list" id="noCoordsNames"></div>
@@ -404,13 +534,9 @@
   </div>
 </div>
 
-<!-- ── Leaflet JS ──────────────────────────────────────────────────────────── -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
 <script>
-/* ════════════════════════════════════════════════════════════════════════════
-   Camera data injected from Django template
-   ════════════════════════════════════════════════════════════════════════════ */
+/* ── Camera data from Django ── */
 const CAMERAS = [
   {% for cam in cameras %}
   {
@@ -429,14 +555,12 @@ const CAMERAS = [
   {% endfor %}
 ];
 
-/* ════════════════════════════════════════════════════════════════════════════
-   View switching
-   ════════════════════════════════════════════════════════════════════════════ */
+/* ── View switching ── */
 let mapInited = false;
 
 function switchView(view) {
-  const gridEl = document.getElementById('grid-view');
-  const mapEl  = document.getElementById('map-view');
+  const gridEl  = document.getElementById('grid-view');
+  const mapEl   = document.getElementById('map-view');
   const tabGrid = document.getElementById('tab-grid');
   const tabMap  = document.getElementById('tab-map');
 
@@ -454,28 +578,21 @@ function switchView(view) {
   }
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
-   Leaflet camera map
-   ════════════════════════════════════════════════════════════════════════════ */
+/* ── Leaflet camera map ── */
 let cameraMap     = null;
-let cameraMarkers = {};   // camera_id → L.Marker
+let cameraMarkers = {};
 
 function initCameraMap() {
   mapInited = true;
 
-  // Find centre from cameras that have coordinates
   const withCoords = CAMERAS.filter(c => c.lat !== null && c.lng !== null);
   const noCoords   = CAMERAS.filter(c => c.lat === null || c.lng === null);
 
-  // Show warning for cameras without coords
   if (noCoords.length > 0) {
-    const notice = document.getElementById('noCoordsNotice');
-    const names  = document.getElementById('noCoordsNames');
-    notice.classList.add('visible');
-    names.textContent = noCoords.map(c => c.name).join(', ');
+    document.getElementById('noCoordsNotice').classList.add('visible');
+    document.getElementById('noCoordsNames').textContent = noCoords.map(c => c.name).join(', ');
   }
 
-  // Default centre: average of pinned cameras, or Kabul fallback
   let centerLat = 34.5553, centerLng = 69.2075, defaultZoom = 5;
   if (withCoords.length > 0) {
     centerLat   = withCoords.reduce((s, c) => s + c.lat, 0) / withCoords.length;
@@ -483,49 +600,37 @@ function initCameraMap() {
     defaultZoom = withCoords.length === 1 ? 14 : 9;
   }
 
-  cameraMap = L.map('camera-map', {
-    center: [centerLat, centerLng],
-    zoom:   defaultZoom,
-  });
+  /* Use dark tile in dark mode, standard in light mode */
+  const isLight = document.body.classList.contains('light-mode');
+  const tileUrl = isLight
+    ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
-  // OpenStreetMap tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+  cameraMap = L.map('camera-map', { center: [centerLat, centerLng], zoom: defaultZoom });
+  L.tileLayer(tileUrl, {
+    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
     maxZoom: 19,
   }).addTo(cameraMap);
 
-  // Place a marker for each camera that has coordinates
   withCoords.forEach(cam => addCameraMarker(cam));
 
-  // Fit bounds if multiple cameras
   if (withCoords.length > 1) {
     const bounds = L.latLngBounds(withCoords.map(c => [c.lat, c.lng]));
     cameraMap.fitBounds(bounds, { padding: [50, 50] });
   }
 }
 
-/* ── Build marker icon by status ── */
 function markerIcon(status, isActive) {
-  const colors = {
-    online:  '#2ecc71',
-    offline: '#e74c3c',
-    unknown: '#f39c12',
-  };
-  const color = isActive ? (colors[status] || '#888') : '#555';
-
+  const colors = { online: '#2ecc71', offline: '#e74c3c', unknown: '#f39c12' };
+  const color  = isActive ? (colors[status] || '#888') : '#888';
   return L.divIcon({
     className: '',
     html: `
-      <div style="
-        position:relative;
-        width:32px;height:32px;
-      ">
+      <div style="position:relative;width:32px;height:32px;">
         <div style="
           width:32px;height:32px;border-radius:50% 50% 50% 0;
-          background:${color};border:3px solid #fff;
-          transform:rotate(-45deg);
+          background:${color};border:3px solid #fff;transform:rotate(-45deg);
           box-shadow:0 2px 12px ${color}88;
-          transition:transform .2s;
         "></div>
         <div style="
           position:absolute;top:50%;left:50%;
@@ -533,17 +638,15 @@ function markerIcon(status, isActive) {
           color:#fff;font-size:10px;
         "><i class="fas fa-video"></i></div>
       </div>`,
-    iconSize:   [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor:[0,  -34],
+    iconSize: [32,32], iconAnchor: [16,32], popupAnchor: [0,-34],
   });
 }
 
-/* ── Build popup HTML ── */
 function popupHTML(cam) {
-  const statusLabel = cam.isActive ? cam.status : 'disabled';
-  const dotClass    = cam.isActive ? cam.status : 'offline';
-  const canView     = cam.status === 'online' && cam.isActive;
+  const dotClass = cam.isActive ? cam.status : 'offline';
+  const canView  = cam.status === 'online' && cam.isActive;
+  const statusLabel = cam.isActive ? cam.status.toUpperCase() : 'DISABLED';
+  const dotGlowColor = cam.status === 'online' ? '#2ecc71' : cam.status === 'offline' ? '#e74c3c' : '#f39c12';
 
   return `
     <div class="cam-popup">
@@ -553,17 +656,16 @@ function popupHTML(cam) {
       </div>
       <div class="cam-popup-body">
         <div class="cam-popup-row">
-          <i class="fas fa-map-marker-alt"></i>
-          ${cam.location}
+          <i class="fas fa-map-marker-alt"></i> ${cam.location}
         </div>
         <div class="cam-popup-row">
           <i class="fas fa-plug"></i>
-          <code style="font-size:.7rem;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">${cam.source}</code>
+          <code class="cam-popup-code">${cam.source}</code>
         </div>
         <div class="cam-popup-row">
-          <i class="fas fa-circle" style="font-size:.55rem;color:${cam.status === 'online' ? '#2ecc71' : cam.status === 'offline' ? '#e74c3c' : '#f39c12'};"></i>
-          ${statusLabel.toUpperCase()}
-          ${cam.lastSeen ? `<span style="margin-left:6px;color:#666;">· ${cam.lastSeen}</span>` : ''}
+          <i class="fas fa-circle" style="font-size:.55rem;color:${dotGlowColor};"></i>
+          ${statusLabel}
+          ${cam.lastSeen ? `<span style="margin-left:6px;opacity:.6;">· ${cam.lastSeen}</span>` : ''}
         </div>
       </div>
       <div class="cam-popup-actions">
@@ -576,32 +678,23 @@ function popupHTML(cam) {
                ${cam.isActive ? 'Offline' : 'Disabled'}
              </span>`
         }
-        <a href="${cam.editUrl}" class="cam-popup-btn"
-           style="flex:none;padding:7px 10px;border:1px solid rgba(255,255,255,.1);color:#888;border-radius:6px;font-size:.72rem;text-align:center;text-decoration:none;">
+        <a href="${cam.editUrl}" class="cam-popup-btn cam-popup-edit-btn">
           <i class="fas fa-edit"></i>
         </a>
       </div>
     </div>`;
 }
 
-/* ── Add one camera marker ── */
 function addCameraMarker(cam) {
   const m = L.marker([cam.lat, cam.lng], {
-    icon:      markerIcon(cam.status, cam.isActive),
-    title:     cam.name,
+    icon: markerIcon(cam.status, cam.isActive),
+    title: cam.name,
     riseOnHover: true,
   }).addTo(cameraMap);
-
-  m.bindPopup(popupHTML(cam), {
-    minWidth:  240,
-    maxWidth:  280,
-    className: 'cam-popup-wrapper',
-  });
-
+  m.bindPopup(popupHTML(cam), { minWidth: 240, maxWidth: 280 });
   cameraMarkers[cam.id] = m;
 }
 
-/* ── Focus on a specific camera from grid "Map" button ── */
 function focusMapCamera(camId) {
   const m = cameraMarkers[camId];
   if (!m) return;
@@ -609,7 +702,6 @@ function focusMapCamera(camId) {
   m.openPopup();
 }
 
-/* ── Update marker when status changes via WS ── */
 function updateMapMarker(camId, status) {
   const cam = CAMERAS.find(c => c.id === camId);
   if (!cam) return;
@@ -617,13 +709,10 @@ function updateMapMarker(camId, status) {
   const m = cameraMarkers[camId];
   if (!m) return;
   m.setIcon(markerIcon(status, cam.isActive));
-  // Refresh popup if open
   if (m.isPopupOpen()) m.setPopupContent(popupHTML(cam));
 }
 
-/* ════════════════════════════════════════════════════════════════
-   DashboardThumbPoller  (existing — unchanged)
-   ════════════════════════════════════════════════════════════════ */
+/* ── Thumb poller ── */
 class DashboardThumbPoller {
   constructor(cameraId, fps = 10) {
     this.cameraId  = cameraId;
@@ -642,7 +731,7 @@ class DashboardThumbPoller {
       const resp = await fetch(`${this.frameUrl}?_=${Date.now()}`);
       if (resp.ok) {
         const cameraStatus = resp.headers.get('X-Camera-Status') || 'live';
-        const blob  = await resp.blob();
+        const blob   = await resp.blob();
         const newUrl = URL.createObjectURL(blob);
         const img = document.getElementById(`thumb-${this.cameraId}`);
         const ph  = document.getElementById(`placeholder-${this.cameraId}`);
@@ -655,7 +744,7 @@ class DashboardThumbPoller {
         } else {
           URL.revokeObjectURL(newUrl);
           if (img) img.style.display = 'none';
-          if (ph) ph.style.display = 'flex';
+          if (ph)  ph.style.display  = 'flex';
         }
         this._errCount = 0;
       } else { this._errCount++; }
@@ -668,25 +757,25 @@ class DashboardThumbPoller {
 }
 
 const _thumbPollers = {};
-function startThumbPoller(cameraId) {
-  if (_thumbPollers[cameraId]) _thumbPollers[cameraId].stop();
-  const p = new DashboardThumbPoller(cameraId, 10);
-  _thumbPollers[cameraId] = p;
+function startThumbPoller(id) {
+  if (_thumbPollers[id]) _thumbPollers[id].stop();
+  const p = new DashboardThumbPoller(id, 10);
+  _thumbPollers[id] = p;
   p.start();
 }
-function stopThumbPoller(cameraId) {
-  if (_thumbPollers[cameraId]) { _thumbPollers[cameraId].stop(); delete _thumbPollers[cameraId]; }
+function stopThumbPoller(id) {
+  if (_thumbPollers[id]) { _thumbPollers[id].stop(); delete _thumbPollers[id]; }
 }
 
 {% for cam in cameras %}{% if cam.status == 'online' and cam.is_active %}startThumbPoller({{ cam.id }});{% endif %}{% endfor %}
 
-/* ── WebSocket for real-time status ── */
+/* ── WebSocket ── */
 const camWs = new WebSocket(`ws://${location.host}/ws/camera/`);
 camWs.onmessage = (e) => {
   const d = JSON.parse(e.data);
   if (d.type !== 'CAMERA_STATUS') return;
   updateCameraCard(d.camera_id, d.status, d.timestamp);
-  updateMapMarker(d.camera_id, d.status);   // ← also refresh map marker
+  updateMapMarker(d.camera_id, d.status);
 };
 camWs.onclose = () => setTimeout(() => location.reload(), 3000);
 
@@ -698,8 +787,8 @@ function updateCameraCard(id, status, ts) {
   const thumb = document.getElementById(`thumb-${id}`);
   const ph    = document.getElementById(`placeholder-${id}`);
   if (!ind) return;
-  ind.className   = `cam-indicator ${status}`;
-  badge.className = `status-badge ${status}`;
+  ind.className     = `cam-indicator ${status}`;
+  badge.className   = `status-badge ${status}`;
   badge.textContent = status.toUpperCase();
   if (time && ts) time.textContent = `Last seen: ${ts.split(' ')[1] || ts.slice(11,19)}`;
   if (status === 'online') {
@@ -723,10 +812,10 @@ function updateCameraCard(id, status, ts) {
   }
 }
 
-/* ── Open camera viewer popup ── */
+/* ── Open camera viewer ── */
 function openCameraViewer(id, status, isActive) {
-  if (!isActive) { showToast('Camera is disabled.', 'warn'); return; }
-  if (status === 'offline') { showToast('Camera is currently offline.', 'warn'); return; }
+  if (!isActive) { showToast('{% trans "Camera is disabled." %}', 'warn'); return; }
+  if (status === 'offline') { showToast('{% trans "Camera is currently offline." %}', 'warn'); return; }
   const url  = `/cameras/${id}/view/`;
   const w    = Math.min(window.screen.availWidth  - 40, 1280);
   const h    = Math.min(window.screen.availHeight - 40, 780);
@@ -748,10 +837,14 @@ function toggleCamera(id, checkbox) {
   .then(r => r.json())
   .then(d => {
     checkbox.disabled = false;
-    label.textContent = d.is_active ? 'Active' : 'Disabled';
+    label.textContent = d.is_active ? '{% trans "Active" %}' : '{% trans "Disabled" %}';
     if (!d.is_active) updateCameraCard(id, 'offline', new Date().toISOString().replace('T',' ').slice(0,19));
   })
-  .catch(() => { checkbox.disabled = false; checkbox.checked = !checkbox.checked; showToast('Toggle failed.', 'error'); });
+  .catch(() => {
+    checkbox.disabled = false;
+    checkbox.checked  = !checkbox.checked;
+    showToast('{% trans "Toggle failed." %}', 'error');
+  });
 }
 
 /* ── Camera discovery ── */
@@ -759,7 +852,7 @@ function discoverCameras() {
   const panel   = document.getElementById('discoverPanel');
   const results = document.getElementById('discoverResults');
   panel.style.display = 'block';
-  results.innerHTML   = '<span style="color:#888">Scanning indices 0–5 (takes ~18s)...</span>';
+  results.innerHTML   = '<span style="color:var(--text-sec)">Scanning indices 0–5 (takes ~18s)…</span>';
   fetch('/cameras/discover/')
     .then(r => r.json())
     .then(d => {
@@ -769,23 +862,32 @@ function discoverCameras() {
           ${c.label} — ${c.accessible ? 'ACCESSIBLE' : 'not found'}
         </div>`).join('');
     })
-    .catch(() => { results.innerHTML = '<span style="color:#e74c3c">Discovery failed.</span>'; });
+    .catch(() => { results.innerHTML = `<span style="color:var(--danger)">{% trans "Discovery failed." %}</span>`; });
 }
 
 /* ── Periodic status sync (fallback) ── */
 setInterval(() => {
   fetch('/cameras/status/')
     .then(r => r.json())
-    .then(d => { d.cameras.forEach(c => { updateCameraCard(c.id, c.status, c.last_seen_at || ''); updateMapMarker(c.id, c.status); }); });
+    .then(d => {
+      d.cameras.forEach(c => {
+        updateCameraCard(c.id, c.status, c.last_seen_at || '');
+        updateMapMarker(c.id, c.status);
+      });
+    });
 }, 8000);
 
 /* ── Toast ── */
-function showToast(msg, type='info') {
+function showToast(msg, type = 'info') {
+  const colors = { warn: 'var(--warn)', error: 'var(--danger)', info: 'var(--accent)' };
   const t = document.createElement('div');
-  t.style.cssText = `position:fixed;bottom:24px;right:20px;z-index:9999;
-    background:#1a1a2e;border:1px solid ${type==='warn'?'#f39c12':type==='error'?'#e74c3c':'#4ecca3'};
-    color:#eee;padding:.75rem 1.1rem;border-radius:8px;font-size:.83rem;
-    box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toast-in .25s ease;`;
+  t.style.cssText = `
+    position:fixed;bottom:24px;right:20px;z-index:9999;
+    background:var(--surface-1);
+    border:1px solid ${colors[type] || colors.info};
+    color:var(--text-pri);
+    padding:.75rem 1.1rem;border-radius:var(--radius);font-size:.83rem;
+    box-shadow:0 4px 20px rgba(0,0,0,.25);`;
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);

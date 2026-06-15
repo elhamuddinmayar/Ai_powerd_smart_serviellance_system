@@ -24,16 +24,26 @@
         object-fit: cover;
         margin-bottom: 15px;
     }
-    
+
     .info-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         padding: 40px;
         gap: 30px;
     }
-    .info-item label { color: var(--accent); font-size: 0.8rem; text-transform: uppercase; display: block; margin-bottom: 5px; }
-    .info-item p { font-size: 1.1rem; color: white; margin: 0; }
-    
+    .info-item label {
+        color: var(--accent);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 5px;
+    }
+    .info-item p {
+        font-size: 1.1rem;
+        color: white;
+        margin: 0;
+    }
+
     .badge-status {
         padding: 5px 15px; border-radius: 50px; font-size: 0.8rem;
         background: {% if profile.is_on_duty %}#2ecc71{% else %}#e74c3c{% endif %};
@@ -49,18 +59,61 @@
         gap: 15px;
     }
 
-    /* Standardized Buttons as Links */
-    .btn-action { 
-        padding: 10px 25px; 
-        border-radius: 8px; 
-        font-weight: bold; 
-        text-decoration: none; 
-        display: inline-block; 
+    .btn-action {
+        padding: 10px 25px;
+        border-radius: 8px;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
         transition: 0.3s;
     }
     .btn-update { background: var(--accent); color: var(--bg); }
     .btn-update:hover { opacity: 0.9; }
     .btn-back { background: var(--border); color: white; }
+
+    /* ── Light mode overrides ── */
+    body.light-mode .profile-container {
+        background: #ffffff;
+        border-color: rgba(0,0,0,.09);
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    }
+
+    /* Keep the header gradient but brighten it slightly for light mode */
+    body.light-mode .profile-header {
+        background: linear-gradient(135deg, #1a4a7a, #1e3a6e);
+        border-bottom-color: rgba(0,0,0,.1);
+    }
+
+    body.light-mode .info-grid {
+        background: #ffffff;
+    }
+
+    /* In light mode, the "white" text on the info cards needs to be dark */
+    body.light-mode .info-item p {
+        color: #1a2332;
+    }
+
+    body.light-mode .info-item label {
+        color: #0ea87a;
+    }
+
+    body.light-mode .action-footer {
+        background: #ffffff;
+        border-top-color: rgba(0,0,0,.09);
+    }
+
+    body.light-mode .btn-back {
+        background: rgba(0,0,0,.08);
+        color: #1a2332;
+    }
+    body.light-mode .btn-back:hover {
+        background: rgba(0,0,0,.13);
+    }
+
+    body.light-mode .btn-update {
+        background: #0ea87a;
+        color: #ffffff;
+    }
 </style>
 
 <div class="profile-container">
@@ -68,7 +121,7 @@
         <img src="{{ profile.profile_picture.url }}" class="profile-pic">
         <h1 style="color: white; margin: 0;">{{ target_user.get_full_name }}</h1>
         <p style="color: var(--accent);">@{{ target_user.username }}</p>
-        
+
         <div style="margin-top: 10px;">
             <span class="badge-status">
                 {% if profile.is_on_duty %}{% trans "ON DUTY" %}{% else %}{% trans "OFF DUTY" %}{% endif %}
@@ -97,7 +150,6 @@
             <p>{{ profile.emergency_contact }}</p>
         </div>
 
-
         <div class="info-item">
             <label>{% trans "Joined Date" %}</label>
             <p>{{ target_user.date_joined|date:"F d, Y" }}</p>
@@ -110,7 +162,7 @@
                 {% trans "Edit Profile" %}
             </a>
         {% endif %}
-        
+
         <a href="{% url 'account_manage' %}" class="btn-action btn-back">
             {% trans "Return" %}
         </a>

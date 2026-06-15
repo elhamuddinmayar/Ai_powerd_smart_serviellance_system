@@ -7,14 +7,9 @@
 <style>
 /* ═══════════════════════════════════════════════════════════════════
    NOTIFICATIONS PAGE  —  Butterfly Surveillance System
-   Aesthetic: Tactical terminal / signal intelligence feed
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Page wrapper ── */
-.notif-page {
-  max-width: 860px;
-  margin: 0 auto;
-}
+.notif-page { max-width: 860px; margin: 0 auto; }
 
 /* ── Hero header ── */
 .notif-hero {
@@ -41,7 +36,6 @@
   flex-wrap: wrap;
 }
 
-.notif-title-block {}
 .notif-eyebrow {
   font-size: .65rem;
   text-transform: uppercase;
@@ -100,7 +94,11 @@
   user-select: none;
 }
 .n-stat:hover  { border-color: rgba(255,255,255,.15); color: var(--text); }
-.n-stat.active { border-color: var(--n-color, var(--accent)); color: var(--n-color, var(--accent)); background: rgba(78,204,163,.07); }
+.n-stat.active {
+  border-color: var(--n-color, var(--accent));
+  color: var(--n-color, var(--accent));
+  background: rgba(78,204,163,.07);
+}
 .n-stat__dot {
   width: 7px; height: 7px;
   border-radius: 50%;
@@ -170,11 +168,7 @@
 .n-count-lbl strong { color: var(--accent); }
 
 /* ── Feed list ── */
-.notif-feed {
-  display: flex;
-  flex-direction: column;
-  gap: .55rem;
-}
+.notif-feed { display: flex; flex-direction: column; gap: .55rem; }
 
 /* ── Individual notification card ── */
 .n-card {
@@ -196,7 +190,6 @@
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-/* Stagger delays */
 .n-card:nth-child(1)  { animation-delay: .04s; }
 .n-card:nth-child(2)  { animation-delay: .08s; }
 .n-card:nth-child(3)  { animation-delay: .12s; }
@@ -220,7 +213,6 @@
 }
 .n-card:hover::before { background: var(--nc, var(--accent)); }
 
-/* Type-specific accent colours */
 .n-card[data-type="assignment"]   { --nc: #4ecca3; }
 .n-card[data-type="pass_back"]    { --nc: #f39c12; }
 .n-card[data-type="detection"]    { --nc: #e94560; }
@@ -245,18 +237,15 @@
   align-items: center;
   justify-content: center;
   font-size: .95rem;
-  background: rgba(var(--nc-rgb, 78,204,163), .1);
-  border: 1px solid rgba(var(--nc-rgb, 78,204,163), .2);
   margin-top: .05rem;
 }
-/* inline RGB versions for rgba() */
-.n-card[data-type="assignment"]   .n-icon-bubble { background: rgba(78,204,163,.1);  border-color: rgba(78,204,163,.2);  color:#4ecca3; }
-.n-card[data-type="pass_back"]    .n-icon-bubble { background: rgba(243,156,18,.1);  border-color: rgba(243,156,18,.2);  color:#f39c12; }
-.n-card[data-type="detection"]    .n-icon-bubble { background: rgba(233,69,96,.1);   border-color: rgba(233,69,96,.2);   color:#e94560; }
-.n-card[data-type="approved"]     .n-icon-bubble { background: rgba(46,204,113,.1);  border-color: rgba(46,204,113,.2);  color:#2ecc71; }
-.n-card[data-type="rejected"]     .n-icon-bubble { background: rgba(231,76,60,.1);   border-color: rgba(231,76,60,.2);   color:#e74c3c; }
-.n-card[data-type="verification"] .n-icon-bubble { background: rgba(52,152,219,.1);  border-color: rgba(52,152,219,.2);  color:#3498db; }
-.n-card[data-type="system"]       .n-icon-bubble { background: rgba(155,89,182,.1);  border-color: rgba(155,89,182,.2);  color:#9b59b6; }
+.n-card[data-type="assignment"]   .n-icon-bubble { background: rgba(78,204,163,.1);  border: 1px solid rgba(78,204,163,.2);  color: #4ecca3; }
+.n-card[data-type="pass_back"]    .n-icon-bubble { background: rgba(243,156,18,.1);  border: 1px solid rgba(243,156,18,.2);  color: #f39c12; }
+.n-card[data-type="detection"]    .n-icon-bubble { background: rgba(233,69,96,.1);   border: 1px solid rgba(233,69,96,.2);   color: #e94560; }
+.n-card[data-type="approved"]     .n-icon-bubble { background: rgba(46,204,113,.1);  border: 1px solid rgba(46,204,113,.2);  color: #2ecc71; }
+.n-card[data-type="rejected"]     .n-icon-bubble { background: rgba(231,76,60,.1);   border: 1px solid rgba(231,76,60,.2);   color: #e74c3c; }
+.n-card[data-type="verification"] .n-icon-bubble { background: rgba(52,152,219,.1);  border: 1px solid rgba(52,152,219,.2);  color: #3498db; }
+.n-card[data-type="system"]       .n-icon-bubble { background: rgba(155,89,182,.1);  border: 1px solid rgba(155,89,182,.2);  color: #9b59b6; }
 
 /* Body */
 .n-body {
@@ -266,7 +255,6 @@
   flex-direction: column;
   gap: .3rem;
 }
-
 .n-top-row {
   display: flex;
   align-items: flex-start;
@@ -274,7 +262,6 @@
   gap: .5rem;
   flex-wrap: wrap;
 }
-
 .n-title {
   font-size: .92rem;
   font-weight: 700;
@@ -282,7 +269,6 @@
   line-height: 1.3;
   word-break: break-word;
 }
-
 .n-meta {
   display: flex;
   align-items: center;
@@ -306,7 +292,6 @@
   font-family: 'Share Tech Mono', monospace;
   white-space: nowrap;
 }
-
 .n-msg {
   font-size: .8rem;
   color: var(--text-muted);
@@ -314,8 +299,6 @@
   white-space: pre-line;
   word-break: break-word;
 }
-
-/* Action buttons row */
 .n-actions {
   display: flex;
   gap: .4rem;
@@ -323,7 +306,7 @@
   flex-wrap: wrap;
 }
 
-/* Divider line between cards in same day */
+/* ── Day divider ── */
 .n-day-divider {
   display: flex;
   align-items: center;
@@ -353,10 +336,7 @@
 .n-no-results i { font-size: 2.5rem; display: block; margin-bottom: .7rem; opacity: .2; }
 
 /* ── Empty state ── */
-.n-empty {
-  text-align: center;
-  padding: 5rem 1rem;
-}
+.n-empty { text-align: center; padding: 5rem 1rem; }
 .n-empty-ring {
   width: 90px; height: 90px;
   border-radius: 50%;
@@ -378,7 +358,7 @@
 .n-empty h2 { font-size: 1.1rem; color: var(--text-dim); margin-bottom: .4rem; }
 .n-empty p  { font-size: .82rem; color: var(--text-muted); }
 
-/* ── Mark all read button ── */
+/* ── Mark all read ── */
 .btn-mark-all {
   background: rgba(78,204,163,.08);
   border: 1px solid rgba(78,204,163,.22);
@@ -395,7 +375,101 @@
   gap: .4rem;
   white-space: nowrap;
 }
-.btn-mark-all:hover { background: rgba(78,204,163,.16); box-shadow: 0 0 14px rgba(78,204,163,.15); }
+.btn-mark-all:hover {
+  background: rgba(78,204,163,.16);
+  box-shadow: 0 0 14px rgba(78,204,163,.15);
+}
+
+/* ══════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+══════════════════════════════════════════════════════════ */
+
+/* Hero ambient glow — subtler on white */
+body.light-mode .notif-hero::before {
+  background:
+    radial-gradient(ellipse 60% 80% at 10% 50%, rgba(14,168,122,.05) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 90% 30%, rgba(214,51,85,.03)  0%, transparent 70%);
+}
+
+/* Filter pills */
+body.light-mode .n-stat {
+  background: rgba(0,0,0,.04);
+  border-color: rgba(0,0,0,.09);
+  color: #6b7a8d;
+}
+body.light-mode .n-stat:hover {
+  border-color: rgba(0,0,0,.18);
+  color: #1a2332;
+}
+body.light-mode .n-stat.active {
+  background: rgba(14,168,122,.08);
+}
+
+/* Search / filter bar */
+body.light-mode .notif-bar {
+  background: rgba(0,0,0,.03);
+  border-color: rgba(0,0,0,.08);
+}
+body.light-mode .n-search {
+  background: #ffffff;
+  border-color: rgba(0,0,0,.1);
+  color: #1a2332;
+}
+body.light-mode .n-search:focus { border-color: #0ea87a; }
+body.light-mode .n-search::placeholder { color: #9ba8b5; }
+body.light-mode .notif-bar-search i { color: #9ba8b5; }
+
+/* Notification cards */
+body.light-mode .n-card {
+  background: #ffffff;
+  border-color: rgba(0,0,0,.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+body.light-mode .n-card:hover {
+  border-color: rgba(0,0,0,.14);
+  box-shadow: 0 6px 20px rgba(0,0,0,.1);
+}
+
+/* Title text inside cards */
+body.light-mode .n-title { color: #1a2332; }
+
+/* Type badge backgrounds — darken slightly for light bg legibility */
+body.light-mode .n-type-badge[style*="rgba(78,204,163"]   { background: rgba(14,168,122,.12) !important; color: #0a7a58 !important; }
+body.light-mode .n-type-badge[style*="rgba(243,156,18"]   { background: rgba(217,119,6,.12)  !important; color: #92540a !important; }
+body.light-mode .n-type-badge[style*="rgba(233,69,96"]    { background: rgba(214,51,85,.12)  !important; color: #991b2e !important; }
+body.light-mode .n-type-badge[style*="rgba(46,204,113"]   { background: rgba(22,163,74,.12)  !important; color: #15803d !important; }
+body.light-mode .n-type-badge[style*="rgba(231,76,60"]    { background: rgba(220,38,38,.12)  !important; color: #991b1b !important; }
+body.light-mode .n-type-badge[style*="rgba(52,152,219"]   { background: rgba(37,99,235,.12)  !important; color: #1e40af !important; }
+body.light-mode .n-type-badge[style*="rgba(155,89,182"]   { background: rgba(124,58,237,.12) !important; color: #5b21b6 !important; }
+
+/* Day divider line */
+body.light-mode .n-day-divider { color: #9ba8b5; }
+body.light-mode .n-day-divider::before,
+body.light-mode .n-day-divider::after { background: rgba(0,0,0,.08); }
+
+/* No-results placeholder */
+body.light-mode .n-no-results { color: #6b7a8d; }
+
+/* Mark all read button */
+body.light-mode .btn-mark-all {
+  background: rgba(14,168,122,.08);
+  border-color: rgba(14,168,122,.25);
+  color: #0a7a58;
+}
+body.light-mode .btn-mark-all:hover {
+  background: rgba(14,168,122,.15);
+  box-shadow: 0 0 14px rgba(14,168,122,.12);
+}
+
+/* Empty state ring */
+body.light-mode .n-empty-ring {
+  border-color: rgba(14,168,122,.2);
+}
+body.light-mode .n-empty-ring::before {
+  border-color: rgba(14,168,122,.1);
+}
+body.light-mode .n-empty-ring i { color: rgba(14,168,122,.4); }
+body.light-mode .n-empty h2 { color: #4a5568; }
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
@@ -410,7 +484,6 @@
   .n-stat { padding: .28rem .55rem; font-size: .68rem; }
   .notif-bar { padding: .5rem .7rem; gap: .5rem; }
 }
-
 @media (max-width: 400px) {
   .n-meta { justify-content: flex-start; }
   .n-top-row { flex-direction: column; gap: .25rem; }
@@ -445,7 +518,6 @@
     </div>
 
     {% if notifications %}
-    <!-- Type filter pills / stats -->
     <div class="notif-stats" id="filterPills">
       <div class="n-stat active" data-filter="all"
            style="--n-color:var(--accent);" onclick="setFilter('all', this)">
@@ -453,7 +525,6 @@
         {% trans "All" %}
         <span class="n-stat__count" id="cnt-all">{{ notifications|length }}</span>
       </div>
-
       {% for filter_type in filter_types %}
       {% if filter_type.key != 'all' %}
       <div class="n-stat" data-filter="{{ filter_type.key }}"
@@ -497,7 +568,6 @@
 
       <div class="n-card-inner">
 
-        <!-- Icon bubble -->
         <div class="n-icon-bubble">
           {% if notif.notification_type == 'assignment' %}<i class="fas fa-tasks"></i>
           {% elif notif.notification_type == 'pass_back' %}<i class="fas fa-undo"></i>
@@ -508,38 +578,31 @@
           {% else %}<i class="fas fa-bell"></i>{% endif %}
         </div>
 
-        <!-- Body -->
         <div class="n-body">
           <div class="n-top-row">
             <div class="n-title">{{ notif.title }}</div>
             <div class="n-meta">
-              <!-- Type badge -->
               <span class="n-type-badge"
-                    style="
-                      {% if notif.notification_type == 'assignment' %}background:rgba(78,204,163,.12);color:#4ecca3;
-                      {% elif notif.notification_type == 'pass_back' %}background:rgba(243,156,18,.12);color:#f39c12;
-                      {% elif notif.notification_type == 'detection' %}background:rgba(233,69,96,.12);color:#e94560;
-                      {% elif notif.notification_type == 'approved' %}background:rgba(46,204,113,.12);color:#2ecc71;
-                      {% elif notif.notification_type == 'rejected' %}background:rgba(231,76,60,.12);color:#e74c3c;
-                      {% elif notif.notification_type == 'verification' %}background:rgba(52,152,219,.12);color:#3498db;
-                      {% else %}background:rgba(155,89,182,.12);color:#9b59b6;{% endif %}">
+                    style="{% if notif.notification_type == 'assignment' %}background:rgba(78,204,163,.12);color:#4ecca3;
+                           {% elif notif.notification_type == 'pass_back' %}background:rgba(243,156,18,.12);color:#f39c12;
+                           {% elif notif.notification_type == 'detection' %}background:rgba(233,69,96,.12);color:#e94560;
+                           {% elif notif.notification_type == 'approved' %}background:rgba(46,204,113,.12);color:#2ecc71;
+                           {% elif notif.notification_type == 'rejected' %}background:rgba(231,76,60,.12);color:#e74c3c;
+                           {% elif notif.notification_type == 'verification' %}background:rgba(52,152,219,.12);color:#3498db;
+                           {% else %}background:rgba(155,89,182,.12);color:#9b59b6;{% endif %}">
                 {{ notif.get_notification_type_display }}
               </span>
-              <!-- Timestamp -->
-              <span class="n-time"
-                    title="{{ notif.created_at|date:'Y-m-d H:i:s' }}">
+              <span class="n-time" title="{{ notif.created_at|date:'Y-m-d H:i:s' }}">
                 <i class="fas fa-clock" style="font-size:.6rem;margin-right:2px;"></i>
                 {{ notif.created_at|date:"d M · H:i" }}
               </span>
             </div>
           </div>
 
-          <!-- Message -->
           {% if notif.message %}
           <div class="n-msg">{{ notif.message }}</div>
           {% endif %}
 
-          <!-- Action buttons -->
           {% if notif.related_assignment or notif.related_event %}
           <div class="n-actions">
             {% if notif.related_assignment %}
@@ -563,22 +626,20 @@
           </div>
           {% endif %}
 
-        </div><!-- /n-body -->
-      </div><!-- /n-card-inner -->
-    </div><!-- /n-card -->
+        </div>
+      </div>
+    </div>
     {% endfor %}
 
-    <!-- No-results placeholder (shown by JS) -->
     <div class="n-no-results" id="noResults">
       <i class="fas fa-satellite-dish"></i>
       {% trans "No notifications match your search." %}
     </div>
 
-  </div><!-- /notif-feed -->
+  </div>
 
   {% else %}
 
-  <!-- ══ Empty state ══════════════════════════════════════════ -->
   <div class="n-empty">
     <div class="n-empty-ring">
       <i class="fas fa-bell-slash"></i>
@@ -589,17 +650,15 @@
 
   {% endif %}
 
-</div><!-- /notif-page -->
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-/* ══ Filter + Search ══════════════════════════════════════════════ */
 let activeFilter = 'all';
 
 function setFilter(type, el) {
   activeFilter = type;
-  // update pill styles
   document.querySelectorAll('#filterPills .n-stat').forEach(p => {
     p.classList.toggle('active', p.dataset.filter === type);
   });
@@ -626,7 +685,6 @@ function applySearch() {
   if (noRes) noRes.style.display = shown === 0 ? 'block' : 'none';
 }
 
-/* ══ Mark all read (client-side visual) ══════════════════════════ */
 function markAllRead() {
   const btn = document.getElementById('markAllBtn');
   if (btn) {
@@ -634,10 +692,8 @@ function markAllRead() {
     btn.disabled  = true;
     btn.style.opacity = '.5';
   }
-  // You can wire a real AJAX call here if you add a backend endpoint.
 }
 
-/* ══ Keyboard shortcut: / focuses search ══════════════════════════ */
 document.addEventListener('keydown', e => {
   if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
     e.preventDefault();
