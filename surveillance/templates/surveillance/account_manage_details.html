@@ -118,7 +118,7 @@
 
 <div class="profile-container">
     <div class="profile-header">
-        <img src="{{ profile.profile_picture.url }}" class="profile-pic">
+        <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}{% static 'img/profile_picture.png' %}{% endif %}" class="profile-pic">
         <h1 style="color: white; margin: 0;">{{ target_user.get_full_name }}</h1>
         <p style="color: var(--accent);">@{{ target_user.username }}</p>
 

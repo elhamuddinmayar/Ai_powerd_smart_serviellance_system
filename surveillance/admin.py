@@ -3,13 +3,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 from django.db.models import Q
-from .models import (
-    SecurityProfile,
-    TargetPerson,
-    DetectionEvent,
-    TargetAssignment,
-    Notification,
-)
+from .models import (SecurityProfile,TargetPerson,DetectionEvent,TargetAssignment,Notification)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -132,11 +126,7 @@ class SecurityProfileAdmin(admin.ModelAdmin):
 
 @admin.register(TargetPerson)
 class TargetPersonAdmin(admin.ModelAdmin):
-    """
-    Admin configuration for TargetPerson model.
-    Comprehensive management of persons of interest with biometric details.
-    """
-    
+ 
     list_display = (
         'id',
         'name',

@@ -33,7 +33,7 @@
 | AI/ML | YOLO11, DeepFace, PyTorch, OpenCV |
 | Real-time | WebSockets, Redis |
 | Frontend | HTML, CSS, JavaScript |
-| Database | SQLite / PostgreSQL |
+| Database | SQLite / MySql |
 
 ---
 
