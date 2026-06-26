@@ -363,7 +363,7 @@ msgstr "عکس‌های لحظه‌ای"
 #: .\help.txt:7426 .\help.txt:11535 .\surveillance\templates\base.html:56
 #: .\surveillance\templates\surveillance\home.html:435
 msgid "Dashboard"
-msgstr "داشبورد"
+msgstr "صفحه اصلی"
 
 #: .\help.txt:7429 .\help.txt:11549 .\surveillance\templates\base.html:59
 #: .\surveillance\templates\surveillance\dashboard.html:540
@@ -2190,7 +2190,6 @@ msgstr "پروفایل با موفقیت به‌روزرسانی شد."
 
 #~ msgid "BACK TO HUB"
 #~ msgstr "بازگشت به مرکز"
-<<<<<<< HEAD
 
 msgid "Access Granted."
 msgstr "دسترسی مجاز است."
@@ -2293,5 +2292,3 @@ msgstr "دوربین '%(name)s' به‌روزرسانی شد."
 
 msgid "Camera '%(name)s' removed."
 msgstr "دوربین '%(name)s' حذف شد."
-=======
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe

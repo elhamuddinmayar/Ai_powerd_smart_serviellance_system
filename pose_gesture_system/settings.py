@@ -3,8 +3,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-pdyi!)!g%46--*@k74u6*9k@g)thpvn%0)p--#%bxr_^n^z9+a'
-DEBUG = True
-
+DEBUG = False
 
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "pounce-plethora-widen.ngrok-free.dev"]
@@ -80,28 +79,28 @@ CELERY_TIMEZONE = 'UTC' # Or your local timezone
 
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'pose',
-#         'USER': 'root',  # 
-#         'PASSWORD': 'mayar',
-#         'HOST': 'localhost',  # Or 127.0.0.1
-#         'PORT': '3306',
-#         'OPTIONS': {
-#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#         },
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'pose',
+        'USER': 'root',  # 
+        'PASSWORD': 'mayar',
+        'HOST': 'localhost',  # Or 127.0.0.1
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+    }
+}
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

@@ -7,103 +7,259 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% trans "Authorize" %} — Butterfly</title>
-    
-    <!-- Font Awesome -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
+
+    <script>
+        (function () {
+            var t = localStorage.getItem('bf-theme') || 'dark';
+            if (t === 'light') document.documentElement.classList.add('pre-light');
+        })();
+    </script>
+
     <style>
+        /* ── Flash prevention ── */
+        html.pre-light body { background: #f0f4f8 !important; }
+
+        /* ══ TOKENS — DARK ══ */
         :root {
-            --primary: #4ecca3;
-            --secondary: #e94560;
-            --bg-deep: #1a1a2e;
-            --glass: rgba(22, 33, 62, 0.85);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --primary:         #4ecca3;
+            --secondary:       #e94560;
+            --body-bg:         radial-gradient(circle at center, #16213e 0%, #1a1a2e 100%);
+            --glass:           rgba(22, 33, 62, 0.88);
+            --text-main:       #ffffff;
+            --text-muted:      rgba(255,255,255,0.45);
+            --input-bg:        rgba(26, 26, 46, 0.8);
+            --input-bg-focus:  #1a1a2e;
+            --border:          rgba(255,255,255,0.1);
+            --card-shadow:     0 25px 50px -12px rgba(0,0,0,0.55);
+            --transition:      all 0.3s cubic-bezier(0.4,0,0.2,1);
+
+            /* Lamp extras */
+            --lamp-shade:   #f5f0e6;
+            --lamp-base:    #d1ccc2;
+            --accent-lamp:  #d4a373;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* ══ TOKENS — LIGHT ══ */
+        html.light-mode {
+            --primary:         #0ea87a;
+            --secondary:       #c0392b;
+            --body-bg:         radial-gradient(circle at center, #dce8ff 0%, #f0f4f8 100%);
+            --glass:           rgba(255,255,255,0.93);
+            --text-main:       #1a2332;
+            --text-muted:      rgba(26,35,50,0.5);
+            --input-bg:        rgba(236,241,247,0.9);
+            --input-bg-focus:  #ffffff;
+            --border:          rgba(0,0,0,0.1);
+            --card-shadow:     0 25px 50px -12px rgba(0,0,0,0.13);
+        }
 
-        body { 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            background: radial-gradient(circle at center, #16213e 0%, #1a1a2e 100%);
-            color: white; 
+        /* ══ RESET ══ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ══ BODY ══ */
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: var(--body-bg);
+            color: var(--text-main);
             min-height: 100vh;
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 20px;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(12px, 4vw, 28px);
+            transition: background 0.3s, color 0.3s;
+            overflow: hidden;
         }
 
-        /* Login Card */
-        .login-card { 
+        /* ══ AMBIENT GLOW (lamp-on state) ══ */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 38% 45%, rgba(255,214,110,0.22), transparent 62%);
+            opacity: 0;
+            transition: opacity 0.7s;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body.lamp-on::before { opacity: 1; }
+
+        /* ══ THEME TOGGLE ══ */
+        .b-theme-toggle {
+            position: fixed;
+            top: clamp(10px, 2.5vw, 18px);
+            right: clamp(10px, 2.5vw, 18px);
+            width: clamp(34px, 6vw, 40px);
+            height: clamp(34px, 6vw, 40px);
+            border-radius: 10px;
+            border: 1px solid var(--border);
             background: var(--glass);
-            backdrop-filter: blur(15px);
-            border-radius: 24px; 
-            padding: 40px; 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 100%; 
-            max-width: 420px; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
+            transition: var(--transition);
+            z-index: 200;
+        }
+        .b-theme-toggle:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 14px rgba(78,204,163,0.25);
+        }
+        .icon-light { display: none; }
+        .icon-dark  { display: inline; }
+        html.light-mode .icon-light { display: inline; }
+        html.light-mode .icon-dark  { display: none; }
+
+        /* ══ STAGE: lamp + card side by side ══ */
+        .stage {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(2rem, 6vw, 5rem);
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* ══ LAMP ══ */
+        .lamp-wrapper {
+            flex-shrink: 0;
+            width: clamp(150px, 22vw, 220px);
+            height: clamp(220px, 33vw, 330px);
+        }
+        .lamp-svg { width: 100%; height: 100%; overflow: visible; }
+
+        .lamp-shade-el { fill: var(--lamp-shade); transition: fill 0.5s; }
+        body.lamp-on .lamp-shade-el { fill: #ffffff; filter: drop-shadow(0 0 22px rgba(255,255,180,0.4)); }
+
+        .inner-glow { fill: #ffdb8a; opacity: 0; transition: opacity 0.5s; }
+        body.lamp-on .inner-glow { opacity: 0.55; }
+
+        .cord-bead { fill: var(--accent-lamp); cursor: grab; }
+        .cord-bead:active { cursor: grabbing; }
+        .cord-line { stroke: #666; stroke-width: 2; }
+
+        /* lamp hint */
+        .lamp-hint {
             text-align: center;
+            margin-top: 10px;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            user-select: none;
+        }
+        body.lamp-on .lamp-hint { opacity: 0; }
+
+        /* ══ LOGIN CARD ══ */
+        .login-card {
+            background: var(--glass);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: clamp(16px, 3vw, 26px);
+            padding: clamp(24px, 5vw, 44px) clamp(20px, 5vw, 44px);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: min(440px, 100%);
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s,
+                        opacity 0.65s cubic-bezier(0.175,0.885,0.32,1.275),
+                        transform 0.65s cubic-bezier(0.175,0.885,0.32,1.275);
+
+            /* hidden until lamp is on */
+            opacity: 0;
+            transform: translateY(28px);
+            pointer-events: none;
+        }
+        .login-card.card-active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
         }
 
-        h1 { 
-            color: var(--primary); 
-            text-transform: uppercase; 
-            letter-spacing: 2px;
-            font-size: 1.75rem; 
-            margin-bottom: 25px; 
+        /* ══ HEADING ══ */
+        h1 {
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: clamp(1px, 0.5vw, 3px);
+            font-size: clamp(1.3rem, 4vw, 1.85rem);
+            margin-bottom: clamp(18px, 4vw, 28px);
+            transition: color 0.3s;
         }
 
-        input { 
-            width: 100%; 
-            padding: 14px 18px; 
-            background: rgba(26, 26, 46, 0.8); 
-            border: 2px solid transparent; 
-            border-radius: 12px; 
-            color: white; 
-            margin-bottom: 20px;
+        /* ══ INPUTS ══ */
+        input {
+            width: 100%;
+            padding: clamp(11px, 2.5vw, 15px) clamp(14px, 3vw, 18px);
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: var(--text-main);
+            margin-bottom: clamp(14px, 3vw, 20px);
             transition: var(--transition);
             outline: none;
             text-align: inherit;
+            font-size: clamp(0.85rem, 2.2vw, 0.97rem);
+            touch-action: manipulation;
+        }
+        @media (max-width: 480px) { input { font-size: 16px; } }
+        input::placeholder { color: var(--text-muted); }
+        input:focus {
+            border-color: var(--primary);
+            background: var(--input-bg-focus);
         }
 
-        input:focus { border-color: var(--primary); background: #1a1a2e; }
-
-        .btn-cyber { 
-            width: 100%; 
-            padding: 15px; 
-            background: var(--primary); 
-            border: none; 
-            border-radius: 12px; 
-            color: #1a1a2e; 
-            font-weight: bold; 
-            cursor: pointer; 
-            text-transform: uppercase; 
+        /* ══ SUBMIT BUTTON ══ */
+        .btn-cyber {
+            width: 100%;
+            padding: clamp(12px, 2.8vw, 16px);
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
+            color: #1a1a2e;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: clamp(0.8rem, 2vw, 0.92rem);
+            letter-spacing: 0.08em;
             transition: var(--transition);
+            touch-action: manipulation;
         }
+        .btn-cyber:hover  { transform: scale(1.02); box-shadow: 0 0 22px rgba(78,204,163,0.3); }
+        .btn-cyber:active { transform: scale(0.98); }
+        html.light-mode .btn-cyber { color: #ffffff; }
 
-        .btn-cyber:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(78, 204, 163, 0.3); }
-
-        /* ══ LANGUAGE SWITCHER STYLING ══ */
+        /* ══ LANGUAGE SWITCHER ══ */
         .lang-container {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: clamp(18px, 4vw, 26px);
+            padding-top: clamp(16px, 3vw, 22px);
+            border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            transition: border-color 0.3s;
         }
-
         .lang-container i { color: var(--primary); font-size: 0.9rem; }
 
         .b-lang {
-            background: #1a1a2e;
-            color: #4ecca3;
-            border: 1px solid rgba(78, 204, 163, 0.4);
+            background: var(--input-bg);
+            color: var(--primary);
+            border: 1px solid rgba(78,204,163,0.4);
             border-radius: 8px;
-            padding: 6px 30px 6px 12px;
-            font-size: 0.85rem;
+            padding: 7px 32px 7px 12px;
+            font-size: clamp(0.78rem, 2vw, 0.88rem);
             cursor: pointer;
             outline: none;
             appearance: none;
@@ -112,53 +268,61 @@
             background-repeat: no-repeat;
             background-position: right 8px center;
             background-size: 14px;
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
+            touch-action: manipulation;
         }
-
-        .b-lang option {
-            background-color: #1a1a2e !important;
-            color: #ffffff !important;
-            padding: 12px;
+        html.light-mode .b-lang {
+            border-color: rgba(14,168,122,0.4);
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230ea87a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
         }
-
-        .b-lang:hover { border-color: var(--primary); }
-
-        .links { margin-top: 20px; }
-        .links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.85rem; transition: 0.3s; }
-        .links a:hover { color: var(--secondary); }
+        .b-lang option { background-color: #1a1a2e; color: #ffffff; }
+        .b-lang:hover  { border-color: var(--primary); }
 
         [dir="rtl"] .b-lang {
-            padding: 6px 12px 6px 30px;
+            padding: 7px 12px 7px 32px;
             background-position: left 8px center;
         }
 
-        /* ══ TOAST MESSAGES ══ */
+        /* ══ CANCEL LINK ══ */
+        .links { margin-top: clamp(14px, 3vw, 20px); }
+        .links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: clamp(0.78rem, 2vw, 0.88rem);
+            transition: color 0.3s;
+            padding: 6px 10px;
+            display: inline-block;
+        }
+        .links a:hover { color: var(--secondary); }
+
+        /* ══ TOAST CONTAINER ══ */
         .msg-container {
             position: fixed;
-            top: 20px;
+            top: clamp(10px, 2.5vw, 20px);
             z-index: 9999;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-width: 360px;
-            width: calc(100vw - 40px);
+            width: min(360px, calc(100vw - 24px));
         }
+        [dir="ltr"] .msg-container { right: clamp(10px, 2.5vw, 20px); }
+        [dir="rtl"] .msg-container { left:  clamp(10px, 2.5vw, 20px); }
 
-        [dir="ltr"] .msg-container { right: 20px; }
-        [dir="rtl"] .msg-container { left: 20px; }
-
+        /* ══ TOAST ══ */
         .msg-toast {
-            background: #16213e;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 0.85rem;
-            box-shadow: 0 8px 30px rgba(0,0,0,.6);
+            padding: clamp(11px, 2.5vw, 15px) clamp(13px, 3vw, 18px);
+            font-size: clamp(0.78rem, 2vw, 0.87rem);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.35);
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            animation: toastSlideIn .3s ease;
-            border: 1px solid rgba(255,255,255,.08);
+            animation: toastSlideIn 0.3s ease;
+            border: 1px solid var(--border);
         }
-
         .msg-toast.error   { border-left: 4px solid #e94560; }
         .msg-toast.success { border-left: 4px solid #4ecca3; }
         .msg-toast.warning { border-left: 4px solid #f39c12; }
@@ -170,9 +334,9 @@
         .msg-toast.warning .msg-toast__icon { color: #f39c12; }
         .msg-toast.info    .msg-toast__icon { color: #3498db; }
 
-        .msg-toast__body { flex: 1; }
+        .msg-toast__body { flex: 1; min-width: 0; }
         .msg-toast__label {
-            font-size: 0.68rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: .08em;
             font-weight: 700;
@@ -184,35 +348,38 @@
         .msg-toast.warning .msg-toast__label { color: #f39c12; }
         .msg-toast.info    .msg-toast__label { color: #3498db; }
 
-        .msg-toast__text { color: #ddd; line-height: 1.4; }
+        .msg-toast__text {
+            color: var(--text-main);
+            line-height: 1.45;
+            word-break: break-word;
+        }
 
         .msg-toast__close {
             background: none;
             border: none;
-            color: rgba(255,255,255,.3);
+            color: var(--text-muted);
             cursor: pointer;
             font-size: 0.9rem;
             flex-shrink: 0;
-            padding: 0;
+            padding: 2px 4px;
             line-height: 1;
-            transition: color .2s;
+            transition: color 0.2s;
+            touch-action: manipulation;
         }
-        .msg-toast__close:hover { color: rgba(255,255,255,.7); }
+        .msg-toast__close:hover { color: var(--text-main); }
 
         @keyframes toastSlideIn {
             from { opacity: 0; transform: translateX(40px); }
             to   { opacity: 1; transform: translateX(0); }
         }
-
-        [dir="rtl"] @keyframes toastSlideIn {
+        [dir="rtl"] .msg-toast { animation: toastSlideInRTL 0.3s ease; }
+        @keyframes toastSlideInRTL {
             from { opacity: 0; transform: translateX(-40px); }
             to   { opacity: 1; transform: translateX(0); }
         }
 
-        /* shake animation on the card when there's an error */
-        .login-card.shake {
-            animation: shake .4s ease;
-        }
+        /* ══ SHAKE + INPUT ERROR ══ */
+        .login-card.shake { animation: shake 0.4s ease; }
         @keyframes shake {
             0%,100% { transform: translateX(0); }
             20%      { transform: translateX(-8px); }
@@ -220,15 +387,45 @@
             60%      { transform: translateX(-5px); }
             80%      { transform: translateX(5px); }
         }
-
-        /* highlight inputs red on error */
         .input-error {
             border-color: #e94560 !important;
-            background: rgba(233,69,96,.07) !important;
+            background: rgba(233,69,96,0.07) !important;
+        }
+
+        /* ══ FOCUS RING ══ */
+        :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+        /* ══ RESPONSIVE ══ */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body { justify-content: flex-start; padding-top: 60px; }
+            .login-card { padding: 20px 28px; }
+            h1 { margin-bottom: 14px; }
+            input { margin-bottom: 10px; padding: 10px 14px; }
+            .btn-cyber { padding: 10px; }
+            .lang-container { margin-top: 14px; padding-top: 12px; }
+            .lamp-wrapper { width: 120px; height: 180px; }
+        }
+        @media (max-width: 360px) {
+            .login-card { border-radius: 14px; padding: 22px 16px; }
+            h1 { font-size: 1.2rem; }
+            .lamp-wrapper { width: 130px; height: 195px; }
+        }
+        @media (min-width: 600px) {
+            .login-card { max-width: 440px; }
+        }
+        @media (min-width: 900px) {
+            .login-card { padding: 48px 52px; }
         }
     </style>
 </head>
 <body>
+
+    <!-- ══ THEME TOGGLE ══ -->
+    <button class="b-theme-toggle" id="b-theme-toggle"
+            aria-label="Toggle theme" title="Toggle light / dark mode">
+        <i class="fas fa-moon icon-dark"></i>
+        <i class="fas fa-sun  icon-light"></i>
+    </button>
 
     <!-- ══ DJANGO MESSAGES ══ -->
     {% if messages %}
@@ -237,15 +434,10 @@
         <div class="msg-toast {% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}"
              id="toast-{{ forloop.counter }}">
             <div class="msg-toast__icon">
-                {% if 'error' in message.tags %}
-                    <i class="fas fa-times-circle"></i>
-                {% elif 'success' in message.tags %}
-                    <i class="fas fa-check-circle"></i>
-                {% elif 'warning' in message.tags %}
-                    <i class="fas fa-exclamation-triangle"></i>
-                {% else %}
-                    <i class="fas fa-info-circle"></i>
-                {% endif %}
+                {% if 'error' in message.tags %}<i class="fas fa-times-circle"></i>
+                {% elif 'success' in message.tags %}<i class="fas fa-check-circle"></i>
+                {% elif 'warning' in message.tags %}<i class="fas fa-exclamation-triangle"></i>
+                {% else %}<i class="fas fa-info-circle"></i>{% endif %}
             </div>
             <div class="msg-toast__body">
                 <span class="msg-toast__label">
@@ -256,98 +448,261 @@
                 </span>
                 <div class="msg-toast__text">{{ message }}</div>
             </div>
-            <button class="msg-toast__close" onclick="dismissToast('toast-{{ forloop.counter }}')">✕</button>
+            <button class="msg-toast__close"
+                    onclick="dismissToast('toast-{{ forloop.counter }}')"
+                    aria-label="Dismiss">✕</button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
-    <div class="login-card" id="loginCard">
-        <h1>{% trans "Authorize" %}</h1>
-        
-        <form method="post" id="loginForm">
-            {% csrf_token %}
-            <input type="text" name="identifier" id="inputIdentifier"
-                   autocomplete="username"
-                   placeholder="{% trans 'Username or Email' %}" required>
-            <input type="password" name="password" id="inputPassword"
-                   autocomplete="current-password"
-                   placeholder="{% trans 'Password' %}" required>
-            <button type="submit" class="btn-cyber">{% trans "Access System" %}</button>
-        </form>
+    <!-- ══ STAGE ══ -->
+    <div class="stage">
 
-        <!-- ══ LANGUAGE SELECTION ══ -->
-        <div class="lang-container">
-            <i class="fas fa-globe"></i>
-            <select class="b-lang" onchange="switchLang(this.value)" aria-label="Language">
-                {% get_available_languages as LANGUAGES %}
-                {% for lang in LANGUAGES %}
-                    <option value="{{ lang.0 }}" 
-                            style="background-color: #1a1a2e; color: white;" 
-                            {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
-                        {{ lang.1 }}
-                    </option>
-                {% endfor %}
-            </select>
+        <!-- ══ LAMP ══ -->
+        <div>
+            <div class="lamp-wrapper">
+                <svg class="lamp-svg" viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse class="inner-glow" cx="100" cy="105" rx="55" ry="26"
+                             style="filter:blur(12px)"/>
+                    <!-- stem -->
+                    <rect class="lamp-shade-el" x="93" y="102" width="14" height="158" rx="7"
+                          fill="#d1ccc2"/>
+                    <!-- base -->
+                    <rect class="lamp-shade-el" x="62" y="248" width="76" height="11" rx="5.5"
+                          fill="#c4bfb6"/>
+                    <!-- pull cord -->
+                    <g id="pull-cord">
+                        <line class="cord-line" id="cord-line" x1="132" y1="108" x2="132" y2="178"/>
+                        <circle class="cord-bead" id="cord-bead" cx="132" cy="188" r="7"
+                                role="button" aria-label="Pull cord to toggle lamp"/>
+                    </g>
+                    <!-- shade -->
+                    <path class="lamp-shade-el"
+                          d="M28 108 C 28 48, 172 48, 172 108 C 172 123, 28 123, 28 108 Z"/>
+                </svg>
+            </div>
+         
         </div>
 
-        <div class="links">
-            <a href="{% url 'home' %}">{% trans "Cancel" %}</a>
-        </div>
-    </div>
+        <!-- ══ LOGIN CARD ══ -->
+        <div class="login-card" id="loginCard">
+            <h1>{% trans "Authorize" %}</h1>
 
+            <form method="post" id="loginForm">
+                {% csrf_token %}
+                <input type="text"
+                       name="identifier"
+                       id="inputIdentifier"
+                       autocomplete="username"
+                       placeholder="{% trans 'Username or Email' %}"
+                       required>
+                <input type="password"
+                       name="password"
+                       id="inputPassword"
+                       autocomplete="current-password"
+                       placeholder="{% trans 'Password' %}"
+                       required>
+                <button type="submit" class="btn-cyber">{% trans "Access System" %}</button>
+            </form>
+
+            <!-- ══ LANGUAGE SELECTION ══ -->
+            <div class="lang-container">
+                <i class="fas fa-globe"></i>
+                <select class="b-lang" onchange="switchLang(this.value)" aria-label="Language">
+                    {% get_available_languages as LANGUAGES %}
+                    {% for lang in LANGUAGES %}
+                        <option value="{{ lang.0 }}"
+                                {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
+                            {{ lang.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="links">
+                <a href="{% url 'home' %}">{% trans "Cancel" %}</a>
+            </div>
+        </div>
+
+    </div><!-- /stage -->
+
+    <!-- ══ SCRIPTS ══ -->
     <script>
-    /* ── Language switcher ── */
+    /* ── Theme toggle ────────────────────────────────────────────── */
+    var html     = document.documentElement;
+    var themeBtn = document.getElementById('b-theme-toggle');
+
+    function applyTheme(t) {
+        if (t === 'light') {
+            html.classList.add('light-mode');
+            html.classList.remove('pre-light');
+            themeBtn.setAttribute('aria-label', 'Switch to dark mode');
+        } else {
+            html.classList.remove('light-mode');
+            themeBtn.setAttribute('aria-label', 'Switch to light mode');
+        }
+        localStorage.setItem('bf-theme', t);
+    }
+    applyTheme(localStorage.getItem('bf-theme') || 'dark');
+    themeBtn.addEventListener('click', function () {
+        applyTheme((localStorage.getItem('bf-theme') || 'dark') === 'dark' ? 'light' : 'dark');
+    });
+
+    /* ── Language switcher ───────────────────────────────────────── */
     function switchLang(code) {
-        let url = "{% url 'set_lang' lang_code='placeholder' %}".replace('placeholder', code);
+        var url = "{% url 'set_lang' lang_code='placeholder' %}".replace('placeholder', code);
         fetch(url, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/x-www-form-urlencoded', 
-                'X-CSRFToken': '{{ csrf_token }}' 
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
             },
             body: 'language=' + encodeURIComponent(code) + '&next=' + encodeURIComponent(location.pathname)
-        }).then(() => location.reload());
+        }).then(function () { location.reload(); });
     }
 
-    /* ── Dismiss a toast ── */
+    /* ── Toast dismiss ───────────────────────────────────────────── */
     function dismissToast(id) {
-        const el = document.getElementById(id);
+        var el = document.getElementById(id);
         if (!el) return;
         el.style.transition = 'opacity .4s, transform .4s';
-        el.style.opacity = '0';
-        el.style.transform = 'translateX(40px)';
-        setTimeout(() => el.remove(), 400);
+        el.style.opacity    = '0';
+        el.style.transform  = 'translateX(40px)';
+        setTimeout(function () { el.remove(); }, 400);
     }
-
-    /* ── Auto-dismiss toasts after 5s ── */
-    setTimeout(() => {
-        document.querySelectorAll('.msg-toast').forEach((el, i) => {
-            setTimeout(() => dismissToast(el.id), i * 150);
+    setTimeout(function () {
+        document.querySelectorAll('.msg-toast').forEach(function (el, i) {
+            setTimeout(function () { dismissToast(el.id); }, i * 150);
         });
     }, 5000);
 
-    /* ── If there are error messages, shake the card and highlight inputs ── */
-    {% if messages %}
-    {% for message in messages %}
-    {% if 'error' in message.tags %}
-    (function() {
-        const card = document.getElementById('loginCard');
-        const pw   = document.getElementById('inputPassword');
-        const id   = document.getElementById('inputIdentifier');
+    /* ── Shake on auth error ─────────────────────────────────────── */
+    {% if messages %}{% for message in messages %}{% if 'error' in message.tags %}
+    (function () {
+        var card = document.getElementById('loginCard');
+        var pw   = document.getElementById('inputPassword');
+        var uid  = document.getElementById('inputIdentifier');
         card.classList.add('shake');
         pw.classList.add('input-error');
-        id.classList.add('input-error');
-        card.addEventListener('animationend', () => card.classList.remove('shake'), { once: true });
-        // Remove red border when user starts typing again
-        [pw, id].forEach(inp => inp.addEventListener('input', () => {
-            pw.classList.remove('input-error');
-            id.classList.remove('input-error');
-        }, { once: true }));
+        uid.classList.add('input-error');
+        card.addEventListener('animationend', function () {
+            card.classList.remove('shake');
+        }, { once: true });
+        [pw, uid].forEach(function (inp) {
+            inp.addEventListener('input', function () {
+                pw.classList.remove('input-error');
+                uid.classList.remove('input-error');
+            }, { once: true });
+        });
     })();
-    {% endif %}
-    {% endfor %}
-    {% endif %}
+    {% endif %}{% endfor %}{% endif %}
+
+    /* ── Lamp pull-cord (100% offline — no CDN) ──────────────────── */
+    (function () {
+        var body       = document.body;
+        var loginCard  = document.getElementById('loginCard');
+        var cordBead   = document.getElementById('cord-bead');
+        var cordLineEl = document.getElementById('cord-line');
+
+        var isOn       = false;
+        var isDragging = false;
+        var startY     = 0;
+        var currentPull = 0;
+
+        var MAX_PULL     = 55;
+        var TRIGGER      = 30;
+        var BEAD_BASE_Y  = 188;
+        var LINE_BASE_Y2 = 178;
+
+        function getEventY(e) {
+            return e.touches ? e.touches[0].clientY : e.clientY;
+        }
+
+        function setSVGPos(dy) {
+            cordBead.setAttribute('cy', BEAD_BASE_Y + dy);
+            cordLineEl.setAttribute('y2', LINE_BASE_Y2 + dy);
+        }
+
+        function snap(triggered) {
+            var start  = currentPull;
+            var frames = 0;
+            var total  = 20;
+            function bounce() {
+                frames++;
+                var t        = frames / total;
+                var ease     = 1 - Math.pow(1 - t, 3);
+                var overshoot = Math.sin(t * Math.PI * 3) * (1 - t) * 9;
+                setSVGPos(Math.max(0, start * (1 - ease) + overshoot));
+                if (frames < total) requestAnimationFrame(bounce);
+                else { setSVGPos(0); currentPull = 0; }
+            }
+            requestAnimationFrame(bounce);
+            if (triggered) toggleLamp();
+        }
+
+        function onPointerDown(e) {
+            isDragging = true;
+            startY     = getEventY(e);
+            currentPull = 0;
+            e.preventDefault();
+        }
+        function onPointerMove(e) {
+            if (!isDragging) return;
+            var dy = Math.min(MAX_PULL, Math.max(0, getEventY(e) - startY));
+            currentPull = dy;
+            setSVGPos(dy);
+        }
+        function onPointerUp() {
+            if (!isDragging) return;
+            isDragging = false;
+            snap(currentPull > TRIGGER);
+        }
+
+        cordBead.addEventListener('mousedown',  onPointerDown);
+        cordBead.addEventListener('touchstart', onPointerDown, { passive: false });
+        document.addEventListener('mousemove',  onPointerMove);
+        document.addEventListener('touchmove',  onPointerMove, { passive: false });
+        document.addEventListener('mouseup',    onPointerUp);
+        document.addEventListener('touchend',   onPointerUp);
+
+        /* Procedural click sound — no audio files needed */
+        function playClick() {
+            try {
+                var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                var buf = ctx.createBuffer(1, ctx.sampleRate * 0.09, ctx.sampleRate);
+                var d   = buf.getChannelData(0);
+                for (var i = 0; i < d.length; i++)
+                    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 4) * 0.55;
+                var src = ctx.createBufferSource();
+                src.buffer = buf;
+                src.connect(ctx.destination);
+                src.start();
+            } catch (e) {}
+        }
+
+        function toggleLamp() {
+            isOn = !isOn;
+            playClick();
+            if (isOn) {
+                body.classList.add('lamp-on');
+                loginCard.classList.add('card-active');
+                /* If there was an auth error, trigger shake after card appears */
+                {% if messages %}{% for message in messages %}{% if 'error' in message.tags %}
+                setTimeout(function () { loginCard.classList.add('shake'); }, 700);
+                {% endif %}{% endfor %}{% endif %}
+            } else {
+                body.classList.remove('lamp-on');
+                loginCard.classList.remove('card-active');
+            }
+        }
+
+        /* Auto-turn on when Django auth error is present so user sees it */
+        {% if messages %}{% for message in messages %}{% if 'error' in message.tags %}
+        setTimeout(function () { toggleLamp(); }, 400);
+        {% endif %}{% endfor %}{% endif %}
+
+    })();
     </script>
 
 </body>

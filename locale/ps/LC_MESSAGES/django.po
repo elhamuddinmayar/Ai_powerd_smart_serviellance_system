@@ -363,7 +363,7 @@ msgstr "لحظوي انځورونه"
 #: .\help.txt:7426 .\help.txt:11535 .\surveillance\templates\base.html:56
 #: .\surveillance\templates\surveillance\home.html:435
 msgid "Dashboard"
-msgstr "ډاشبورډ"
+msgstr "اصلی صفحه"
 
 #: .\help.txt:7429 .\help.txt:11549 .\surveillance\templates\base.html:59
 #: .\surveillance\templates\surveillance\dashboard.html:540
@@ -929,12 +929,6 @@ msgstr "ټول"
 msgid "Assignment"
 msgstr "دنده"
 
-<<<<<<< HEAD
-=======
-#: .\help.txt:12202 .\surveillance\views.py:968
-msgid "Passed Back"
-msgstr "بیرته لیږل شوی"
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe
 
 #: .\help.txt:12203 .\surveillance\views.py:969
 msgid "Detection"
@@ -2156,7 +2150,7 @@ msgstr "پروفایل په بریالیتوب سره تازه شو."
 
 #~ msgid "ADMINISTRATOR"
 #~ msgstr "مدیر"
-<<<<<<< HEAD
+
 msgid "Access Granted."
 msgstr "لاسرسی منظور دی."
 
@@ -2262,7 +2256,3 @@ msgstr "کمیره '%(name)s' لرې شوه."
 
 msgid "Passed Back"
 msgstr "بیرته لیږل شوی"
-
-
-=======
->>>>>>> 455159d896adfcf1bd8b907c40f30aed94444dbe

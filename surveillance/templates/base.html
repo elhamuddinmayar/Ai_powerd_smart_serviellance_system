@@ -1,7 +1,6 @@
 {% load i18n static %}
 {% load i18n %}
 
-<!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}" 
       dir="{% if LANGUAGE_CODE == 'fa' or LANGUAGE_CODE == 'ps' %}rtl{% else %}ltr{% endif %}">
 <head>
@@ -99,7 +98,7 @@
       {% endfor %}
     </select>
 
-    <!-- ★ Theme toggle button -->
+    <!--   Theme toggle button -->
     <button class="b-theme-toggle" id="b-theme-toggle" aria-label="Switch to light mode" title="Toggle theme">
       <!-- Moon = currently dark mode -->
       <i class="fas fa-moon icon-dark"></i>
