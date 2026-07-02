@@ -106,14 +106,17 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   EVENT CARDS
+   EVENT CARDS — regular grid, 4 / 3 / 2 / 1 per row
    ═══════════════════════════════════════════════════════ */
 .verif-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(660px, 100%), 1fr));
-  gap: 1.3rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.1rem;
+  align-items: stretch;
 }
-@media (max-width: 720px) { .verif-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1400px) { .verif-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 980px)  { .verif-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px)  { .verif-grid { grid-template-columns: 1fr; } }
 
 .verif-card {
   background: var(--card, #121929);
@@ -123,6 +126,7 @@
   transition: border-color .2s, box-shadow .2s, transform .2s;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 .verif-card:hover {
   border-color: rgba(78,204,163,.2);
@@ -133,59 +137,56 @@
 /* Card header */
 .vc-header {
   background: linear-gradient(135deg, rgba(15,52,96,.7) 0%, rgba(10,14,26,.5) 100%);
-  padding: .7rem 1rem;
+  padding: .6rem .8rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: .5rem;
+  gap: .4rem;
   border-bottom: 1px solid rgba(255,255,255,.06);
-  flex-wrap: wrap;
 }
 .vc-header-left {
   display: flex;
   align-items: center;
-  gap: .55rem;
+  gap: .4rem;
   min-width: 0;
 }
 .vc-event-id {
   font-family: var(--font-mono, monospace);
-  font-size: .68rem;
+  font-size: .65rem;
   color: var(--accent);
   white-space: nowrap;
   flex-shrink: 0;
 }
 .vc-target-name {
   font-weight: 700;
-  font-size: .95rem;
+  font-size: .88rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--text);
 }
 .vc-ts {
-  font-size: .7rem;
+  font-size: .64rem;
   color: var(--text-muted);
   font-family: var(--font-mono, monospace);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-/* Card body */
+/* Card body — stacked: snapshot on top, info below */
 .vc-body {
   display: flex;
-  gap: 1rem;
-  padding: 1rem;
+  flex-direction: column;
+  gap: .75rem;
+  padding: .85rem;
   flex: 1;
 }
-@media (max-width: 480px) { .vc-body { flex-direction: column; gap: .8rem; } }
 
-/* Photos */
+/* Photos row */
 .vc-photos {
   display: flex;
-  flex-direction: column;
-  gap: .5rem;
-  flex-shrink: 0;
   align-items: center;
+  gap: .6rem;
 }
 .vc-photo {
   border-radius: 8px;
@@ -195,11 +196,12 @@
   transition: border-color .15s;
 }
 .vc-photo:hover { border-color: var(--accent); }
-.vc-photo-snap { width: 130px; height: 120px; }
-.vc-photo-ref  { width: 56px;  height: 56px;  border-radius: 50%; }
+.vc-photo-snap { width: 100%; height: 140px; flex: 1; min-width: 0; }
+.vc-photo-ref  { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; }
 
 .vc-no-snap {
-  width: 130px; height: 120px;
+  flex: 1;
+  height: 140px;
   background: rgba(0,0,0,.35);
   border: 1px dashed rgba(255,255,255,.1);
   border-radius: 8px;
@@ -212,12 +214,20 @@
   font-size: .68rem;
 }
 .vc-no-snap i { font-size: 1.6rem; opacity: .3; }
-.vc-ref-row { display: flex; align-items: center; gap: .4rem; }
-.vc-ref-lbl { font-size: .65rem; color: var(--text-muted); }
 
-@media (max-width: 480px) {
-  .vc-photos { flex-direction: row; align-items: flex-start; }
-  .vc-photo-snap { width: 90px; height: 80px; }
+.vc-ref-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  flex-shrink: 0;
+}
+.vc-ref-lbl {
+  font-size: .58rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  white-space: nowrap;
 }
 
 /* Info + actions */
@@ -228,16 +238,27 @@
   gap: .65rem;
   min-width: 0;
 }
-.vc-meta { display: flex; flex-direction: column; gap: .28rem; }
+.vc-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .4rem .5rem;
+}
 .vc-meta-row {
   display: flex;
   align-items: center;
-  gap: .4rem;
-  font-size: .8rem;
+  gap: .35rem;
+  font-size: .74rem;
   color: var(--text-muted);
+  min-width: 0;
 }
-.vc-meta-row i { color: var(--accent); font-size: .7rem; width: 14px; flex-shrink: 0; }
+.vc-meta-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vc-meta-row i { color: var(--accent); font-size: .68rem; width: 13px; flex-shrink: 0; }
 .vc-meta-row strong { color: var(--text-dim); }
+.vc-meta-row.span-2 { grid-column: 1 / -1; }
 
 /* Verify form */
 .vc-form {
@@ -245,6 +266,8 @@
   flex-direction: column;
   gap: .5rem;
   margin-top: auto;
+  padding-top: .5rem;
+  border-top: 1px dashed rgba(255,255,255,.08);
 }
 .vc-note {
   width: 100%;
@@ -252,38 +275,41 @@
   border: 1px solid rgba(255,255,255,.09);
   border-radius: 7px;
   color: #ddd;
-  padding: .5rem .7rem;
-  font-size: .78rem;
+  padding: .45rem .65rem;
+  font-size: .76rem;
   font-family: inherit;
   outline: none;
   resize: vertical;
-  min-height: 52px;
+  min-height: 44px;
   transition: border-color .18s;
   box-sizing: border-box;
 }
 .vc-note:focus { border-color: var(--accent); }
 .vc-note::placeholder { color: #3a4a5a; }
 
-.vc-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.vc-actions { display: flex; gap: .5rem; }
+.vc-actions .b-btn { flex: 1; justify-content: center; }
 
 /* Export strip */
 .vc-exports {
-  padding: .6rem 1rem;
+  padding: .55rem .85rem;
   border-top: 1px solid rgba(255,255,255,.06);
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: .45rem;
   flex-wrap: wrap;
   background: rgba(0,0,0,.15);
 }
 .vc-exports-lbl {
-  font-size: .65rem;
+  font-size: .6rem;
   text-transform: uppercase;
-  letter-spacing: .09em;
+  letter-spacing: .08em;
   color: var(--text-muted);
   flex-shrink: 0;
-  margin-right: .2rem;
+  margin-right: .1rem;
+  white-space: nowrap;
 }
+.vc-exports .b-btn { font-size: .7rem; padding: .32rem .55rem; }
 
 /* ═══════════════════════════════════════════════════════
    PAGINATION
@@ -346,21 +372,19 @@
 .no-results-banner i { font-size: 2rem; display: block; margin-bottom: .5rem; opacity: .25; }
 
 @media (max-width: 400px) {
-  .vc-header { padding: .55rem .75rem; }
-  .vc-body   { padding: .75rem; }
+  .vc-header { padding: .55rem .7rem; }
+  .vc-body   { padding: .7rem; }
 }
 
 /* ═══════════════════════════════════════════════════════
    LIGHT MODE OVERRIDES
    ═══════════════════════════════════════════════════════ */
 
-/* Controls bar */
 body.light-mode .verif-controls {
   background: rgba(0,0,0,.03);
   border-color: rgba(0,0,0,.08);
 }
 
-/* Search input */
 body.light-mode .ctrl-search {
   background: #ffffff;
   border-color: rgba(0,0,0,.1);
@@ -369,7 +393,6 @@ body.light-mode .ctrl-search {
 body.light-mode .ctrl-search:focus { border-color: #0ea87a; }
 body.light-mode .ctrl-search::placeholder { color: #9ba8b5; }
 
-/* Sort select */
 body.light-mode .sort-select {
   background: #ffffff;
   border-color: rgba(0,0,0,.1);
@@ -378,7 +401,6 @@ body.light-mode .sort-select {
 body.light-mode .sort-select:focus { border-color: #0ea87a; }
 body.light-mode .sort-select option { background: #ffffff; color: #1a2332; }
 
-/* Verification cards */
 body.light-mode .verif-card {
   background: #ffffff;
   border-color: rgba(0,0,0,.08);
@@ -389,23 +411,21 @@ body.light-mode .verif-card:hover {
   box-shadow: 0 8px 24px rgba(0,0,0,.1);
 }
 
-/* Card header — swap dark gradient for a neutral light one */
 body.light-mode .vc-header {
   background: linear-gradient(135deg, rgba(14,168,122,.07) 0%, rgba(240,244,248,.8) 100%);
   border-bottom-color: rgba(0,0,0,.07);
 }
 body.light-mode .vc-target-name { color: #1a2332; }
 
-/* Photo borders */
 body.light-mode .vc-photo { border-color: rgba(0,0,0,.1); }
 
-/* No-snapshot placeholder */
 body.light-mode .vc-no-snap {
   background: rgba(0,0,0,.04);
   border-color: rgba(0,0,0,.12);
 }
 
-/* Verify textarea */
+body.light-mode .vc-form { border-top-color: rgba(0,0,0,.08); }
+
 body.light-mode .vc-note {
   background: #f8fafc;
   border-color: rgba(0,0,0,.1);
@@ -414,13 +434,11 @@ body.light-mode .vc-note {
 body.light-mode .vc-note:focus { border-color: #0ea87a; }
 body.light-mode .vc-note::placeholder { color: #9ba8b5; }
 
-/* Export strip */
 body.light-mode .vc-exports {
   background: rgba(0,0,0,.02);
   border-top-color: rgba(0,0,0,.07);
 }
 
-/* Pagination buttons */
 body.light-mode .pg-btn {
   background: #ffffff;
   border-color: rgba(0,0,0,.1);
@@ -523,7 +541,7 @@ body.light-mode .pg-btn.active {
           {% endif %}
 
           {% if event.matched_target and event.matched_target.image %}
-          <div class="vc-ref-row">
+          <div class="vc-ref-wrap">
             <img class="vc-photo vc-photo-ref"
                  src="{{ event.matched_target.image.url }}"
                  alt="{% trans 'Ref' %}"
@@ -541,6 +559,10 @@ body.light-mode .pg-btn.active {
               <span>{{ event.camera.name|default:"—" }}</span>
             </div>
             <div class="vc-meta-row">
+              <i class="fas fa-users"></i>
+              <span>{{ event.person_count }} {% trans "in frame" %}</span>
+            </div>
+            <div class="vc-meta-row span-2">
               <i class="fas fa-map-marker-alt"></i>
               <span>{{ event.camera.location|default:"—" }}</span>
             </div>
@@ -555,15 +577,11 @@ body.light-mode .pg-btn.active {
               </span>
             </div>
             <div class="vc-meta-row">
-              <i class="fas fa-users"></i>
-              <span>{{ event.person_count }} {% trans "in frame" %}</span>
-            </div>
-            <div class="vc-meta-row">
               <i class="fas fa-user-shield"></i>
               {% if event.related_assignment and event.related_assignment.assigned_to %}
-                <span>{% trans "By" %}: <strong>{{ event.related_assignment.assigned_to.username }}</strong></span>
+                <span>{{ event.related_assignment.assigned_to.username }}</span>
               {% else %}
-                <span style="color:#555;">{% trans "Engine detected" %}</span>
+                <span style="color:#555;">{% trans "Engine" %}</span>
               {% endif %}
             </div>
           </div>
@@ -592,12 +610,12 @@ body.light-mode .pg-btn.active {
         <span class="vc-exports-lbl"><i class="fas fa-file-pdf"></i> {% trans "Export" %}:</span>
         <a href="{% url 'export_detection_pdf' event.pk %}"
            class="b-btn b-btn--pdf b-btn--sm" target="_blank">
-          <i class="fas fa-camera"></i> {% trans "Detection PDF" %}
+          <i class="fas fa-camera"></i> {% trans "Detection" %}
         </a>
         {% if event.matched_target %}
         <a href="{% url 'export_target_pdf' event.matched_target.pk %}"
            class="b-btn b-btn--ghost b-btn--sm" target="_blank">
-          <i class="fas fa-id-card"></i> {% trans "Full Dossier" %}
+          <i class="fas fa-id-card"></i> {% trans "Dossier" %}
         </a>
         {% endif %}
       </div>
@@ -629,7 +647,7 @@ body.light-mode .pg-btn.active {
 
 {% block extra_js %}
 <script>
-const PER_PAGE    = 9;
+const PER_PAGE    = 12;
 let   currentPage = 1;
 
 const allCards = () =>

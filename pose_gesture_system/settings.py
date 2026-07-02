@@ -3,7 +3,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-pdyi!)!g%46--*@k74u6*9k@g)thpvn%0)p--#%bxr_^n^z9+a'
-DEBUG = False
+DEBUG = True
 
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "pounce-plethora-widen.ngrok-free.dev"]
